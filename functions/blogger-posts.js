@@ -1,103 +1,139 @@
-const BLOGGER_FEED =
+const FEED =
     "https://tollywoodboost.blogspot.com/feeds/posts/default";
 
-const POSTS_PER_PAGE = 20;
+const PER_PAGE = 20;
 
-function getText(value) {
+function text(value) {
     return value && value.$t ? value.$t : "";
 }
 
-function getAlternateUrl(entry) {
+function bloggerUrl(entry) {
     if (!Array.isArray(entry.link)) {
         return "";
     }
 
     const link = entry.link.find(
-        item => item.rel === "alternate"
+        x => x.rel === "alternate"
     );
 
-    return link && link.href ? link.href : "";
+    return link ? link.href : "";
 }
 
-function makeLargeImage(url) {
-    if (!url) {
-        return "";
-    }
-
-    return url
-        .replace(/\/s72-c\//, "/s600/")
-        .replace(/\/s72\//, "/s600/")
-        .replace(/\/w72-h72-p-k-no-nu\//, "/w900/")
-        .replace(/\/s1600\//, "/s1600/");
-}
-
-function getFilmstarsUrl(bloggerUrl) {
+function filmstarsUrl(url) {
     try {
-        const url = new URL(bloggerUrl);
+        const u = new URL(url);
 
-        const match = url.pathname.match(
-            /^\/(\d{4})\/(\d{2})\/([^/]+)\.html$/
+        const m = u.pathname.match(
+            /^\/(\d{4})\/(\d{2})\/(.+)\.html$/
         );
 
-        if (!match) {
-            return bloggerUrl;
+        if (!m) {
+            return url;
         }
 
-        return `/${match[1]}/${match[2]}/${match[3]}.html`;
+        return `/${m[1]}/${m[2]}/${m[3]}.html`;
     } catch {
-        return bloggerUrl;
+        return url;
     }
 }
 
-function getFirstImage(html) {
-    if (!html) {
-        return "";
-    }
+function largeImage(url) {
+    if (!url) return "";
 
-    const match = html.match(
-        /<img[^>]+src=["']([^"']+)["']/i
-    );
-
-    if (!match) {
-        return "";
-    }
-
-    return makeLargeImage(match[1]);
+    return url
+        .replace(/\/s72-c\//g, "/s800/")
+        .replace(/\/s72\//g, "/s800/")
+        .replace(
+            /\/w72-h72-p-k-no-nu\//g,
+            "/w800/"
+        );
 }
 
-function htmlToText(html) {
+function firstImage(html) {
+
+    if (!html) return "";
+
+    const m =
+        html.match(
+            /<img[^>]+src=["']([^"']+)["']/i
+        );
+
+    return m
+        ? largeImage(m[1])
+        : "";
+}
+
+function plainText(html) {
+
     return (html || "")
-        .replace(/<script[\s\S]*?<\/script>/gi, "")
-        .replace(/<style[\s\S]*?<\/style>/gi, "")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&nbsp;/gi, " ")
-        .replace(/&amp;/gi, "&")
-        .replace(/&quot;/gi, '"')
-        .replace(/&#39;/gi, "'")
-        .replace(/\s+/g, " ")
+        .replace(
+            /<script[\s\S]*?<\/script>/gi,
+            ""
+        )
+        .replace(
+            /<style[\s\S]*?<\/style>/gi,
+            ""
+        )
+        .replace(
+            /<[^>]+>/g,
+            " "
+        )
+        .replace(
+            /&nbsp;/gi,
+            " "
+        )
+        .replace(
+            /&amp;/gi,
+            "&"
+        )
+        .replace(
+            /&quot;/gi,
+            '"'
+        )
+        .replace(
+            /&#39;/gi,
+            "'"
+        )
+        .replace(
+            /\s+/g,
+            " "
+        )
         .trim();
 }
 
-function createExcerpt(html) {
-    const text = htmlToText(html);
+function excerpt(html) {
 
-    if (text.length <= 220) {
-        return text;
+    const t =
+        plainText(html);
+
+    return t.length > 220
+        ? t.substring(0, 220).trim() + "..."
+        : t;
+}
+
+function labels(entry) {
+
+    if (!Array.isArray(entry.category)) {
+        return [];
     }
 
-    return text.substring(0, 220).trim() + "...";
+    return entry.category
+        .map(x => x.term)
+        .filter(Boolean);
 }
 
 export async function onRequestGet(context) {
 
     try {
 
-        const requestUrl =
-            new URL(context.request.url);
+        const url =
+            new URL(
+                context.request.url
+            );
 
         let page =
             parseInt(
-                requestUrl.searchParams.get("page") || "1",
+                url.searchParams.get("page") || "1",
                 10
             );
 
@@ -105,17 +141,17 @@ export async function onRequestGet(context) {
             page = 1;
         }
 
-        const startIndex =
-            ((page - 1) * POSTS_PER_PAGE) + 1;
+        const start =
+            ((page - 1) * PER_PAGE) + 1;
 
         const feedUrl =
-            `${BLOGGER_FEED}?alt=json&start-index=${startIndex}&max-results=${POSTS_PER_PAGE}`;
+            `${FEED}?alt=json&start-index=${start}&max-results=${PER_PAGE}`;
 
         const response =
             await fetch(feedUrl, {
                 headers: {
                     "User-Agent":
-                        "Mozilla/5.0 Filmstars Pages"
+                        "Filmstars Pages"
                 }
             });
 
@@ -125,7 +161,7 @@ export async function onRequestGet(context) {
                 {
                     success: false,
                     error:
-                        "Unable to fetch Blogger feed."
+                        "Blogger feed unavailable"
                 },
                 {
                     status: 502
@@ -144,31 +180,31 @@ export async function onRequestGet(context) {
                 ? feed.entry
                 : [];
 
-        const totalResults =
+        const total =
             feed["openSearch$totalResults"] &&
             feed["openSearch$totalResults"].$t
-                ? parseInt(
-                    feed["openSearch$totalResults"].$t,
-                    10
+                ? Number(
+                    feed["openSearch$totalResults"].$t
                 )
-                : 0;
+                : entries.length;
 
         const totalPages =
-            totalResults > 0
-                ? Math.ceil(
-                    totalResults / POSTS_PER_PAGE
+            Math.max(
+                1,
+                Math.ceil(
+                    total / PER_PAGE
                 )
-                : 1;
+            );
 
         const posts =
             entries.map(entry => {
 
-                const bloggerUrl =
-                    getAlternateUrl(entry);
+                const original =
+                    bloggerUrl(entry);
 
                 const content =
-                    getText(entry.content) ||
-                    getText(entry.summary);
+                    text(entry.content) ||
+                    text(entry.summary);
 
                 let image = "";
 
@@ -177,42 +213,43 @@ export async function onRequestGet(context) {
                     entry.media$thumbnail.url
                 ) {
                     image =
-                        makeLargeImage(
+                        largeImage(
                             entry.media$thumbnail.url
                         );
                 }
 
                 if (!image) {
                     image =
-                        getFirstImage(content);
+                        firstImage(content);
                 }
 
                 return {
 
                     title:
-                        getText(entry.title) ||
-                        "Untitled Post",
+                        text(entry.title),
 
                     url:
-                        getFilmstarsUrl(
-                            bloggerUrl
+                        filmstarsUrl(
+                            original
                         ),
 
-                    bloggerUrl,
+                    bloggerUrl:
+                        original,
 
                     published:
-                        getText(entry.published),
+                        text(entry.published),
 
                     updated:
-                        getText(entry.updated),
+                        text(entry.updated),
 
                     image,
 
                     excerpt:
-                        createExcerpt(content)
+                        excerpt(content),
 
+                    labels:
+                        labels(entry)
                 };
-
             });
 
 
@@ -220,19 +257,13 @@ export async function onRequestGet(context) {
             {
                 success: true,
 
-                blog:
-                    "Tollywood Boost",
-
-                source:
-                    "https://tollywoodboost.blogspot.com/",
-
                 page,
 
                 perPage:
-                    POSTS_PER_PAGE,
+                    PER_PAGE,
 
                 totalPosts:
-                    totalResults,
+                    total,
 
                 totalPages,
 
@@ -254,16 +285,11 @@ export async function onRequestGet(context) {
             {
                 success: false,
                 error:
-                    "Server error while loading Blogger posts."
+                    "Unable to load Blogger posts"
             },
             {
-                status: 500,
-                headers: {
-                    "Cache-Control":
-                        "no-store"
-                }
+                status: 500
             }
         );
-
     }
 }
