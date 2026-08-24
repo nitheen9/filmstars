@@ -1,19 +1,28 @@
-const BLOG_URL = "https://tollywoodboost.blogspot.com/";
-const BLOG_FEED = "https://tollywoodboost.blogspot.com/feeds/posts/default";
+const BLOG_URL =
+    "https://tollywoodboost.blogspot.com";
+
+const BLOG_FEED =
+    "https://tollywoodboost.blogspot.com/feeds/posts/default";
 
 
-// ============================================================
-// TEXT
-// ============================================================
+
+/* ============================================================
+   TEXT
+   ============================================================ */
 
 function getText(value) {
-    return value && value.$t ? value.$t : "";
+
+    return value && value.$t
+        ? value.$t
+        : "";
+
 }
 
 
-// ============================================================
-// BLOGGER ALTERNATE URL
-// ============================================================
+
+/* ============================================================
+   BLOGGER ALTERNATE URL
+   ============================================================ */
 
 function getAlternateUrl(entry) {
 
@@ -21,19 +30,27 @@ function getAlternateUrl(entry) {
         return "";
     }
 
-    const link = entry.link.find(
-        item => item.rel === "alternate"
-    );
+    const link =
+        entry.link.find(
+            item =>
+                item.rel === "alternate"
+        );
 
-    return link ? link.href : "";
+    return link
+        ? link.href
+        : "";
+
 }
 
 
-// ============================================================
-// BLOGGER URL -> FILMSTARS URL
-// ============================================================
 
-function convertToFilmstarsUrl(bloggerUrl) {
+/* ============================================================
+   BLOGGER URL -> FILMSTARS URL
+   ============================================================ */
+
+function convertToFilmstarsUrl(
+    bloggerUrl
+) {
 
     if (!bloggerUrl) {
         return "";
@@ -41,29 +58,37 @@ function convertToFilmstarsUrl(bloggerUrl) {
 
     try {
 
-        const url = new URL(bloggerUrl);
+        const url =
+            new URL(bloggerUrl);
 
-        const match = url.pathname.match(
-            /^\/(\d{4})\/(\d{2})\/([^/]+)\.html$/
-        );
+        const match =
+            url.pathname.match(
+                /^\/(\d{4})\/(\d{2})\/([^/]+)\.html$/
+            );
 
         if (!match) {
             return "";
         }
 
-        return `/${match[1]}/${match[2]}/${match[3]}.html`;
+        return (
+            `/${match[1]}/` +
+            `${match[2]}/` +
+            `${match[3]}.html`
+        );
 
     } catch {
 
         return "";
+
     }
+
 }
 
 
-// ============================================================
-// GET SLUG
-// FIXED FOR BOTH ABSOLUTE AND RELATIVE URLS
-// ============================================================
+
+/* ============================================================
+   GET SLUG
+   ============================================================ */
 
 function getSlug(url) {
 
@@ -89,10 +114,12 @@ function getSlug(url) {
 
         }
 
+
         const match =
             pathname.match(
                 /^\/\d{4}\/\d{2}\/([^/]+)\.html$/
             );
+
 
         return match
             ? match[1]
@@ -101,55 +128,66 @@ function getSlug(url) {
     } catch {
 
         return "";
+
     }
+
 }
 
 
-// ============================================================
-// IMAGE URL
-// ============================================================
+
+/* ============================================================
+   IMAGE URL
+   ============================================================ */
 
 function upgradeImageUrl(
     url,
-    size = "s800"
+    size = "s1600"
 ) {
 
     if (!url) {
         return "";
     }
 
+
     return url
+
         .replace(
             /\/s72-c\//g,
             `/${size}/`
         )
+
         .replace(
             /\/s72\//g,
             `/${size}/`
         )
+
         .replace(
             /\/w72-h72-p-k-no-nu\//g,
             `/${size}/`
         )
+
         .replace(
             /\/w\d+-h\d+-p-k-no-nu\//g,
             `/${size}/`
         )
+
         .replace(
             /\/s\d+\//g,
             `/${size}/`
         );
+
 }
 
 
-// ============================================================
-// GET POST IMAGE
-// ============================================================
+
+/* ============================================================
+   GET POST IMAGE
+   ============================================================ */
 
 function getPostImage(
     entry,
     content,
-    size = "s800"
+    size = "s1600"
 ) {
 
     if (
@@ -172,6 +210,7 @@ function getPostImage(
                 /data-src=["']([^"']+)["']/i
             );
 
+
         if (match) {
 
             return upgradeImageUrl(
@@ -187,6 +226,7 @@ function getPostImage(
                 /<img[^>]+src=["']([^"']+)["']/i
             );
 
+
         if (match) {
 
             return upgradeImageUrl(
@@ -200,35 +240,48 @@ function getPostImage(
 
 
     return "";
+
 }
 
 
-// ============================================================
-// LABELS
-// ============================================================
+
+/* ============================================================
+   LABELS
+   ============================================================ */
 
 function getLabels(entry) {
 
-    if (!Array.isArray(entry.category)) {
+    if (
+        !Array.isArray(
+            entry.category
+        )
+    ) {
+
         return [];
+
     }
 
+
     return entry.category
+
         .map(
             category =>
                 category.term || ""
         )
+
         .filter(Boolean);
+
 }
 
 
-// ============================================================
-// CREATE POST
-// ============================================================
+
+/* ============================================================
+   CREATE POST
+   ============================================================ */
 
 function createPost(
     entry,
-    imageSize = "s800"
+    imageSize = "s1600"
 ) {
 
     const content =
@@ -255,7 +308,6 @@ function createPost(
             filmstarsUrl,
 
         bloggerUrl:
-
             bloggerUrl,
 
         published:
@@ -272,27 +324,77 @@ function createPost(
             ),
 
         content:
-
             content,
 
         labels:
             getLabels(entry)
 
     };
+
 }
 
 
-// ============================================================
-// FETCH BLOGGER FEED
-// ============================================================
+
+/* ============================================================
+   FETCH BLOGGER FEED
+   ============================================================
+
+   IMPORTANT:
+
+   Normal:
+
+   /feeds/posts/default
+
+   Label:
+
+   /feeds/posts/default/-/Tollywood%20Actress
+
+   This means Blogger itself performs the label filtering.
+   ============================================================ */
 
 async function fetchBlogger(
     startIndex = 1,
-    maxResults = 20
+    maxResults = 20,
+    label = ""
 ) {
 
-    const feedUrl =
-        `${BLOG_FEED}?alt=json&start-index=${startIndex}&max-results=${maxResults}`;
+    let feedUrl;
+
+
+    if (label) {
+
+        const encodedLabel =
+            encodeURIComponent(label);
+
+
+        feedUrl =
+            `${BLOG_FEED}/-/${encodedLabel}`;
+
+    } else {
+
+        feedUrl =
+            BLOG_FEED;
+
+    }
+
+
+    const separator =
+        feedUrl.includes("?")
+            ? "&"
+            : "?";
+
+
+    feedUrl +=
+        `${separator}` +
+        `alt=json` +
+        `&start-index=${startIndex}` +
+        `&max-results=${maxResults}`;
+
+
+    console.log(
+        "Blogger feed:",
+        feedUrl
+    );
 
 
     const response =
@@ -302,6 +404,11 @@ async function fetchBlogger(
                 headers: {
                     "User-Agent":
                         "Filmstars Pages"
+                },
+
+                cf: {
+                    cacheTtl: 300,
+                    cacheEverything: true
                 }
             }
         );
@@ -317,12 +424,14 @@ async function fetchBlogger(
 
 
     return await response.json();
+
 }
 
 
-// ============================================================
-// BLOGGER API
-// ============================================================
+
+/* ============================================================
+   BLOGGER API
+   ============================================================ */
 
 async function bloggerApi(
     requestUrl
@@ -345,6 +454,28 @@ async function bloggerApi(
             10
         );
 
+
+    /*
+       EXACT LABEL FROM URL
+
+       Example:
+
+       ?label=Tollywood%20Actress
+
+       becomes:
+
+       Tollywood Actress
+    */
+
+    const label =
+        (
+            requestUrl.searchParams.get(
+                "label"
+            ) || ""
+        ).trim();
+
+
+    /* Validate */
 
     if (
         !Number.isFinite(startIndex) ||
@@ -373,12 +504,17 @@ async function bloggerApi(
         );
 
 
+    /* Fetch */
+
     const data =
         await fetchBlogger(
             startIndex,
-            maxResults
+            maxResults,
+            label
         );
 
+
+    /* Entries */
 
     const entries =
         Array.isArray(
@@ -388,15 +524,25 @@ async function bloggerApi(
             : [];
 
 
+    /* Posts */
+
     const posts =
         entries.map(
             entry =>
                 createPost(
                     entry,
-                    "s800"
+                    "s1600"
                 )
         );
 
+
+    /*
+       Blogger gives the total for the
+       current feed.
+
+       For a label feed this is the
+       total for that label.
+    */
 
     const total =
         Number(
@@ -417,6 +563,9 @@ async function bloggerApi(
 
             source:
                 BLOG_URL,
+
+            label:
+                label,
 
             count:
                 posts.length,
@@ -456,17 +605,27 @@ async function bloggerApi(
 }
 
 
-// ============================================================
-// FETCH MANY POSTS
-// Used for single post, previous/next and related posts
-// ============================================================
+
+/* ============================================================
+   FETCH POSTS FOR SINGLE POST
+   ============================================================ */
 
 async function getPostsForSinglePage() {
+
+    /*
+       Fetch 150 posts.
+
+       This is enough for previous/next/related
+       among the latest posts.
+
+       It does NOT affect label pagination.
+    */
 
     const data =
         await fetchBlogger(
             1,
-            150
+            150,
+            ""
         );
 
 
@@ -489,9 +648,10 @@ async function getPostsForSinglePage() {
 }
 
 
-// ============================================================
-// HTML ESCAPE
-// ============================================================
+
+/* ============================================================
+   ESCAPE HTML
+   ============================================================ */
 
 function escapeHtml(value) {
 
@@ -525,9 +685,10 @@ function escapeHtml(value) {
 }
 
 
-// ============================================================
-// DATE
-// ============================================================
+
+/* ============================================================
+   DATE
+   ============================================================ */
 
 function formatDate(value) {
 
@@ -547,6 +708,7 @@ function formatDate(value) {
     ) {
 
         return "";
+
     }
 
 
@@ -562,9 +724,10 @@ function formatDate(value) {
 }
 
 
-// ============================================================
-// CLEAN BLOGGER CONTENT
-// ============================================================
+
+/* ============================================================
+   CLEAN BLOGGER CONTENT
+   ============================================================ */
 
 function cleanPostContent(html) {
 
@@ -576,7 +739,8 @@ function cleanPostContent(html) {
     let result = html;
 
 
-    // Remove scripts
+    /* Remove scripts */
+
     result =
         result.replace(
             /<script[\s\S]*?<\/script>/gi,
@@ -584,7 +748,8 @@ function cleanPostContent(html) {
         );
 
 
-    // Remove styles
+    /* Remove styles */
+
     result =
         result.replace(
             /<style[\s\S]*?<\/style>/gi,
@@ -592,7 +757,8 @@ function cleanPostContent(html) {
         );
 
 
-    // Remove iframe
+    /* Remove iframes */
+
     result =
         result.replace(
             /<iframe[\s\S]*?<\/iframe>/gi,
@@ -600,7 +766,8 @@ function cleanPostContent(html) {
         );
 
 
-    // Remove object
+    /* Remove object */
+
     result =
         result.replace(
             /<object[\s\S]*?<\/object>/gi,
@@ -608,7 +775,8 @@ function cleanPostContent(html) {
         );
 
 
-    // Remove embed
+    /* Remove embed */
+
     result =
         result.replace(
             /<embed[^>]*>/gi,
@@ -616,7 +784,8 @@ function cleanPostContent(html) {
         );
 
 
-    // Remove event handlers
+    /* Remove event handlers */
+
     result =
         result.replace(
             /\s+on[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi,
@@ -624,7 +793,8 @@ function cleanPostContent(html) {
         );
 
 
-    // Remove javascript URLs
+    /* Remove javascript */
+
     result =
         result.replace(
             /javascript\s*:/gi,
@@ -632,7 +802,8 @@ function cleanPostContent(html) {
         );
 
 
-    // Upgrade Blogger image URLs
+    /* Upgrade Blogger images */
+
     result =
         result.replace(
             /\/s72-c\//g,
@@ -661,7 +832,8 @@ function cleanPostContent(html) {
         );
 
 
-    // Fix images
+    /* Fix IMG attributes */
+
     result =
         result.replace(
             /<img\b([^>]*)>/gi,
@@ -691,7 +863,6 @@ function cleanPostContent(html) {
                 }
 
 
-                // Remove fixed width
                 attrs =
                     attrs.replace(
                         /\swidth=["'][^"']*["']/gi,
@@ -699,7 +870,6 @@ function cleanPostContent(html) {
                     );
 
 
-                // Remove fixed height
                 attrs =
                     attrs.replace(
                         /\sheight=["'][^"']*["']/gi,
@@ -707,7 +877,6 @@ function cleanPostContent(html) {
                     );
 
 
-                // Remove inline style
                 attrs =
                     attrs.replace(
                         /\sstyle=["'][^"']*["']/gi,
@@ -721,7 +890,8 @@ function cleanPostContent(html) {
         );
 
 
-    // Upgrade image src
+    /* Upgrade image URLs */
+
     result =
         result.replace(
             /(<img[^>]+(?:src|data-src)=["'])([^"']+)(["'])/gi,
@@ -746,16 +916,16 @@ function cleanPostContent(html) {
 
 
     return result;
+
 }
 
 
-// ============================================================
-// LABEL
-// ============================================================
 
-function createLabel(
-    label
-) {
+/* ============================================================
+   LABEL HTML
+   ============================================================ */
+
+function createLabel(label) {
 
     return `
 
@@ -763,27 +933,24 @@ function createLabel(
             class="post-label"
             href="/blog?label=${encodeURIComponent(label)}"
         >
-
             ${escapeHtml(label)}
-
         </a>
 
     `;
+
 }
 
 
-// ============================================================
-// RELATED CARD
-// ============================================================
 
-function createRelatedCard(
-    post
-) {
+/* ============================================================
+   RELATED CARD
+   ============================================================ */
+
+function createRelatedCard(post) {
 
     return `
 
         <article class="related-card">
-
 
             <a
                 class="related-image"
@@ -808,7 +975,6 @@ function createRelatedCard(
 
 
             <div class="related-info">
-
 
                 <h3>
 
@@ -840,24 +1006,22 @@ function createRelatedCard(
                     class="read-more"
                     href="${escapeHtml(post.url)}"
                 >
-
                     Read More
-
                 </a>
 
-
             </div>
-
 
         </article>
 
     `;
+
 }
 
 
-// ============================================================
-// SINGLE POST PAGE
-// ============================================================
+
+/* ============================================================
+   SINGLE POST HTML
+   ============================================================ */
 
 function createSinglePostPage(
     post,
@@ -868,7 +1032,6 @@ function createSinglePostPage(
 
     const labels =
         post.labels.length > 0
-
             ? `
 
                 <div class="labels">
@@ -884,7 +1047,6 @@ function createSinglePostPage(
                 </div>
 
               `
-
             : "";
 
 
@@ -991,24 +1153,20 @@ function createSinglePostPage(
 ${escapeHtml(post.title)} | Filmstars
 </title>
 
-
 <meta
     name="description"
     content="${escapeHtml(post.title)}"
 >
-
 
 <meta
     property="og:title"
     content="${escapeHtml(post.title)}"
 >
 
-
 <meta
     property="og:type"
     content="article"
 >
-
 
 ${
     post.image
@@ -1023,16 +1181,13 @@ ${
         : ""
 }
 
-
 <style>
 
 * {
     box-sizing: border-box;
 }
 
-
 body {
-
     margin: 0;
 
     font-family:
@@ -1043,23 +1198,15 @@ body {
     background: #f5f6f8;
 
     color: #222;
-
 }
-
 
 .header {
-
     background: #fe5301;
-
-    color: #fdfdff;
-
+    color: white;
 }
 
-
 .header-inner {
-
     width: 92%;
-
     max-width: 1200px;
 
     min-height: 68px;
@@ -1071,51 +1218,33 @@ body {
     align-items: center;
 
     justify-content: space-between;
-
 }
-
 
 .logo {
-
     font-size: 36px;
-
     font-weight: bold;
-
 }
+
 .logo a {
-
-    color: #fdfdff;
-    cursor: pointer;
-    text-decoration: unset;
-
+    color: white;
+    text-decoration: none;
 }
-
 
 .nav a {
-
     color: white;
-
     text-decoration: none;
-
     margin-left: 22px;
-
 }
 
-
 .main {
-
     width: 92%;
-
     max-width: 1050px;
 
     margin:
         35px auto 70px;
-
 }
 
-
 .back {
-
     display: inline-block;
 
     margin-bottom: 18px;
@@ -1125,12 +1254,9 @@ body {
     text-decoration: none;
 
     font-weight: bold;
-
 }
 
-
 .post {
-
     background: white;
 
     border:
@@ -1142,41 +1268,30 @@ body {
 
     box-shadow:
         0 4px 18px rgba(0,0,0,.06);
-
 }
 
-
 .post-title {
-
     font-size: 28px;
 
     line-height: 1.25;
 
     margin:
         0 0 12px;
-
 }
 
-
 .post-date {
-
     color: #777;
 
     font-size: 14px;
 
     margin-bottom: 28px;
-
 }
 
-
-/*
- * Main image:
- * Keep original aspect ratio.
- * Do NOT crop faces/body.
- */
+/* =========================================================
+   FEATURED IMAGE
+   ========================================================= */
 
 .featured-image {
-
     display: block;
 
     width: auto;
@@ -1185,7 +1300,7 @@ body {
 
     height: auto;
 
-    max-height: 1100px;
+    max-height: 1400px;
 
     object-fit: contain;
 
@@ -1195,29 +1310,23 @@ body {
     border-radius: 8px;
 
     background: #f2f2f2;
-
 }
 
+/* =========================================================
+   CONTENT
+   ========================================================= */
 
 .post-content {
-
     font-size: 18px;
-
     line-height: 1.8;
-
 }
-
 
 .post-content p {
-
     margin:
         0 0 22px;
-
 }
 
-
 .post-content img {
-
     display: block;
 
     width: auto;
@@ -1226,7 +1335,7 @@ body {
 
     height: auto;
 
-    max-height: 1100px;
+    max-height: 1400px;
 
     object-fit: contain;
 
@@ -1234,29 +1343,24 @@ body {
         30px auto;
 
     border-radius: 7px;
-
 }
 
-
 .post-content figure {
-
     max-width: 100%;
 
     margin:
         30px auto;
-
 }
-
 
 .post-content a {
-
     color: #2563eb;
-
 }
 
+/* =========================================================
+   LABELS
+   ========================================================= */
 
 .labels {
-
     border-top:
         1px solid #eeeeee;
 
@@ -1265,16 +1369,12 @@ body {
     padding-top: 20px;
 
     line-height: 2.5;
-
 }
 
-
 .post-label {
-
     display: inline-block;
 
-    margin:
-        4px;
+    margin: 4px;
 
     padding:
         3px 12px;
@@ -1283,18 +1383,20 @@ body {
 
     background: #47164F;
 
-    color: #fdfdff;
+    color: white;
 
     text-decoration: none;
 
     font-size: 13px;
-    font-weight: 600;
 
+    font-weight: 600;
 }
 
+/* =========================================================
+   PREVIOUS / NEXT
+   ========================================================= */
 
 .post-navigation-wrapper {
-
     display: grid;
 
     grid-template-columns:
@@ -1303,12 +1405,9 @@ body {
     gap: 20px;
 
     margin-top: 30px;
-
 }
 
-
 .post-navigation {
-
     display: flex;
 
     flex-direction: column;
@@ -1327,81 +1426,58 @@ body {
     text-decoration: none;
 
     color: #222;
-
 }
-
 
 .post-navigation:hover {
-
     border-color:
         #2563eb;
-
 }
 
-
 .post-navigation span {
-
     color: #47164F;
 
     font-size: 13px;
 
     font-weight: bold;
-
 }
-
 
 .post-navigation strong {
-
     line-height: 1.45;
-
 }
-
 
 .post-navigation.next {
-
     text-align: right;
-
 }
-
 
 .disabled {
-
     opacity: .45;
-
 }
 
+/* =========================================================
+   RELATED
+   ========================================================= */
 
 .related {
-
     margin-top: 55px;
-
 }
 
-
 .related h2 {
-
     margin:
         0 0 25px;
 
     font-size: 29px;
-
 }
 
-
 .related-grid {
-
     display: grid;
 
     grid-template-columns:
         repeat(4, 1fr);
 
     gap: 22px;
-
 }
 
-
 .related-card {
-
     overflow: hidden;
 
     background: white;
@@ -1413,75 +1489,54 @@ body {
 
     box-shadow:
         0 3px 12px rgba(0,0,0,.05);
-
 }
 
-
 .related-image {
-
     display: block;
 
     background: #f2f2f2;
-
 }
 
-
 .related-image img {
-
     display: block;
 
     width: 100%;
 
     height: 300px;
 
-    object-fit: fill;
+    object-fit: contain;
 
     background: #f2f2f2;
-
 }
-
 
 .related-info {
-
     padding: 15px;
-
 }
 
-
 .related-info h3 {
-
     margin:
         0 0 8px;
 
     font-size: 17px;
 
     line-height: 1.4;
-
 }
 
-
 .related-info h3 a {
-
     color: #222;
 
     text-decoration: none;
-
 }
 
-
 .related-date {
-
     color: #777;
 
     font-size: 12px;
 
     margin-bottom: 12px;
-
 }
 
-
 .read-more {
-
     display: inline-block;
 
     padding:
@@ -1498,12 +1553,9 @@ body {
     font-size: 12px;
 
     font-weight: bold;
-
 }
 
-
 .footer {
-
     padding:
         30px 15px;
 
@@ -1512,122 +1564,75 @@ body {
     color: #aaa;
 
     text-align: center;
-
 }
 
-
-@media (
-    max-width: 800px
-) {
+@media (max-width: 800px) {
 
     .related-grid {
-
         grid-template-columns:
             repeat(2, 1fr);
-
     }
 
 }
 
-
-@media (
-    max-width: 600px
-) {
+@media (max-width: 600px) {
 
     .header-inner {
-
         padding:
             17px 0;
-
-        flex-direction:
-            inherit;
-
-        gap: 14px;
-
     }
 
+    .logo {
+        font-size: 30px;
+    }
 
     .nav a {
-
         margin:
             0 8px;
-
     }
-
 
     .main {
-
         width: 94%;
-
     }
-
 
     .post {
-
         padding: 18px;
-
     }
-
 
     .post-title {
-
         font-size: 24px;
-
     }
-
 
     .post-content {
-
         font-size: 16px;
-
     }
-
 
     .featured-image {
-
         width: 100%;
-
         max-height: none;
-
     }
-
 
     .post-content img {
-
         max-height: none;
-
     }
-
 
     .post-navigation-wrapper {
-
         grid-template-columns:
             1fr;
-
     }
-
 
     .post-navigation.next {
-
         text-align: left;
-
     }
-
 
     .related-grid {
-
         grid-template-columns:
             1fr;
-
     }
 
-
     .related-image img {
-
         height: auto;
-
-        max-height: 700px;
-
+        max-height: 800px;
     }
 
 }
@@ -1636,20 +1641,19 @@ body {
 
 </head>
 
-
 <body>
-
 
 <header class="header">
 
 <div class="header-inner">
 
 <div class="logo">
+
 <a href="/">
 Film Stars
 </a>
-</div>
 
+</div>
 
 <nav class="nav">
 
@@ -1666,7 +1670,6 @@ Home
 
 <main class="main">
 
-
 <a
     class="back"
     href="/blog"
@@ -1676,7 +1679,6 @@ Home
 
 
 <article class="post">
-
 
 <h1 class="post-title">
 
@@ -1705,6 +1707,7 @@ ${
                 class="featured-image"
                 src="${escapeHtml(post.image)}"
                 alt="${escapeHtml(post.title)}"
+                decoding="async"
             >
 
           `
@@ -1722,7 +1725,6 @@ ${cleanPostContent(
 
 
 ${labels}
-
 
 </article>
 
@@ -1753,7 +1755,6 @@ ${related
 
 </section>
 
-
 </main>
 
 
@@ -1763,16 +1764,17 @@ ${related
 
 </footer>
 
-
 </body>
 
 </html>`;
+
 }
 
 
-// ============================================================
-// SINGLE POST
-// ============================================================
+
+/* ============================================================
+   SINGLE POST PAGE
+   ============================================================ */
 
 async function singlePostPage(
     requestUrl
@@ -1781,12 +1783,6 @@ async function singlePostPage(
     const pathname =
         requestUrl.pathname;
 
-
-    /*
-     * This matches:
-     *
-     * /2026/06/marathi-beautiful-actress-ankita.html
-     */
 
     const match =
         pathname.match(
@@ -1801,23 +1797,13 @@ async function singlePostPage(
     }
 
 
-    const year =
-        match[1];
-
-
-    const month =
-        match[2];
-
-
     const slug =
         match[3];
 
 
     console.log(
-        "Looking for post:",
-        year,
-        month,
-        slug
+        "Looking for:",
+        pathname
     );
 
 
@@ -1825,21 +1811,16 @@ async function singlePostPage(
         await getPostsForSinglePage();
 
 
-    /*
-     * Find by complete Filmstars path first.
-     */
+    /* Find exact Filmstars URL */
 
     let currentIndex =
         posts.findIndex(
             post =>
-                post.url ===
-                pathname
+                post.url === pathname
         );
 
 
-    /*
-     * If not found, find by slug.
-     */
+    /* Find slug */
 
     if (
         currentIndex === -1
@@ -1848,18 +1829,14 @@ async function singlePostPage(
         currentIndex =
             posts.findIndex(
                 post =>
-                    getSlug(
-                        post.url
-                    ) === slug
+                    getSlug(post.url) ===
+                    slug
             );
 
     }
 
 
-    /*
-     * Last fallback:
-     * compare the Blogger URL pathname.
-     */
+    /* Find Blogger path */
 
     if (
         currentIndex === -1
@@ -1871,14 +1848,10 @@ async function singlePostPage(
 
                     try {
 
-                        const bloggerPath =
+                        return (
                             new URL(
                                 post.bloggerUrl
-                            ).pathname;
-
-
-                        return (
-                            bloggerPath ===
+                            ).pathname ===
                             pathname
                         );
 
@@ -1894,96 +1867,105 @@ async function singlePostPage(
     }
 
 
+    /* Not found */
+
     if (
         currentIndex === -1
     ) {
 
         return new Response(
 
-            `<!DOCTYPE html>
+`<!DOCTYPE html>
 
-            <html lang="en">
+<html lang="en">
 
-            <head>
+<head>
 
-                <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-                <meta
-                    name="viewport"
-                    content="width=device-width, initial-scale=1.0"
-                >
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-                <title>
-                    Post Not Found | Filmstars
-                </title>
+<title>
+Post Not Found | Filmstars
+</title>
 
-                <style>
+<style>
 
-                body {
-                    font-family: Arial, sans-serif;
-                    background: #f5f6f8;
-                    margin: 0;
-                    padding: 50px 20px;
-                    text-align: center;
-                }
+body {
+    font-family: Arial, sans-serif;
 
-                .box {
-                    max-width: 700px;
-                    margin: auto;
-                    background: white;
-                    padding: 40px;
-                    border-radius: 12px;
-                }
+    background: #f5f6f8;
 
-                a {
-                    color: #2563eb;
-                    text-decoration: none;
-                    font-weight: bold;
-                }
+    margin: 0;
 
-                </style>
+    padding: 50px 20px;
 
-            </head>
+    text-align: center;
+}
 
-            <body>
+.box {
+    max-width: 700px;
 
-                <div class="box">
+    margin: auto;
 
-                    <h1>
-                        Post Not Found
-                    </h1>
+    background: white;
 
-                    <p>
-                        The requested Filmstars post
-                        could not be found.
-                    </p>
+    padding: 40px;
 
-                    <p>
-                        <a href="/blog">
-                            ← Back to Blog
-                        </a>
-                    </p>
+    border-radius: 12px;
+}
 
-                </div>
+a {
+    color: #2563eb;
 
-            </body>
+    text-decoration: none;
 
-            </html>`,
+    font-weight: bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>
+Post Not Found
+</h1>
+
+<p>
+The requested Filmstars post could not be found.
+</p>
+
+<p>
+
+<a href="/blog">
+← Back to Blog
+</a>
+
+</p>
+
+</div>
+
+</body>
+
+</html>`,
 
             {
-
                 status: 404,
 
                 headers: {
-
                     "Content-Type":
                         "text/html; charset=UTF-8",
 
                     "Cache-Control":
                         "no-cache"
-
                 }
-
             }
 
         );
@@ -1996,42 +1978,38 @@ async function singlePostPage(
 
 
     /*
-     * Feed order:
-     *
-     * newest
-     * ↓
-     * oldest
-     *
-     * Therefore:
-     *
-     * Next = newer
-     * Previous = older
-     */
+       Blogger feed order:
+
+       newest
+       ↓
+       oldest
+
+       Therefore:
+
+       Previous = older
+       Next = newer
+    */
 
     const previous =
         currentIndex <
         posts.length - 1
-
             ? posts[
                 currentIndex + 1
             ]
-
             : null;
 
 
     const next =
         currentIndex > 0
-
             ? posts[
                 currentIndex - 1
             ]
-
             : null;
 
 
-    /*
-     * RELATED POSTS
-     */
+    /* ========================================================
+       RELATED POSTS
+       ======================================================== */
 
     const currentLabels =
         new Set(
@@ -2133,7 +2111,6 @@ async function singlePostPage(
         html,
 
         {
-
             status: 200,
 
             headers: {
@@ -2153,9 +2130,10 @@ async function singlePostPage(
 }
 
 
-// ============================================================
-// MAIN CLOUDFLARE HANDLER
-// ============================================================
+
+/* ============================================================
+   MAIN CLOUDFLARE PAGES HANDLER
+   ============================================================ */
 
 export async function onRequest(
     context
@@ -2167,9 +2145,9 @@ export async function onRequest(
         );
 
 
-    /*
-     * BLOGGER API
-     */
+    /* ========================================================
+       BLOGGER API
+       ======================================================== */
 
     if (
         requestUrl.pathname ===
@@ -2199,7 +2177,10 @@ export async function onRequest(
                     success: false,
 
                     error:
-                        "Unable to load Blogger posts."
+                        "Unable to load Blogger posts.",
+
+                    message:
+                        error.message
 
                 }),
 
@@ -2226,9 +2207,9 @@ export async function onRequest(
     }
 
 
-    /*
-     * SINGLE POST
-     */
+    /* ========================================================
+       SINGLE POST
+       ======================================================== */
 
     if (
         /^\/\d{4}\/\d{2}\/[^/]+\.html$/
@@ -2253,39 +2234,46 @@ export async function onRequest(
 
             return new Response(
 
-                `<!DOCTYPE html>
+`<!DOCTYPE html>
 
-                <html>
+<html>
 
-                <head>
+<head>
 
-                    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-                    <title>
-                        Error | Filmstars
-                    </title>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-                </head>
+<title>
+Unable to load post | Filmstars
+</title>
 
-                <body>
+</head>
 
-                    <h1>
-                        Unable to load post
-                    </h1>
+<body>
 
-                    <p>
-                        Please try again later.
-                    </p>
+<h1>
+Unable to load post
+</h1>
 
-                    <p>
-                        <a href="/blog">
-                            ← Back to Blog
-                        </a>
-                    </p>
+<p>
+${escapeHtml(error.message)}
+</p>
 
-                </body>
+<p>
 
-                </html>`,
+<a href="/blog">
+← Back to Blog
+</a>
+
+</p>
+
+</body>
+
+</html>`,
 
                 {
 
@@ -2310,13 +2298,13 @@ export async function onRequest(
     }
 
 
-    /*
-     * Normal files:
-     *
-     * index.html
-     * blog.html
-     * etc.
-     */
+    /* ========================================================
+       NORMAL FILES
+
+       index.html
+       blog.html
+       etc.
+       ======================================================== */
 
     return context.next();
 
