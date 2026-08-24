@@ -1,395 +1,780 @@
-<section class="latest-blog-posts">
+<!DOCTYPE html>
+<html lang="en">
+<head>
 
-    <div class="blog-container">
+<meta charset="UTF-8">
 
-        <div class="blog-heading">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-            <h2>
-                Latest Tollywood Posts
-            </h2>
+<title>Filmstars - Tollywood & Indian Actress Photos</title>
 
-            <p>
-                Latest movie news, celebrity updates
-                and entertainment stories from Tollywood Boost.
-            </p>
-
-        </div>
-
-
-        <div id="home-blog-loading">
-            Loading latest posts...
-        </div>
-
-
-        <div id="home-blog-error"
-             style="display:none;">
-        </div>
-
-
-        <div id="home-blog-posts"
-             class="home-blog-grid">
-        </div>
-
-
-        <div class="home-blog-button">
-
-            <a href="/blog">
-                View All Posts
-            </a>
-
-        </div>
-
-    </div>
-
-</section>
-
+<meta
+    name="description"
+    content="Latest Tollywood, Bollywood and Indian actress photos, movie updates and celebrity posts."
+>
 
 <style>
 
-.latest-blog-posts {
-    padding: 50px 20px;
-    background: #f5f7fb;
+* {
+    box-sizing: border-box;
 }
 
-.blog-container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f5f6f8;
+    color: #222;
 }
 
-.blog-heading {
-    text-align: center;
-    margin-bottom: 30px;
+.header {
+    background: #111827;
+    color: white;
 }
 
-.blog-heading h2 {
+.header-inner {
+    width: 92%;
+    max-width: 1250px;
+    margin: auto;
+    min-height: 68px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    font-size: 27px;
+    font-weight: 700;
+}
+
+.nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 22px;
+    font-size: 15px;
+}
+
+.nav a:hover {
+    color: #93c5fd;
+}
+
+.hero {
+    width: 92%;
+    max-width: 1250px;
+    margin: 35px auto 25px;
+}
+
+.hero h1 {
     margin: 0 0 10px;
-    font-size: 32px;
+    font-size: 34px;
 }
 
-.blog-heading p {
-    margin: 0 auto;
-    max-width: 700px;
+.hero p {
+    margin: 0;
     color: #666;
-    line-height: 1.6;
+    font-size: 16px;
 }
 
-.home-blog-grid {
+.posts-container {
+    width: 92%;
+    max-width: 1250px;
+    margin: 0 auto 60px;
+}
+
+.posts-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 22px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
 }
 
-.home-blog-card {
-    background: #fff;
+.post-card {
+    background: white;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 3px 12px rgba(0,0,0,.06);
+
+    box-shadow:
+        0 3px 14px rgba(0, 0, 0, 0.06);
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
 }
 
-.home-blog-card img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
+.post-card:hover {
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.10);
+}
+
+.post-image-link {
     display: block;
+    background: #f1f1f1;
+    text-decoration: none;
 }
 
-.home-blog-content {
-    padding: 18px;
+.post-card-image {
+    width: 100%;
+    height: 400px;
+
+    display: block;
+
+    /*
+     * IMPORTANT:
+     * contain keeps the complete portrait.
+     * It does not crop the face or body.
+     */
+    object-fit: contain;
+
+    background: #f1f1f1;
 }
 
-.home-blog-content h3 {
-    margin: 0 0 10px;
+.post-content {
+    padding: 17px;
+}
+
+.post-title {
+    margin: 0 0 9px;
+
     font-size: 19px;
     line-height: 1.4;
 }
 
-.home-blog-content h3 a {
+.post-title a {
     color: #222;
     text-decoration: none;
 }
 
-.home-blog-content h3 a:hover {
+.post-title a:hover {
     color: #2563eb;
 }
 
-.home-blog-date {
-    font-size: 13px;
+.post-date {
     color: #777;
-    margin-bottom: 10px;
+    font-size: 12px;
+    margin-bottom: 12px;
 }
 
-.home-blog-excerpt {
+.post-excerpt {
     color: #555;
     font-size: 14px;
-    line-height: 1.6;
-    margin-bottom: 15px;
+    line-height: 1.55;
 }
 
-.home-blog-read {
+.read-more {
     display: inline-block;
-    padding: 9px 14px;
+
+    margin-top: 14px;
+
+    padding: 8px 13px;
+
+    border-radius: 6px;
+
     background: #2563eb;
     color: white;
-    text-decoration: none;
-    border-radius: 6px;
+
     font-size: 13px;
     font-weight: bold;
-}
 
-.home-blog-button {
-    text-align: center;
-    margin-top: 30px;
-}
-
-.home-blog-button a {
-    display: inline-block;
-    padding: 12px 22px;
-    background: #111827;
-    color: white;
     text-decoration: none;
-    border-radius: 7px;
 }
 
-@media (max-width: 900px) {
+.read-more:hover {
+    background: #1d4ed8;
+}
 
-    .home-blog-grid {
+.loading {
+    text-align: center;
+    padding: 50px;
+    color: #777;
+}
+
+.error {
+    background: #fff1f2;
+    color: #b91c1c;
+    border: 1px solid #fecdd3;
+
+    padding: 20px;
+    border-radius: 8px;
+
+    text-align: center;
+}
+
+.footer {
+    background: #111827;
+    color: #aaa;
+    text-align: center;
+    padding: 28px 15px;
+}
+
+@media (max-width: 1100px) {
+
+    .posts-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+}
+
+@media (max-width: 800px) {
+
+    .posts-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .post-card-image {
+        height: 380px;
     }
 
 }
 
 @media (max-width: 600px) {
 
-    .home-blog-grid {
+    .header-inner {
+        min-height: auto;
+        padding: 17px 0;
+
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .nav a {
+        margin: 0 8px;
+    }
+
+    .hero {
+        margin-top: 25px;
+    }
+
+    .hero h1 {
+        font-size: 28px;
+    }
+
+    .posts-grid {
         grid-template-columns: 1fr;
     }
 
-    .blog-heading h2 {
-        font-size: 27px;
+    /*
+     * On phones let the image use its natural
+     * portrait height.
+     */
+    .post-card-image {
+        height: auto;
+        max-height: 700px;
+        object-fit: contain;
     }
 
 }
 
 </style>
 
+</head>
+
+<body>
+
+<header class="header">
+
+<div class="header-inner">
+
+    <div class="logo">
+        Filmstars
+    </div>
+
+    <nav class="nav">
+
+        <a href="/">
+            Home
+        </a>
+
+        <a href="/blog">
+            Blog
+        </a>
+
+    </nav>
+
+</div>
+
+</header>
+
+
+<section class="hero">
+
+    <h1>
+        Latest Tollywood Posts
+    </h1>
+
+    <p>
+        Latest movie news, celebrity updates, actress photos and entertainment stories.
+    </p>
+
+</section>
+
+
+<main class="posts-container">
+
+    <div id="posts" class="posts-grid">
+
+        <div class="loading">
+            Loading posts...
+        </div>
+
+    </div>
+
+</main>
+
+
+<footer class="footer">
+
+    © <span id="year"></span> Filmstars
+
+</footer>
+
 
 <script>
 
-(function () {
-
-    const loading =
-        document.getElementById(
-            "home-blog-loading"
-        );
-
-    const error =
-        document.getElementById(
-            "home-blog-error"
-        );
-
-    const container =
-        document.getElementById(
-            "home-blog-posts"
-        );
+const BLOG_FEED =
+    "https://tollywoodboost.blogspot.com/feeds/posts/default";
 
 
-    function escapeHtml(value) {
+const POSTS_TO_SHOW = 12;
 
-        if (!value) {
-            return "";
-        }
 
-        return String(value)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+function getText(value) {
 
+    return value && value.$t
+        ? value.$t
+        : "";
+
+}
+
+
+function getBloggerUrl(entry) {
+
+    if (!Array.isArray(entry.link)) {
+        return "";
     }
 
-
-    function formatDate(dateString) {
-
-        if (!dateString) {
-            return "";
-        }
-
-        const date =
-            new Date(dateString);
-
-        if (isNaN(date.getTime())) {
-            return "";
-        }
-
-        return date.toLocaleDateString(
-            "en-IN",
-            {
-                day: "numeric",
-                month: "short",
-                year: "numeric"
-            }
+    const link =
+        entry.link.find(
+            x => x.rel === "alternate"
         );
 
-    }
+    return link
+        ? link.href
+        : "";
+
+}
 
 
-    function createCard(post) {
+function filmstarsUrl(bloggerUrl) {
 
-        const title =
-            escapeHtml(post.title);
+    try {
 
         const url =
-            escapeHtml(post.url || "#");
+            new URL(bloggerUrl);
 
-        const image =
-            escapeHtml(post.image || "");
+        const match =
+            url.pathname.match(
+                /^\/(\d{4})\/(\d{2})\/(.+)\.html$/
+            );
 
-        const excerpt =
-            escapeHtml(post.excerpt || "");
+        if (!match) {
+            return bloggerUrl;
+        }
 
-        const date =
-            formatDate(post.published);
+        return (
+            "/" +
+            match[1] +
+            "/" +
+            match[2] +
+            "/" +
+            match[3] +
+            ".html"
+        );
+
+    } catch {
+
+        return bloggerUrl;
+
+    }
+
+}
 
 
-        return `
+function largeImage(url) {
 
-            <article class="home-blog-card">
+    if (!url) {
+        return "";
+    }
+
+    /*
+     * Blogger thumbnail -> large image.
+     */
+
+    return url
+
+        .replace(
+            /\/s72-c\//g,
+            "/s800/"
+        )
+
+        .replace(
+            /\/s72\//g,
+            "/s800/"
+        )
+
+        .replace(
+            /\/w72-h72-p-k-no-nu\//g,
+            "/s800/"
+        );
+
+}
+
+
+function findImage(content) {
+
+    if (!content) {
+        return "";
+    }
+
+    const match =
+        content.match(
+            /<img[^>]+src=["']([^"']+)["']/i
+        );
+
+    return match
+        ? largeImage(match[1])
+        : "";
+
+}
+
+
+function getImage(entry) {
+
+    /*
+     * Do NOT use s72-c directly.
+     */
+
+    if (
+        entry.media$thumbnail &&
+        entry.media$thumbnail.url
+    ) {
+
+        return largeImage(
+            entry.media$thumbnail.url
+        );
+
+    }
+
+    const content =
+        getText(entry.content);
+
+    return findImage(content);
+
+}
+
+
+function plainText(html) {
+
+    return (html || "")
+
+        .replace(
+            /<script[\s\S]*?<\/script>/gi,
+            ""
+        )
+
+        .replace(
+            /<style[\s\S]*?<\/style>/gi,
+            ""
+        )
+
+        .replace(
+            /<[^>]+>/g,
+            " "
+        )
+
+        .replace(
+            /&nbsp;/gi,
+            " "
+        )
+
+        .replace(
+            /&amp;/gi,
+            "&"
+        )
+
+        .replace(
+            /&quot;/gi,
+            '"'
+        )
+
+        .replace(
+            /&#39;/gi,
+            "'"
+        )
+
+        .replace(
+            /\s+/g,
+            " "
+        )
+
+        .trim();
+
+}
+
+
+function formatDate(value) {
+
+    if (!value) {
+        return "";
+    }
+
+    const date =
+        new Date(value);
+
+    if (isNaN(date.getTime())) {
+        return "";
+    }
+
+    return date.toLocaleDateString(
+        "en-IN",
+        {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        }
+    );
+
+}
+
+
+function escapeHtml(value) {
+
+    return String(value || "")
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+function createCard(entry) {
+
+    const title =
+        getText(entry.title);
+
+    const bloggerUrl =
+        getBloggerUrl(entry);
+
+    const url =
+        filmstarsUrl(
+            bloggerUrl
+        );
+
+    const image =
+        getImage(entry);
+
+    const content =
+        getText(entry.content);
+
+    const excerpt =
+        plainText(content);
+
+    const shortExcerpt =
+        excerpt.length > 130
+            ? excerpt.substring(0, 130) + "..."
+            : excerpt;
+
+    const date =
+        formatDate(
+            getText(entry.published)
+        );
+
+
+    return `
+
+        <article class="post-card">
+
+            <a
+                class="post-image-link"
+                href="${escapeHtml(url)}"
+            >
 
                 ${
                     image
-                    ? `
+                        ? `
                         <img
-                            src="${image}"
-                            alt="${title}"
+                            class="post-card-image"
+                            src="${escapeHtml(image)}"
+                            alt="${escapeHtml(title)}"
                             loading="lazy"
-                            onerror="this.style.display='none';"
+                            decoding="async"
                         >
-                      `
-                    : ""
+                        `
+                        : `
+                        <div
+                            style="
+                                height:400px;
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                color:#777;
+                            "
+                        >
+                            No Image
+                        </div>
+                        `
                 }
 
-                <div class="home-blog-content">
-
-                    <h3>
-
-                        <a
-                            href="${url}"
-                            target="_blank"
-                            rel="noopener"
-                        >
-                            ${title}
-                        </a>
-
-                    </h3>
+            </a>
 
 
-                    ${
-                        date
-                        ? `
-                            <div class="home-blog-date">
-                                ${date}
-                            </div>
-                          `
-                        : ""
-                    }
+            <div class="post-content">
 
-
-                    <div class="home-blog-excerpt">
-                        ${excerpt}
-                    </div>
-
+                <h2 class="post-title">
 
                     <a
-                        class="home-blog-read"
-                        href="${url}"
-                        target="_blank"
-                        rel="noopener"
+                        href="${escapeHtml(url)}"
                     >
-                        Read More
+                        ${escapeHtml(title)}
                     </a>
+
+                </h2>
+
+
+                ${
+                    date
+                        ? `
+                        <div class="post-date">
+                            ${escapeHtml(date)}
+                        </div>
+                        `
+                        : ""
+                }
+
+
+                <div class="post-excerpt">
+
+                    ${escapeHtml(shortExcerpt)}
 
                 </div>
 
-            </article>
 
-        `;
+                <a
+                    class="read-more"
+                    href="${escapeHtml(url)}"
+                >
+                    Read More
+                </a>
 
-    }
+            </div>
 
+        </article>
 
-    async function loadHomePosts() {
+    `;
 
-        try {
-
-            const response =
-                await fetch(
-                    "/blogger-posts"
-                );
-
-
-            if (!response.ok) {
-                throw new Error(
-                    "Blogger API failed"
-                );
-            }
+}
 
 
-            const data =
-                await response.json();
+async function loadPosts() {
 
+    const container =
+        document.getElementById(
+            "posts"
+        );
 
-            loading.style.display =
-                "none";
+    try {
 
+        const response =
+            await fetch(
+                BLOG_FEED +
+                "?alt=json&max-results=" +
+                POSTS_TO_SHOW
+            );
 
-            if (
-                !data.success ||
-                !Array.isArray(data.posts)
-            ) {
-
-                throw new Error(
-                    "Invalid Blogger data"
-                );
-
-            }
-
-
-            /*
-             * Homepage shows only 6 posts.
-             */
-            const posts =
-                data.posts.slice(0, 6);
-
-
-            container.innerHTML =
-                posts
-                    .map(createCard)
-                    .join("");
-
-
-        } catch (e) {
-
-            console.error(e);
-
-            loading.style.display =
-                "none";
-
-            error.textContent =
-                "Latest posts are temporarily unavailable.";
-
-            error.style.display =
-                "block";
-
+        if (!response.ok) {
+            throw new Error(
+                "Feed request failed"
+            );
         }
 
+        const data =
+            await response.json();
+
+        const entries =
+            Array.isArray(
+                data.feed?.entry
+            )
+                ? data.feed.entry
+                : [];
+
+
+        if (!entries.length) {
+
+            container.innerHTML =
+                `
+                <div class="error">
+                    No posts found.
+                </div>
+                `;
+
+            return;
+        }
+
+
+        container.innerHTML =
+            entries
+                .map(createCard)
+                .join("");
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        container.innerHTML =
+            `
+            <div class="error">
+                Unable to load posts right now.
+            </div>
+            `;
+
     }
 
+}
 
-    loadHomePosts();
 
-})();
+document.getElementById(
+    "year"
+).textContent =
+    new Date().getFullYear();
+
+
+loadPosts();
 
 </script>
+
+</body>
+</html>
