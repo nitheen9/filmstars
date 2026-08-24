@@ -1891,14 +1891,6 @@ ${escapeHtml(
 )}
 </strong>
 
-<div class="nav-date">
-${escapeHtml(
-    formatDate(
-        previous.published
-    )
-)}
-</div>
-
 </a>
 
 `
@@ -1945,14 +1937,6 @@ ${escapeHtml(
     next.title
 )}
 </strong>
-
-<div class="nav-date">
-${escapeHtml(
-    formatDate(
-        next.published
-    )
-)}
-</div>
 
 </a>
 
