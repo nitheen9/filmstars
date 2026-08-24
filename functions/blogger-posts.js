@@ -12,10 +12,14 @@
 // /blogger-posts?label=Hollywood%20Actress
 // /blogger-posts?label=Hollywood%20Actress&page=2
 //
-// Blogger source:
-// https://tollywoodboost.blogspot.com/
+// Source:
+// https://tollywoodboost.blogspot.com
 //
-// Supports old posts from 2011 through current posts.
+// IMPORTANT:
+// - Supports Blogger posts from old and new years.
+// - Uses Blogger start-index pagination.
+// - Preserves label filtering.
+// - Returns real Blogger total count.
 // ============================================================
 
 
@@ -25,7 +29,7 @@ const BLOG_URL =
 const BLOG_FEED =
     "https://tollywoodboost.blogspot.com/feeds/posts/default";
 
-const PER_PAGE_DEFAULT = 20;
+const DEFAULT_PER_PAGE = 20;
 
 const MAX_PER_PAGE = 50;
 
@@ -41,7 +45,7 @@ function getText(value) {
         typeof value === "object" &&
         "$t" in value
     ) {
-        return value.$t || "";
+        return String(value.$t || "");
     }
 
     return "";
@@ -49,25 +53,25 @@ function getText(value) {
 
 
 // ============================================================
-// ALTERNATE BLOGGER URL
+// ALTERNATE URL
 // ============================================================
 
 function getAlternateUrl(entry) {
 
-    if (
-        !Array.isArray(entry.link)
-    ) {
+    if (!Array.isArray(entry?.link)) {
         return "";
     }
 
-    const link =
+    const item =
         entry.link.find(
-            item =>
-                item.rel === "alternate"
+            link =>
+                link &&
+                link.rel === "alternate" &&
+                link.href
         );
 
-    return link
-        ? link.href
+    return item
+        ? item.href
         : "";
 }
 
@@ -120,45 +124,55 @@ function convertToFilmstarsUrl(
 // ============================================================
 
 function upgradeImageUrl(
-    url,
+    imageUrl,
     size = "s800"
 ) {
 
-    if (!url) {
+    if (!imageUrl) {
         return "";
     }
 
-    return String(url)
+    let url =
+        String(imageUrl);
 
-        .replace(
-            /\/s72-c\//g,
-            `/${size}/`
-        )
-
-        .replace(
-            /\/s72\//g,
-            `/${size}/`
-        )
-
-        .replace(
-            /\/w72-h72-p-k-no-nu\//g,
-            `/${size}/`
-        )
-
-        .replace(
-            /\/w\d+-h\d+-p-k-no-nu\//g,
-            `/${size}/`
-        )
-
-        .replace(
-            /\/s\d+\//g,
+    // Blogger thumbnail formats
+    url =
+        url.replace(
+            /\/s72-c\//gi,
             `/${size}/`
         );
+
+    url =
+        url.replace(
+            /\/s72\//gi,
+            `/${size}/`
+        );
+
+    url =
+        url.replace(
+            /\/w72-h72-p-k-no-nu\//gi,
+            `/${size}/`
+        );
+
+    url =
+        url.replace(
+            /\/w\d+-h\d+-p-k-no-nu\//gi,
+            `/${size}/`
+        );
+
+    // Blogger /sXXX/ format
+    url =
+        url.replace(
+            /\/s\d+(?:-[a-z]+)?\//gi,
+            `/${size}/`
+        );
+
+    return url;
 }
 
 
 // ============================================================
-// GET IMAGE
+// GET FIRST IMAGE
 // ============================================================
 
 function getPostImage(
@@ -167,9 +181,9 @@ function getPostImage(
     size = "s800"
 ) {
 
+    // Blogger thumbnail
     if (
-        entry.media$thumbnail &&
-        entry.media$thumbnail.url
+        entry?.media$thumbnail?.url
     ) {
 
         return upgradeImageUrl(
@@ -179,34 +193,38 @@ function getPostImage(
     }
 
 
-    if (content) {
-
-        let match =
-            content.match(
-                /data-src=["']([^"']+)["']/i
-            );
-
-        if (match) {
-
-            return upgradeImageUrl(
-                match[1],
-                size
-            );
-        }
+    if (!content) {
+        return "";
+    }
 
 
-        match =
-            content.match(
-                /<img[^>]+src=["']([^"']+)["']/i
-            );
+    // data-src
+    let match =
+        content.match(
+            /data-src\s*=\s*["']([^"']+)["']/i
+        );
 
-        if (match) {
+    if (match) {
 
-            return upgradeImageUrl(
-                match[1],
-                size
-            );
-        }
+        return upgradeImageUrl(
+            match[1],
+            size
+        );
+    }
+
+
+    // src
+    match =
+        content.match(
+            /<img\b[^>]*src\s*=\s*["']([^"']+)["']/i
+        );
+
+    if (match) {
+
+        return upgradeImageUrl(
+            match[1],
+            size
+        );
     }
 
 
@@ -220,69 +238,62 @@ function getPostImage(
 
 function getLabels(entry) {
 
-    if (
-        !Array.isArray(entry.category)
-    ) {
+    if (!Array.isArray(entry?.category)) {
         return [];
     }
 
     return entry.category
-
         .map(
             category =>
-                category.term || ""
+                String(
+                    category?.term || ""
+                ).trim()
         )
-
         .filter(Boolean);
 }
 
 
 // ============================================================
-// CREATE POST OBJECT
+// CREATE POST
 // ============================================================
 
 function createPost(
-    entry,
-    imageSize = "s800"
+    entry
 ) {
 
     const content =
-        getText(entry.content) ||
-        getText(entry.summary);
+        getText(entry?.content) ||
+        getText(entry?.summary);
 
 
     const bloggerUrl =
         getAlternateUrl(entry);
 
 
-    const filmstarsUrl =
-        convertToFilmstarsUrl(
-            bloggerUrl
-        );
-
-
     return {
 
         title:
-            getText(entry.title),
+            getText(entry?.title),
 
         url:
-            filmstarsUrl,
+            convertToFilmstarsUrl(
+                bloggerUrl
+            ),
 
         bloggerUrl:
             bloggerUrl,
 
         published:
-            getText(entry.published),
+            getText(entry?.published),
 
         updated:
-            getText(entry.updated),
+            getText(entry?.updated),
 
         image:
             getPostImage(
                 entry,
                 content,
-                imageSize
+                "s800"
             ),
 
         content:
@@ -290,31 +301,35 @@ function createPost(
 
         labels:
             getLabels(entry)
+
     };
 }
 
 
 // ============================================================
-// FETCH BLOGGER FEED
-// ============================================================
-//
-// IMPORTANT:
-// Blogger feed supports start-index and max-results.
-// We use the feed total to calculate pagination.
-//
-// Label feeds use:
-// /feeds/posts/default/-/LABEL
+// FETCH BLOGGER
 // ============================================================
 
-async function fetchBloggerFeed(
-    startIndex,
-    maxResults,
-    label = ""
+async function fetchBlogger(
+    page,
+    perPage,
+    label
 ) {
+
+    const startIndex =
+        (
+            (page - 1) *
+            perPage
+        ) + 1;
+
 
     let feedUrl =
         BLOG_FEED;
 
+
+    // --------------------------------------------------------
+    // Label feed
+    // --------------------------------------------------------
 
     if (label) {
 
@@ -342,7 +357,7 @@ async function fetchBloggerFeed(
 
     url.searchParams.set(
         "max-results",
-        String(maxResults)
+        String(perPage)
     );
 
 
@@ -361,30 +376,43 @@ async function fetchBloggerFeed(
     if (!response.ok) {
 
         throw new Error(
-            `Blogger HTTP ${response.status}`
+            `Blogger returned HTTP ${response.status}`
         );
     }
 
 
-    return await response.json();
+    const data =
+        await response.json();
+
+
+    return {
+        data,
+        startIndex
+    };
 }
 
 
 // ============================================================
-// NUMBER HELPER
+// TOTAL
 // ============================================================
 
 function getTotal(
     feed
 ) {
 
-    return (
-        Number(
-            feed
-                ?.openSearch$totalResults
-                ?.$t
-        ) || 0
-    );
+    const value =
+        feed
+            ?.openSearch$totalResults
+            ?.$t;
+
+
+    const total =
+        Number(value);
+
+
+    return Number.isFinite(total)
+        ? total
+        : 0;
 }
 
 
@@ -404,6 +432,10 @@ export async function onRequest(
             );
 
 
+        // ----------------------------------------------------
+        // PAGE
+        // ----------------------------------------------------
+
         let page =
             parseInt(
                 requestUrl.searchParams.get(
@@ -422,12 +454,16 @@ export async function onRequest(
         }
 
 
+        // ----------------------------------------------------
+        // PER PAGE
+        // ----------------------------------------------------
+
         let perPage =
             parseInt(
                 requestUrl.searchParams.get(
                     "max-results"
                 ) ||
-                String(PER_PAGE_DEFAULT),
+                String(DEFAULT_PER_PAGE),
                 10
             );
 
@@ -438,7 +474,7 @@ export async function onRequest(
         ) {
 
             perPage =
-                PER_PAGE_DEFAULT;
+                DEFAULT_PER_PAGE;
         }
 
 
@@ -449,6 +485,10 @@ export async function onRequest(
             );
 
 
+        // ----------------------------------------------------
+        // LABEL
+        // ----------------------------------------------------
+
         const label =
             (
                 requestUrl.searchParams.get(
@@ -457,23 +497,23 @@ export async function onRequest(
             ).trim();
 
 
-        const startIndex =
-            (
-                (page - 1) *
-                perPage
-            ) + 1;
+        // ----------------------------------------------------
+        // FETCH
+        // ----------------------------------------------------
 
-
-        const data =
-            await fetchBloggerFeed(
-                startIndex,
+        const {
+            data,
+            startIndex
+        } =
+            await fetchBlogger(
+                page,
                 perPage,
                 label
             );
 
 
         const feed =
-            data.feed || {};
+            data?.feed || {};
 
 
         const entries =
@@ -484,22 +524,25 @@ export async function onRequest(
                 : [];
 
 
+        // ----------------------------------------------------
+        // POSTS
+        // ----------------------------------------------------
+
         const posts =
             entries
-
                 .map(
-                    entry =>
-                        createPost(
-                            entry,
-                            "s800"
-                        )
+                    createPost
                 )
-
                 .filter(
                     post =>
-                        post.url
+                        post.url &&
+                        post.title
                 );
 
+
+        // ----------------------------------------------------
+        // TOTAL
+        // ----------------------------------------------------
 
         const total =
             getTotal(feed);
@@ -508,57 +551,63 @@ export async function onRequest(
         const totalPages =
             total > 0
                 ? Math.ceil(
-                    total / perPage
+                    total /
+                    perPage
                 )
                 : 0;
 
 
+        // ----------------------------------------------------
+        // RESPONSE
+        // ----------------------------------------------------
+
+        const result = {
+
+            success: true,
+
+            blog:
+                "Tollywood Boost",
+
+            source:
+                BLOG_URL,
+
+            label:
+                label,
+
+            page:
+                page,
+
+            perPage:
+                perPage,
+
+            startIndex:
+                startIndex,
+
+            count:
+                posts.length,
+
+            total:
+                total,
+
+            totalPages:
+                totalPages,
+
+            hasPrevious:
+                page > 1,
+
+            hasNext:
+                totalPages > 0 &&
+                page < totalPages,
+
+            posts:
+                posts
+
+        };
+
+
         return new Response(
-
-            JSON.stringify({
-
-                success: true,
-
-                blog:
-                    "Tollywood Boost",
-
-                source:
-                    BLOG_URL,
-
-                label:
-                    label,
-
-                page:
-                    page,
-
-                perPage:
-                    perPage,
-
-                startIndex:
-                    startIndex,
-
-                count:
-                    posts.length,
-
-                total:
-                    total,
-
-                totalPages:
-                    totalPages,
-
-                hasPrevious:
-                    page > 1,
-
-                hasNext:
-                    page < totalPages,
-
-                posts:
-                    posts
-
-            }),
-
+            JSON.stringify(result),
             {
-
                 status: 200,
 
                 headers: {
@@ -567,17 +616,20 @@ export async function onRequest(
                         "application/json; charset=UTF-8",
 
                     "Cache-Control":
-                        "public, max-age=300, s-maxage=300"
+                        "public, max-age=60, s-maxage=60",
+
+                    "Access-Control-Allow-Origin":
+                        "*"
 
                 }
-
             }
         );
+
 
     } catch (error) {
 
         console.error(
-            "Blogger posts error:",
+            "Filmstars Blogger API error:",
             error
         );
 
@@ -609,7 +661,10 @@ export async function onRequest(
                         "application/json; charset=UTF-8",
 
                     "Cache-Control":
-                        "no-cache"
+                        "no-cache",
+
+                    "Access-Control-Allow-Origin":
+                        "*"
 
                 }
 
