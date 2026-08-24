@@ -1082,6 +1082,13 @@ body {
     font-weight: bold;
 
 }
+.logo a {
+
+    fcolor: #fdfdff;
+    cursor: pointer;
+    text-decoration: unset;
+
+}
 
 
 .nav a {
