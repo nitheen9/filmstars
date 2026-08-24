@@ -1,9 +1,9 @@
 // ============================================================
-// BLOGGER SETTINGS
+// functions/[[path]].js
 // ============================================================
 
 const BLOG_URL =
-    "https://tollywoodboost.blogspot.com/";
+    "https://tollywoodboost.blogspot.com";
 
 const BLOG_FEED =
     "https://tollywoodboost.blogspot.com/feeds/posts/default";
@@ -23,7 +23,7 @@ function getText(value) {
 
 
 // ============================================================
-// ALTERNATE URL
+// BLOGGER ALTERNATE URL
 // ============================================================
 
 function getAlternateUrl(entry) {
@@ -46,7 +46,7 @@ function getAlternateUrl(entry) {
 
 
 // ============================================================
-// FILMSTARS URL
+// BLOGGER URL -> FILMSTARS URL
 // ============================================================
 
 function convertToFilmstarsUrl(
@@ -81,8 +81,7 @@ function convertToFilmstarsUrl(
             ".html"
         );
 
-    }
-    catch {
+    } catch {
 
         return "";
 
@@ -92,7 +91,7 @@ function convertToFilmstarsUrl(
 
 
 // ============================================================
-// SLUG
+// GET SLUG
 // ============================================================
 
 function getSlug(url) {
@@ -103,10 +102,21 @@ function getSlug(url) {
 
     try {
 
-        const pathname =
-            url.startsWith("http")
-                ? new URL(url).pathname
-                : url;
+        let pathname = "";
+
+        if (
+            url.startsWith("http://") ||
+            url.startsWith("https://")
+        ) {
+
+            pathname =
+                new URL(url).pathname;
+
+        } else {
+
+            pathname = url;
+
+        }
 
         const match =
             pathname.match(
@@ -117,8 +127,7 @@ function getSlug(url) {
             ? match[1]
             : "";
 
-    }
-    catch {
+    } catch {
 
         return "";
 
@@ -128,7 +137,7 @@ function getSlug(url) {
 
 
 // ============================================================
-// IMAGE
+// IMAGE URL
 // ============================================================
 
 function upgradeImageUrl(
@@ -144,31 +153,35 @@ function upgradeImageUrl(
 
         .replace(
             /\/s72-c\//g,
-            "/" + size + "/"
+            `/${size}/`
         )
 
         .replace(
             /\/s72\//g,
-            "/" + size + "/"
+            `/${size}/`
         )
 
         .replace(
             /\/w72-h72-p-k-no-nu\//g,
-            "/" + size + "/"
+            `/${size}/`
         )
 
         .replace(
             /\/w\d+-h\d+-p-k-no-nu\//g,
-            "/" + size + "/"
+            `/${size}/`
         )
 
         .replace(
             /\/s\d+\//g,
-            "/" + size + "/"
+            `/${size}/`
         );
 
 }
 
+
+// ============================================================
+// GET POST IMAGE
+// ============================================================
 
 function getPostImage(
     entry,
@@ -189,52 +202,36 @@ function getPostImage(
     }
 
 
-    if (!content) {
-        return "";
-    }
+    if (content) {
+
+        let match =
+            content.match(
+                /data-src=["']([^"']+)["']/i
+            );
+
+        if (match) {
+
+            return upgradeImageUrl(
+                match[1],
+                size
+            );
+
+        }
 
 
-    let match =
-        content.match(
-            /data-original=["']([^"']+)["']/i
-        );
+        match =
+            content.match(
+                /<img[^>]+src=["']([^"']+)["']/i
+            );
 
-    if (match) {
+        if (match) {
 
-        return upgradeImageUrl(
-            match[1],
-            size
-        );
+            return upgradeImageUrl(
+                match[1],
+                size
+            );
 
-    }
-
-
-    match =
-        content.match(
-            /data-src=["']([^"']+)["']/i
-        );
-
-    if (match) {
-
-        return upgradeImageUrl(
-            match[1],
-            size
-        );
-
-    }
-
-
-    match =
-        content.match(
-            /<img[^>]+src=["']([^"']+)["']/i
-        );
-
-    if (match) {
-
-        return upgradeImageUrl(
-            match[1],
-            size
-        );
+        }
 
     }
 
@@ -270,10 +267,7 @@ function getLabels(entry) {
 // CREATE POST
 // ============================================================
 
-function createPost(
-    entry,
-    imageSize = "s1600"
-) {
+function createPost(entry) {
 
     const content =
         getText(entry.content) ||
@@ -284,15 +278,19 @@ function createPost(
         getAlternateUrl(entry);
 
 
+    const filmstarsUrl =
+        convertToFilmstarsUrl(
+            bloggerUrl
+        );
+
+
     return {
 
         title:
             getText(entry.title),
 
         url:
-            convertToFilmstarsUrl(
-                bloggerUrl
-            ),
+            filmstarsUrl,
 
         bloggerUrl:
             bloggerUrl,
@@ -307,7 +305,7 @@ function createPost(
             getPostImage(
                 entry,
                 content,
-                imageSize
+                "s1600"
             ),
 
         content:
@@ -322,27 +320,88 @@ function createPost(
 
 
 // ============================================================
-// FETCH ALL POSTS IN BATCHES
+// FETCH BLOGGER
+// ============================================================
+
+async function fetchBlogger(
+    startIndex = 1,
+    maxResults = 150
+) {
+
+    const url =
+        new URL(
+            BLOG_FEED
+        );
+
+
+    url.searchParams.set(
+        "alt",
+        "json"
+    );
+
+
+    url.searchParams.set(
+        "start-index",
+        String(startIndex)
+    );
+
+
+    url.searchParams.set(
+        "max-results",
+        String(maxResults)
+    );
+
+
+    const response =
+        await fetch(
+            url.toString(),
+            {
+                headers: {
+                    "Accept":
+                        "application/json"
+                }
+            }
+        );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Blogger HTTP " +
+            response.status
+        );
+
+    }
+
+
+    return await response.json();
+
+}
+
+
+// ============================================================
+// FETCH MANY POSTS
 //
-// IMPORTANT:
-// Do NOT request 850+ posts in one Blogger request.
+// Used for single-post pages.
 //
-// Blogger has limits.
-// We fetch batches of 100.
-//
-// Used only for single-post lookup,
-// previous/next and related posts.
+// Blogger allows up to 150 posts in one request.
+// We use multiple requests when necessary.
 // ============================================================
 
 async function getAllPosts() {
 
     const allPosts = [];
 
-    const seen = new Set();
+    const batchSize = 150;
 
-    let start = 1;
+    let startIndex = 1;
 
-    const batchSize = 100;
+    let total = 0;
+
+
+    // Safety limit.
+    // This avoids an endless loop if Blogger
+    // returns unexpected feed data.
 
     const maxBatches = 20;
 
@@ -353,43 +412,11 @@ async function getAllPosts() {
         batch++
     ) {
 
-        const url =
-            BLOG_FEED +
-            "?alt=json" +
-            "&start-index=" +
-            start +
-            "&max-results=" +
-            batchSize;
-
-
-        const response =
-            await fetch(
-                url,
-                {
-                    headers: {
-                        "User-Agent":
-                            "Filmstars Pages"
-                    },
-                    cf: {
-                        cacheTtl: 300,
-                        cacheEverything: true
-                    }
-                }
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Blogger HTTP " +
-                response.status
-            );
-
-        }
-
-
         const data =
-            await response.json();
+            await fetchBlogger(
+                startIndex,
+                batchSize
+            );
 
 
         const entries =
@@ -401,6 +428,20 @@ async function getAllPosts() {
 
 
         if (
+            batch === 0
+        ) {
+
+            total =
+                Number(
+                    data.feed
+                        ?.openSearch$totalResults
+                        ?.$t
+                ) || 0;
+
+        }
+
+
+        if (
             entries.length === 0
         ) {
 
@@ -409,40 +450,18 @@ async function getAllPosts() {
         }
 
 
-        for (
-            const entry
-            of entries
-        ) {
-
-            const post =
-                createPost(
-                    entry,
-                    "s1600"
+        const posts =
+            entries
+                .map(createPost)
+                .filter(
+                    post =>
+                        post.url
                 );
 
 
-            if (
-                !post.url ||
-                seen.has(
-                    post.url
-                )
-            ) {
-
-                continue;
-
-            }
-
-
-            seen.add(
-                post.url
-            );
-
-
-            allPosts.push(
-                post
-            );
-
-        }
+        allPosts.push(
+            ...posts
+        );
 
 
         if (
@@ -455,8 +474,18 @@ async function getAllPosts() {
         }
 
 
-        start +=
+        startIndex +=
             entries.length;
+
+
+        if (
+            total > 0 &&
+            allPosts.length >= total
+        ) {
+
+            break;
+
+        }
 
     }
 
@@ -467,14 +496,12 @@ async function getAllPosts() {
 
 
 // ============================================================
-// ESCAPE
+// HTML ESCAPE
 // ============================================================
 
 function escapeHtml(value) {
 
-    return String(
-        value || ""
-    )
+    return String(value || "")
 
         .replace(
             /&/g,
@@ -514,8 +541,10 @@ function formatDate(value) {
         return "";
     }
 
+
     const date =
         new Date(value);
+
 
     if (
         Number.isNaN(
@@ -526,6 +555,7 @@ function formatDate(value) {
         return "";
 
     }
+
 
     return date.toLocaleDateString(
         "en-IN",
@@ -540,6 +570,73 @@ function formatDate(value) {
                 "numeric"
         }
     );
+
+}
+
+
+// ============================================================
+// REMOVE FIRST IMAGE
+//
+// IMPORTANT:
+//
+// The featured image is already shown separately
+// at the top of the article.
+//
+// Blogger content also contains the first image.
+//
+// This removes only the first image from the
+// content so it does not appear twice.
+// ============================================================
+
+function removeFirstImage(
+    html
+) {
+
+    if (!html) {
+        return "";
+    }
+
+
+    let result = html;
+
+
+    // --------------------------------------------------------
+    // Case 1:
+    // <figure> containing first image
+    // --------------------------------------------------------
+
+    result =
+        result.replace(
+            /<figure\b[^>]*>[\s\S]*?<img\b[^>]*>[\s\S]*?<\/figure>/i,
+            ""
+        );
+
+
+    // --------------------------------------------------------
+    // Case 2:
+    // Link containing first image
+    // --------------------------------------------------------
+
+    result =
+        result.replace(
+            /<a\b[^>]*>\s*<img\b[^>]*>\s*<\/a>/i,
+            ""
+        );
+
+
+    // --------------------------------------------------------
+    // Case 3:
+    // Normal first image
+    // --------------------------------------------------------
+
+    result =
+        result.replace(
+            /<img\b[^>]*>/i,
+            ""
+        );
+
+
+    return result;
 
 }
 
@@ -561,12 +658,20 @@ function cleanPostContent(
         html;
 
 
+    // --------------------------------------------------------
+    // Remove scripts
+    // --------------------------------------------------------
+
     result =
         result.replace(
             /<script[\s\S]*?<\/script>/gi,
             ""
         );
 
+
+    // --------------------------------------------------------
+    // Remove styles
+    // --------------------------------------------------------
 
     result =
         result.replace(
@@ -575,12 +680,20 @@ function cleanPostContent(
         );
 
 
+    // --------------------------------------------------------
+    // Remove iframe
+    // --------------------------------------------------------
+
     result =
         result.replace(
             /<iframe[\s\S]*?<\/iframe>/gi,
             ""
         );
 
+
+    // --------------------------------------------------------
+    // Remove object
+    // --------------------------------------------------------
 
     result =
         result.replace(
@@ -589,12 +702,20 @@ function cleanPostContent(
         );
 
 
+    // --------------------------------------------------------
+    // Remove embed
+    // --------------------------------------------------------
+
     result =
         result.replace(
             /<embed[^>]*>/gi,
             ""
         );
 
+
+    // --------------------------------------------------------
+    // Remove event handlers
+    // --------------------------------------------------------
 
     result =
         result.replace(
@@ -603,12 +724,20 @@ function cleanPostContent(
         );
 
 
+    // --------------------------------------------------------
+    // Remove javascript URLs
+    // --------------------------------------------------------
+
     result =
         result.replace(
             /javascript\s*:/gi,
             ""
         );
 
+
+    // --------------------------------------------------------
+    // Upgrade Blogger images
+    // --------------------------------------------------------
 
     result =
         result.replace(
@@ -638,72 +767,63 @@ function cleanPostContent(
         );
 
 
-    // Convert Blogger images to responsive images
+    // --------------------------------------------------------
+    // Convert data-src to src
+    // --------------------------------------------------------
 
     result =
         result.replace(
             /<img\b([^>]*)>/gi,
             function(
-                tag,
-                attrs
+                completeTag,
+                attributes
             ) {
 
-                let a =
-                    attrs;
-
-
-                const original =
-                    a.match(
-                        /data-original=["']([^"']+)["']/i
-                    );
+                let attrs =
+                    attributes;
 
 
                 const dataSrc =
-                    a.match(
+                    attrs.match(
                         /data-src=["']([^"']+)["']/i
                     );
 
 
                 if (
-                    original &&
-                    !/\ssrc=/i.test(a)
-                ) {
-
-                    a +=
-                        ' src="' +
-                        original[1] +
-                        '"';
-
-                }
-                else if (
                     dataSrc &&
-                    !/\ssrc=/i.test(a)
+                    !/\ssrc=/i.test(
+                        attrs
+                    )
                 ) {
 
-                    a +=
-                        ' src="' +
-                        dataSrc[1] +
-                        '"';
+                    attrs +=
+                        ` src="${dataSrc[1]}"`;
 
                 }
 
 
-                a =
-                    a.replace(
+                // Remove fixed width
+
+                attrs =
+                    attrs.replace(
                         /\swidth=["'][^"']*["']/gi,
                         ""
                     );
 
 
-                a =
-                    a.replace(
+                // Remove fixed height
+
+                attrs =
+                    attrs.replace(
                         /\sheight=["'][^"']*["']/gi,
                         ""
                     );
 
 
-                a =
-                    a.replace(
+                // Remove inline style
+
+                attrs =
+                    attrs.replace(
                         /\sstyle=["'][^"']*["']/gi,
                         ""
                     );
@@ -711,7 +831,7 @@ function cleanPostContent(
 
                 return (
                     "<img" +
-                    a +
+                    attrs +
                     ">"
                 );
 
@@ -719,23 +839,27 @@ function cleanPostContent(
         );
 
 
+    // --------------------------------------------------------
+    // Upgrade image src
+    // --------------------------------------------------------
+
     result =
         result.replace(
-            /(<img[^>]+src=["'])([^"']+)(["'])/gi,
+            /(<img[^>]+(?:src|data-src)=["'])([^"']+)(["'])/gi,
             function(
                 full,
-                before,
-                image,
-                after
+                start,
+                imageUrl,
+                end
             ) {
 
                 return (
-                    before +
+                    start +
                     upgradeImageUrl(
-                        image,
+                        imageUrl,
                         "s1600"
                     ) +
-                    after
+                    end
                 );
 
             }
@@ -757,14 +881,14 @@ function createLabel(
 
     return `
 
-        <a
-            class="post-label"
-            href="/blog?label=${encodeURIComponent(label)}"
-        >
-            ${escapeHtml(label)}
-        </a>
+<a
+    class="post-label"
+    href="/blog?label=${encodeURIComponent(label)}"
+>
+    ${escapeHtml(label)}
+</a>
 
-    `;
+`;
 
 }
 
@@ -779,68 +903,69 @@ function createRelatedCard(
 
     return `
 
-        <article
-            class="related-card"
-        >
+<article class="related-card">
 
-            <a
-                class="related-image"
-                href="${escapeHtml(post.url)}"
-            >
+<a
+    class="related-image"
+    href="${escapeHtml(post.url)}"
+>
 
-                ${
-                    post.image
-                        ? `
-                            <img
-                                src="${escapeHtml(post.image)}"
-                                alt="${escapeHtml(post.title)}"
-                                loading="lazy"
-                            >
-                          `
-                        : ""
-                }
+${
+    post.image
+        ? `
 
-            </a>
+<img
+    src="${escapeHtml(post.image)}"
+    alt="${escapeHtml(post.title)}"
+    loading="lazy"
+    decoding="async"
+>
 
+`
+        : ""
+}
 
-            <div
-                class="related-info"
-            >
-
-                <h3>
-
-                    <a
-                        href="${escapeHtml(post.url)}"
-                    >
-                        ${escapeHtml(post.title)}
-                    </a>
-
-                </h3>
+</a>
 
 
-                <div
-                    class="related-date"
-                >
-                    ${escapeHtml(
-                        formatDate(
-                            post.published
-                        )
-                    )}
-                </div>
+<div class="related-info">
+
+<h3>
+
+<a
+    href="${escapeHtml(post.url)}"
+>
+
+${escapeHtml(post.title)}
+
+</a>
+
+</h3>
 
 
-                <a
-                    class="read-more"
-                    href="${escapeHtml(post.url)}"
-                >
-                    Read More
-                </a>
+<div class="related-date">
 
-            </div>
+${escapeHtml(
+    formatDate(
+        post.published
+    )
+)}
 
-        </article>
+</div>
 
-    `;
+
+<a
+    class="read-more"
+    href="${escapeHtml(post.url)}"
+>
+Read More
+</a>
+
+</div>
+
+</article>
+
+`;
 
 }
 
@@ -857,72 +982,70 @@ function createSinglePostPage(
 ) {
 
     const labels =
-        post.labels.length
+        post.labels.length > 0
 
             ? `
 
-                <div
-                    class="labels"
-                >
+<div class="labels">
 
-                    <strong>
-                        Labels:
-                    </strong>
+<strong>
+Labels:
+</strong>
 
-                    ${post.labels
-                        .map(
-                            createLabel
-                        )
-                        .join("")}
+${post.labels
+    .map(createLabel)
+    .join("")}
 
-                </div>
+</div>
 
-              `
+`
 
             : "";
 
+
+    // --------------------------------------------------------
+    // Navigation
+    // --------------------------------------------------------
 
     const previousHtml =
         previous
 
             ? `
 
-                <a
-                    class="post-navigation previous"
-                    href="${escapeHtml(previous.url)}"
-                >
+<a
+    class="post-navigation previous"
+    href="${escapeHtml(previous.url)}"
+>
 
-                    <span>
-                        ← Previous Post
-                    </span>
+<span>
+← Previous Post
+</span>
 
-                    <strong>
-                        ${escapeHtml(
-                            previous.title
-                        )}
-                    </strong>
+<strong>
+${escapeHtml(previous.title)}
+</strong>
 
-                </a>
+</a>
 
-              `
+`
 
             : `
 
-                <div
-                    class="post-navigation disabled"
-                >
+<div
+    class="post-navigation disabled"
+>
 
-                    <span>
-                        ← Previous Post
-                    </span>
+<span>
+← Previous Post
+</span>
 
-                    <strong>
-                        No previous post
-                    </strong>
+<strong>
+No previous post
+</strong>
 
-                </div>
+</div>
 
-              `;
+`;
 
 
     const nextHtml =
@@ -930,45 +1053,61 @@ function createSinglePostPage(
 
             ? `
 
-                <a
-                    class="post-navigation next"
-                    href="${escapeHtml(next.url)}"
-                >
+<a
+    class="post-navigation next"
+    href="${escapeHtml(next.url)}"
+>
 
-                    <span>
-                        Next Post →
-                    </span>
+<span>
+Next Post →
+</span>
 
-                    <strong>
-                        ${escapeHtml(
-                            next.title
-                        )}
-                    </strong>
+<strong>
+${escapeHtml(next.title)}
+</strong>
 
-                </a>
+</a>
 
-              `
+`
 
             : `
 
-                <div
-                    class="post-navigation disabled"
-                >
+<div
+    class="post-navigation disabled"
+>
 
-                    <span>
-                        Next Post →
-                    </span>
+<span>
+Next Post →
+</span>
 
-                    <strong>
-                        No next post
-                    </strong>
+<strong>
+No next post
+</strong>
 
-                </div>
+</div>
 
-              `;
+`;
 
 
-    return `<!DOCTYPE html>
+    // --------------------------------------------------------
+    // REMOVE DUPLICATE FIRST IMAGE
+    // --------------------------------------------------------
+
+    const bodyContent =
+        removeFirstImage(
+            post.content
+        );
+
+
+    const cleanedContent =
+        cleanPostContent(
+            bodyContent
+        );
+
+
+    return `
+
+<!DOCTYPE html>
 
 <html lang="en">
 
@@ -981,299 +1120,338 @@ function createSinglePostPage(
     content="width=device-width, initial-scale=1.0"
 >
 
+
 <title>
 ${escapeHtml(post.title)}
  | Filmstars
 </title>
+
 
 <meta
     name="description"
     content="${escapeHtml(post.title)}"
 >
 
+
 <link
     rel="canonical"
     href="https://filmstars.pages.dev${escapeHtml(post.url)}"
 >
+
 
 <meta
     property="og:title"
     content="${escapeHtml(post.title)}"
 >
 
+
 <meta
     property="og:type"
     content="article"
 >
 
+
+<meta
+    property="og:url"
+    content="https://filmstars.pages.dev${escapeHtml(post.url)}"
+>
+
+
 ${
     post.image
         ? `
+
 <meta
     property="og:image"
     content="${escapeHtml(post.image)}"
 >
+
 `
         : ""
 }
 
+
 <style>
 
 * {
-    box-sizing:
-        border-box;
+    box-sizing: border-box;
 }
+
 
 body {
 
-    margin:
-        0;
+    margin: 0;
 
     font-family:
         Arial,
         Helvetica,
         sans-serif;
 
-    background:
-        #f5f6f8;
+    background: #f5f6f8;
 
-    color:
-        #222;
+    color: #222;
 
 }
+
 
 .header {
 
-    background:
-        #fe5301;
+    background: #fe5301;
 
-    color:
-        white;
+    color: white;
 
 }
+
 
 .header-inner {
 
-    width:
-        92%;
+    width: 92%;
 
-    max-width:
-        1200px;
+    max-width: 1200px;
 
-    min-height:
-        68px;
+    min-height: 68px;
 
-    margin:
-        auto;
+    margin: auto;
 
-    display:
-        flex;
+    display: flex;
 
-    align-items:
-        center;
+    align-items: center;
 
-    justify-content:
-        space-between;
+    justify-content: space-between;
 
 }
+
 
 .logo {
 
-    font-size:
-        36px;
+    font-size: 36px;
 
-    font-weight:
-        bold;
+    font-weight: bold;
 
 }
+
 
 .logo a {
 
-    color:
-        white;
+    color: white;
 
-    text-decoration:
-        none;
+    text-decoration: none;
 
 }
+
 
 .nav a {
 
-    color:
-        white;
+    color: white;
 
-    text-decoration:
-        none;
+    text-decoration: none;
 
-    margin-left:
-        20px;
+    margin-left: 22px;
 
 }
 
+
 .main {
 
-    width:
-        92%;
+    width: 92%;
 
-    max-width:
-        1050px;
+    max-width: 1050px;
 
     margin:
         35px auto 70px;
 
 }
 
+
 .back {
 
-    display:
-        inline-block;
+    display: inline-block;
 
-    margin-bottom:
-        18px;
+    margin-bottom: 18px;
 
-    color:
-        #47164F;
+    color: #47164F;
 
-    text-decoration:
-        none;
+    text-decoration: none;
 
-    font-weight:
-        bold;
+    font-weight: bold;
 
 }
 
+
 .post {
 
-    background:
-        white;
+    background: white;
 
     border:
         1px solid #e5e7eb;
 
-    border-radius:
-        12px;
+    border-radius: 12px;
 
-    padding:
-        30px;
+    padding: 30px;
 
     box-shadow:
         0 4px 18px rgba(0,0,0,.06);
 
 }
 
+
 .post-title {
 
-    font-size:
-        32px;
+    font-size: 30px;
 
-    line-height:
-        1.3;
+    line-height: 1.3;
 
     margin:
         0 0 12px;
 
 }
 
+
 .post-date {
 
-    color:
-        #777;
+    color: #777;
 
-    font-size:
-        14px;
+    font-size: 14px;
 
-    margin-bottom:
-        28px;
+    margin-bottom: 28px;
 
 }
 
+
+/* ----------------------------------------------------------
+   FEATURED IMAGE
+   ---------------------------------------------------------- */
+
 .featured-image {
 
-    display:
-        block;
+    display: block;
 
-    width:
-        100%;
+    width: auto;
 
-    max-width:
-        900px;
+    max-width: 100%;
 
-    height:
-        auto;
+    height: auto;
 
-    max-height:
-        none;
+    max-height: 1100px;
 
-    object-fit:
-        contain;
+    object-fit: contain;
 
     margin:
         0 auto 35px;
 
-    border-radius:
-        8px;
+    border-radius: 8px;
+
+    background: #f2f2f2;
 
 }
+
+
+/* ----------------------------------------------------------
+   POST CONTENT
+   ---------------------------------------------------------- */
 
 .post-content {
 
-    font-size:
-        18px;
+    font-size: 18px;
 
-    line-height:
-        1.8;
+    line-height: 1.8;
 
 }
 
+
+.post-content p {
+
+    margin:
+        0 0 22px;
+
+}
+
+
 .post-content img {
 
-    display:
-        block;
+    display: block;
 
-    width:
-        auto;
+    width: auto;
 
-    max-width:
-        100%;
+    max-width: 100%;
 
-    height:
-        auto;
+    height: auto;
+
+    max-height: 1100px;
+
+    object-fit: contain;
 
     margin:
         30px auto;
 
-    border-radius:
-        7px;
+    border-radius: 7px;
 
 }
+
+
+.post-content figure {
+
+    max-width: 100%;
+
+    margin:
+        30px auto;
+
+}
+
 
 .post-content a {
 
-    color:
-        #2563eb;
+    color: #2563eb;
 
 }
+
+
+.post-content h2,
+.post-content h3,
+.post-content h4 {
+
+    line-height: 1.4;
+
+}
+
+
+.post-content table {
+
+    max-width: 100%;
+
+    overflow-x: auto;
+
+}
+
+
+.post-content iframe {
+
+    max-width: 100%;
+
+}
+
+
+/* ----------------------------------------------------------
+   LABELS
+   ---------------------------------------------------------- */
 
 .labels {
 
     border-top:
-        1px solid #eee;
+        1px solid #eeeeee;
 
-    margin-top:
-        30px;
+    margin-top: 30px;
 
-    padding-top:
-        20px;
+    padding-top: 20px;
 
-    line-height:
-        2.5;
+    line-height: 2.5;
 
 }
 
+
 .post-label {
 
-    display:
-        inline-block;
+    display: inline-block;
 
     margin:
         4px;
@@ -1281,290 +1459,342 @@ body {
     padding:
         3px 12px;
 
-    border-radius:
-        20px;
+    border-radius: 20px;
 
-    background:
-        #47164F;
+    background: #47164F;
 
-    color:
-        white;
+    color: white;
 
-    text-decoration:
-        none;
+    text-decoration: none;
 
-    font-size:
-        13px;
+    font-size: 13px;
+
+    font-weight: 600;
 
 }
 
+
+/* ----------------------------------------------------------
+   NAVIGATION
+   ---------------------------------------------------------- */
+
 .post-navigation-wrapper {
 
-    display:
-        grid;
+    display: grid;
 
     grid-template-columns:
         1fr 1fr;
 
-    gap:
-        20px;
+    gap: 20px;
 
-    margin-top:
-        30px;
+    margin-top: 30px;
 
 }
 
+
 .post-navigation {
 
-    display:
-        flex;
+    display: flex;
 
-    flex-direction:
-        column;
+    flex-direction: column;
 
-    gap:
-        8px;
+    gap: 8px;
 
-    padding:
-        18px;
+    padding: 18px;
 
-    background:
-        white;
+    background: white;
 
     border:
         1px solid #e5e7eb;
 
-    border-radius:
-        10px;
+    border-radius: 10px;
 
-    text-decoration:
-        none;
+    text-decoration: none;
 
-    color:
-        #222;
+    color: #222;
 
 }
+
+
+.post-navigation:hover {
+
+    border-color:
+        #2563eb;
+
+}
+
 
 .post-navigation span {
 
-    color:
-        #47164F;
+    color: #47164F;
 
-    font-size:
-        13px;
+    font-size: 13px;
 
-    font-weight:
-        bold;
+    font-weight: bold;
 
 }
+
 
 .post-navigation strong {
 
-    line-height:
-        1.45;
+    line-height: 1.45;
 
 }
+
 
 .post-navigation.next {
 
-    text-align:
-        right;
+    text-align: right;
 
 }
+
 
 .disabled {
 
-    opacity:
-        .45;
+    opacity: .45;
 
 }
+
+
+/* ----------------------------------------------------------
+   RELATED
+   ---------------------------------------------------------- */
 
 .related {
 
-    margin-top:
-        55px;
+    margin-top: 55px;
 
 }
+
 
 .related h2 {
 
-    font-size:
-        29px;
+    margin:
+        0 0 25px;
+
+    font-size: 29px;
 
 }
 
+
 .related-grid {
 
-    display:
-        grid;
+    display: grid;
 
     grid-template-columns:
         repeat(4, 1fr);
 
-    gap:
-        22px;
+    gap: 22px;
 
 }
 
+
 .related-card {
 
-    overflow:
-        hidden;
+    overflow: hidden;
 
-    background:
-        white;
+    background: white;
 
     border:
         1px solid #e5e7eb;
 
-    border-radius:
-        10px;
+    border-radius: 10px;
+
+    box-shadow:
+        0 3px 12px rgba(0,0,0,.05);
 
 }
+
 
 .related-image {
 
-    display:
-        block;
+    display: block;
+
+    background: #f2f2f2;
 
 }
+
 
 .related-image img {
 
-    display:
-        block;
+    display: block;
 
-    width:
-        100%;
+    width: 100%;
 
-    height:
-        300px;
+    height: 300px;
 
-    object-fit:
-        cover;
+    object-fit: contain;
+
+    background: #f2f2f2;
 
 }
+
 
 .related-info {
 
-    padding:
-        15px;
+    padding: 15px;
 
 }
+
 
 .related-info h3 {
 
     margin:
         0 0 8px;
 
-    font-size:
-        17px;
+    font-size: 17px;
 
-    line-height:
-        1.4;
+    line-height: 1.4;
 
 }
+
 
 .related-info h3 a {
 
-    color:
-        #222;
+    color: #222;
 
-    text-decoration:
-        none;
+    text-decoration: none;
 
 }
+
 
 .related-date {
 
-    color:
-        #777;
+    color: #777;
 
-    font-size:
-        12px;
+    font-size: 12px;
 
-    margin-bottom:
-        12px;
+    margin-bottom: 12px;
 
 }
 
+
 .read-more {
 
-    display:
-        inline-block;
+    display: inline-block;
 
     padding:
         7px 11px;
 
-    background:
-        #47164F;
+    background: #47164F;
 
-    color:
-        white;
+    color: white;
 
-    border-radius:
-        5px;
+    border-radius: 5px;
 
-    text-decoration:
-        none;
+    text-decoration: none;
 
-    font-size:
-        12px;
+    font-size: 12px;
 
-    font-weight:
-        bold;
+    font-weight: bold;
 
 }
 
+
+/* ----------------------------------------------------------
+   FOOTER
+   ---------------------------------------------------------- */
+
 .footer {
-
-    background:
-        #111827;
-
-    color:
-        #aaa;
-
-    text-align:
-        center;
 
     padding:
         30px 15px;
 
+    background: #111827;
+
+    color: #aaa;
+
+    text-align: center;
+
 }
+
+
+/* ----------------------------------------------------------
+   MOBILE
+   ---------------------------------------------------------- */
 
 @media(max-width:800px) {
 
     .related-grid {
 
         grid-template-columns:
-            repeat(2,1fr);
+            repeat(2, 1fr);
 
     }
 
 }
 
+
 @media(max-width:600px) {
+
+    .header-inner {
+
+        padding:
+            17px 0;
+
+        gap: 14px;
+
+    }
+
+
+    .logo {
+
+        font-size: 28px;
+
+    }
+
+
+    .nav a {
+
+        margin:
+            0 8px;
+
+    }
+
+
+    .main {
+
+        width: 94%;
+
+    }
+
 
     .post {
 
-        padding:
-            18px;
+        padding: 18px;
 
     }
+
 
     .post-title {
 
-        font-size:
-            25px;
+        font-size: 24px;
 
     }
+
 
     .post-content {
 
-        font-size:
-            16px;
+        font-size: 16px;
 
     }
+
+
+    .featured-image {
+
+        width: 100%;
+
+        max-height: none;
+
+    }
+
+
+    .post-content img {
+
+        max-height: none;
+
+    }
+
 
     .post-navigation-wrapper {
 
@@ -1573,17 +1803,27 @@ body {
 
     }
 
+
     .post-navigation.next {
 
-        text-align:
-            left;
+        text-align: left;
 
     }
+
 
     .related-grid {
 
         grid-template-columns:
             1fr;
+
+    }
+
+
+    .related-image img {
+
+        height: auto;
+
+        max-height: 700px;
 
     }
 
@@ -1593,7 +1833,9 @@ body {
 
 </head>
 
+
 <body>
+
 
 <header class="header">
 
@@ -1606,6 +1848,7 @@ Film Stars
 </a>
 
 </div>
+
 
 <nav class="nav">
 
@@ -1626,6 +1869,7 @@ Blog
 
 <main class="main">
 
+
 <a
     class="back"
     href="/blog"
@@ -1635,6 +1879,7 @@ Blog
 
 
 <article class="post">
+
 
 <h1 class="post-title">
 
@@ -1658,11 +1903,14 @@ ${escapeHtml(
 ${
     post.image
         ? `
+
 <img
     class="featured-image"
     src="${escapeHtml(post.image)}"
     alt="${escapeHtml(post.title)}"
+    decoding="async"
 >
+
 `
         : ""
 }
@@ -1670,21 +1918,18 @@ ${
 
 <div class="post-content">
 
-${cleanPostContent(
-    post.content
-)}
+${cleanedContent}
 
 </div>
 
 
 ${labels}
 
+
 </article>
 
 
-<div
-    class="post-navigation-wrapper"
->
+<div class="post-navigation-wrapper">
 
 ${previousHtml}
 
@@ -1699,12 +1944,11 @@ ${nextHtml}
 Related Posts
 </h2>
 
+
 <div class="related-grid">
 
 ${related
-    .map(
-        createRelatedCard
-    )
+    .map(createRelatedCard)
     .join("")}
 
 </div>
@@ -1722,15 +1966,18 @@ Filmstars
 
 </footer>
 
+
 </body>
 
-</html>`;
+</html>
+
+`;
 
 }
 
 
 // ============================================================
-// SINGLE POST
+// SINGLE POST PAGE
 // ============================================================
 
 async function singlePostPage(
@@ -1748,26 +1995,119 @@ async function singlePostPage(
 
 
     if (!match) {
+
         return null;
+
     }
 
+
+    const year =
+        match[1];
+
+    const month =
+        match[2];
 
     const slug =
         match[3];
 
 
+    console.log(
+        "Looking for post:",
+        year,
+        month,
+        slug
+    );
+
+
+    // --------------------------------------------------------
+    // Get all posts
+    // --------------------------------------------------------
+
     const posts =
         await getAllPosts();
 
 
+    // --------------------------------------------------------
+    // Find current post
+    // --------------------------------------------------------
+
     let currentIndex =
         posts.findIndex(
             post =>
-                getSlug(
-                    post.url
-                ) === slug
+                post.url ===
+                pathname
         );
 
+
+    // --------------------------------------------------------
+    // Find by slug
+    // --------------------------------------------------------
+
+    if (
+        currentIndex === -1
+    ) {
+
+        currentIndex =
+            posts.findIndex(
+                post =>
+                    getSlug(
+                        post.url
+                    ) ===
+                    slug
+            );
+
+    }
+
+
+    // --------------------------------------------------------
+    // Find by Blogger pathname
+    // --------------------------------------------------------
+
+    if (
+        currentIndex === -1
+    ) {
+
+        currentIndex =
+            posts.findIndex(
+                post => {
+
+                    if (
+                        !post.bloggerUrl
+                    ) {
+
+                        return false;
+
+                    }
+
+
+                    try {
+
+                        const bloggerPath =
+                            new URL(
+                                post.bloggerUrl
+                            ).pathname;
+
+
+                        return (
+                            bloggerPath ===
+                            pathname
+                        );
+
+                    } catch {
+
+                        return false;
+
+                    }
+
+                }
+            );
+
+    }
+
+
+    // --------------------------------------------------------
+    // NOT FOUND
+    // --------------------------------------------------------
 
     if (
         currentIndex === -1
@@ -1777,11 +2117,16 @@ async function singlePostPage(
 
             `<!DOCTYPE html>
 
-<html>
+<html lang="en">
 
 <head>
 
 <meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
 <title>
 Post Not Found | Filmstars
@@ -1792,29 +2137,32 @@ Post Not Found | Filmstars
 body {
 
     font-family:
-        Arial;
+        Arial,
+        sans-serif;
 
     background:
         #f5f6f8;
 
-    text-align:
-        center;
+    margin: 0;
 
     padding:
-        60px 20px;
+        50px 20px;
+
+    text-align:
+        center;
 
 }
 
 .box {
-
-    background:
-        white;
 
     max-width:
         700px;
 
     margin:
         auto;
+
+    background:
+        white;
 
     padding:
         40px;
@@ -1850,7 +2198,8 @@ Post Not Found
 </h1>
 
 <p>
-The requested Filmstars post could not be found.
+The requested Filmstars post
+could not be found.
 </p>
 
 <p>
@@ -1889,11 +2238,17 @@ The requested Filmstars post could not be found.
     }
 
 
+    // --------------------------------------------------------
+    // CURRENT POST
+    // --------------------------------------------------------
+
     const current =
         posts[currentIndex];
 
 
-    // Feed is newest → oldest
+    // --------------------------------------------------------
+    // PREVIOUS / NEXT
+    // --------------------------------------------------------
 
     const previous =
         currentIndex <
@@ -1916,9 +2271,9 @@ The requested Filmstars post could not be found.
             : null;
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // RELATED POSTS
-    // ========================================================
+    // --------------------------------------------------------
 
     const currentLabels =
         new Set(
@@ -2011,14 +2366,22 @@ The requested Filmstars post could not be found.
             );
 
 
-    return new Response(
+    // --------------------------------------------------------
+    // CREATE HTML
+    // --------------------------------------------------------
 
+    const html =
         createSinglePostPage(
             current,
             previous,
             next,
             related
-        ),
+        );
+
+
+    return new Response(
+
+        html,
 
         {
 
@@ -2043,7 +2406,7 @@ The requested Filmstars post could not be found.
 
 
 // ============================================================
-// CLOUDFLARE HANDLER
+// MAIN CLOUDFLARE HANDLER
 // ============================================================
 
 export async function onRequest(
@@ -2057,154 +2420,17 @@ export async function onRequest(
 
 
     // --------------------------------------------------------
-    // /api/blogger
-    //
-    // We proxy the existing blogger-posts function here.
+    // DO NOT HANDLE STATIC FILES
     // --------------------------------------------------------
 
     if (
         requestUrl.pathname ===
-            "/api/blogger" ||
+            "/blogger-posts" ||
         requestUrl.pathname ===
-            "/api/blogger/"
+            "/blogger-posts/"
     ) {
 
-        try {
-
-            const startIndex =
-                parseInt(
-                    requestUrl.searchParams.get(
-                        "start-index"
-                    ) || "1",
-                    10
-                );
-
-
-            const maxResults =
-                parseInt(
-                    requestUrl.searchParams.get(
-                        "max-results"
-                    ) || "20",
-                    10
-                );
-
-
-            const label =
-                requestUrl.searchParams.get(
-                    "label"
-                ) || "";
-
-
-            let start =
-                Number.isFinite(
-                    startIndex
-                ) &&
-                startIndex > 0
-                    ? startIndex
-                    : 1;
-
-
-            let max =
-                Number.isFinite(
-                    maxResults
-                ) &&
-                maxResults > 0
-                    ? Math.min(
-                        maxResults,
-                        50
-                    )
-                    : 20;
-
-
-            const params =
-                new URLSearchParams();
-
-
-            params.set(
-                "start-index",
-                String(start)
-            );
-
-
-            params.set(
-                "max-results",
-                String(max)
-            );
-
-
-            if (label) {
-
-                params.set(
-                    "label",
-                    label
-                );
-
-            }
-
-
-            const endpoint =
-                new URL(
-                    "/blogger-posts",
-                    requestUrl.origin
-                );
-
-
-            endpoint.search =
-                params.toString();
-
-
-            const response =
-                await fetch(
-                    endpoint.toString()
-                );
-
-
-            return new Response(
-                await response.text(),
-                {
-                    status:
-                        response.status,
-
-                    headers: {
-                        "Content-Type":
-                            "application/json; charset=UTF-8"
-                    }
-                }
-            );
-
-        }
-        catch (error) {
-
-            return new Response(
-
-                JSON.stringify({
-
-                    success:
-                        false,
-
-                    error:
-                        error.message ||
-                        "Unable to load Blogger posts."
-
-                }),
-
-                {
-
-                    status:
-                        502,
-
-                    headers: {
-
-                        "Content-Type":
-                            "application/json; charset=UTF-8"
-
-                    }
-
-                }
-
-            );
-
-        }
+        return context.next();
 
     }
 
@@ -2226,8 +2452,7 @@ export async function onRequest(
                 requestUrl
             );
 
-        }
-        catch (error) {
+        } catch (error) {
 
             console.error(
                 "Single post error:",
@@ -2237,7 +2462,41 @@ export async function onRequest(
 
             return new Response(
 
-                "Unable to load post.",
+                `<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+Error | Filmstars
+</title>
+
+</head>
+
+<body>
+
+<h1>
+Unable to load post
+</h1>
+
+<p>
+Please try again later.
+</p>
+
+<p>
+
+<a href="/blog">
+← Back to Blog
+</a>
+
+</p>
+
+</body>
+
+</html>`,
 
                 {
 
@@ -2247,7 +2506,10 @@ export async function onRequest(
                     headers: {
 
                         "Content-Type":
-                            "text/plain; charset=UTF-8"
+                            "text/html; charset=UTF-8",
+
+                        "Cache-Control":
+                            "no-cache"
 
                     }
 
@@ -2259,6 +2521,10 @@ export async function onRequest(
 
     }
 
+
+    // --------------------------------------------------------
+    // EVERYTHING ELSE
+    // --------------------------------------------------------
 
     return context.next();
 
