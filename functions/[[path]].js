@@ -1540,7 +1540,7 @@ body {
             17px 0;
 
         flex-direction:
-            column;
+            inherit;
 
         gap: 14px;
 
