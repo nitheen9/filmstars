@@ -79,13 +79,18 @@ body {
 
 }
 
+
 .logo a {
 
     color: #fdfdff;
+
     cursor: pointer;
+
     text-decoration: unset;
 
-}    
+}
+
+
 .nav a {
 
     color: white;
@@ -127,6 +132,57 @@ body {
 
 }
 
+
+/* ======================================================
+   LABEL HEADER
+====================================================== */
+
+.label-header {
+
+    display: none;
+
+    margin-bottom: 30px;
+
+}
+
+
+.label-header h1 {
+
+    margin:
+        0 0 8px;
+
+    font-size: 32px;
+
+}
+
+
+.label-header p {
+
+    margin: 0;
+
+    color: #666;
+
+}
+
+
+.view-all {
+
+    display: inline-block;
+
+    margin-top: 12px;
+
+    color: #47164F;
+
+    font-weight: bold;
+
+    text-decoration: none;
+
+}
+
+
+/* ======================================================
+   POSTS
+====================================================== */
 
 .posts-grid {
 
@@ -181,6 +237,11 @@ body {
 }
 
 
+/*
+ * Keep the original card size.
+ * contain prevents faces/body from being cropped.
+ */
+
 .post-image {
 
     width: 100%;
@@ -189,7 +250,7 @@ body {
 
     display: block;
 
-    object-fit: fill;
+    object-fit: contain;
 
     background: #f1f1f1;
 
@@ -220,6 +281,13 @@ body {
     color: #222;
 
     text-decoration: none;
+
+}
+
+
+.post-title a:hover {
+
+    color: #47164F;
 
 }
 
@@ -270,6 +338,55 @@ body {
 }
 
 
+/* ======================================================
+   LABELS ON CARDS
+====================================================== */
+
+.post-labels {
+
+    margin-top: 13px;
+
+    line-height: 1.9;
+
+}
+
+
+.post-label {
+
+    display: inline-block;
+
+    padding:
+        3px 9px;
+
+    margin:
+        2px 3px 2px 0;
+
+    border-radius: 15px;
+
+    background: #f0e7f2;
+
+    color: #47164F;
+
+    text-decoration: none;
+
+    font-size: 11px;
+
+}
+
+
+.post-label:hover {
+
+    background: #47164F;
+
+    color: white;
+
+}
+
+
+/* ======================================================
+   LOADING
+====================================================== */
+
 .loading {
 
     text-align: center;
@@ -278,8 +395,14 @@ body {
 
     color: #666;
 
+    grid-column: 1 / -1;
+
 }
 
+
+/* ======================================================
+   ERROR
+====================================================== */
 
 .error {
 
@@ -294,8 +417,46 @@ body {
 
     color: #b91c1c;
 
+    grid-column: 1 / -1;
+
+    text-align: center;
+
 }
 
+
+/* ======================================================
+   NO POSTS
+====================================================== */
+
+.no-posts {
+
+    background: white;
+
+    padding: 45px 25px;
+
+    border-radius: 10px;
+
+    text-align: center;
+
+    color: #666;
+
+    grid-column: 1 / -1;
+
+}
+
+
+.no-posts h2 {
+
+    margin-top: 0;
+
+    color: #333;
+
+}
+
+
+/* ======================================================
+   PAGINATION
+====================================================== */
 
 .pagination {
 
@@ -338,10 +499,10 @@ body {
 .page-button:hover {
 
     border-color:
-        #2563eb;
+        #47164F;
 
     color:
-        #2563eb;
+        #47164F;
 
 }
 
@@ -380,6 +541,10 @@ body {
 }
 
 
+/* ======================================================
+   FOOTER
+====================================================== */
+
 .footer {
 
     background: #111827;
@@ -392,6 +557,28 @@ body {
 
 }
 
+
+/* ======================================================
+   TABLET
+====================================================== */
+
+@media (
+    max-width: 1100px
+) {
+
+    .posts-grid {
+
+        grid-template-columns:
+            repeat(3, 1fr);
+
+    }
+
+}
+
+
+/* ======================================================
+   SMALL TABLET
+====================================================== */
 
 @media (
     max-width: 900px
@@ -406,6 +593,10 @@ body {
 
 }
 
+
+/* ======================================================
+   MOBILE
+====================================================== */
 
 @media (
     max-width: 600px
@@ -462,6 +653,13 @@ body {
 
     }
 
+
+    .label-header h1 {
+
+        font-size: 27px;
+
+    }
+
 }
 
 </style>
@@ -477,9 +675,11 @@ body {
 <div class="header-inner">
 
 <div class="logo">
-    <a href="/">
+
+<a href="/">
 Film Stars
-        </a>
+</a>
+
 </div>
 
 
@@ -498,7 +698,13 @@ Home
 
 <main class="container">
 
-<!-- 
+
+<!-- =====================================================
+     NORMAL BLOG TITLE
+====================================================== -->
+
+<div id="normalHeader">
+
 <h1 class="page-title">
 Filmstars Blog
 </h1>
@@ -507,18 +713,58 @@ Filmstars Blog
 <p class="page-description">
 Latest posts from Tollywood Boost
 </p>
--->
+
+</div>
+
+
+<!-- =====================================================
+     LABEL HEADER
+====================================================== -->
+
+<div
+    id="labelHeader"
+    class="label-header"
+>
+
+<h1 id="labelTitle">
+</h1>
+
+
+<p id="labelDescription">
+</p>
+
+
+<a
+    class="view-all"
+    href="/blog"
+>
+← View All Posts
+</a>
+
+</div>
+
+
+<!-- =====================================================
+     POSTS
+====================================================== -->
 
 <div
     id="posts"
-    class="posts-grid">
+    class="posts-grid"
+>
 
 <div class="loading">
+
 Loading posts...
-</div>
 
 </div>
 
+</div>
+
+
+<!-- =====================================================
+     PAGINATION
+====================================================== -->
 
 <div
     id="pagination"
@@ -539,6 +785,11 @@ Loading posts...
 
 <script>
 
+
+// ======================================================
+// SETTINGS
+// ======================================================
+
 const API =
     "/api/blogger";
 
@@ -546,6 +797,10 @@ const API =
 const PER_PAGE =
     20;
 
+
+// ======================================================
+// ELEMENTS
+// ======================================================
 
 const postsContainer =
     document.getElementById(
@@ -559,10 +814,62 @@ const paginationContainer =
     );
 
 
+const normalHeader =
+    document.getElementById(
+        "normalHeader"
+    );
+
+
+const labelHeader =
+    document.getElementById(
+        "labelHeader"
+    );
+
+
+const labelTitle =
+    document.getElementById(
+        "labelTitle"
+    );
+
+
+const labelDescription =
+    document.getElementById(
+        "labelDescription"
+    );
+
+
 document.getElementById(
     "year"
 ).textContent =
     new Date().getFullYear();
+
+
+// ======================================================
+// READ URL
+// ======================================================
+
+const urlParams =
+    new URLSearchParams(
+        window.location.search
+    );
+
+
+/*
+ * Example:
+ *
+ * /blog?label=Ankita%20Lokhande
+ *
+ * gives:
+ *
+ * Ankita Lokhande
+ */
+
+const selectedLabel =
+    (
+        urlParams.get(
+            "label"
+        ) || ""
+    ).trim();
 
 
 // ======================================================
@@ -571,25 +878,24 @@ document.getElementById(
 
 function getPage() {
 
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
-
-
     const page =
         parseInt(
-            params.get("page") || "1",
+            urlParams.get(
+                "page"
+            ) || "1",
             10
         );
 
 
     return (
+
         Number.isFinite(page) &&
         page > 0
+
     )
         ? page
         : 1;
+
 }
 
 
@@ -625,6 +931,7 @@ function escapeHtml(value) {
             /'/g,
             "&#039;"
         );
+
 }
 
 
@@ -635,7 +942,9 @@ function escapeHtml(value) {
 function formatDate(value) {
 
     if (!value) {
+
         return "";
+
     }
 
 
@@ -650,6 +959,7 @@ function formatDate(value) {
     ) {
 
         return "";
+
     }
 
 
@@ -661,6 +971,7 @@ function formatDate(value) {
             year: "numeric"
         }
     );
+
 }
 
 
@@ -674,7 +985,9 @@ function getExcerpt(
 ) {
 
     if (!html) {
+
         return "";
+
     }
 
 
@@ -708,16 +1021,186 @@ function getExcerpt(
     ) {
 
         return clean;
+
     }
 
 
     return (
-        clean.substring(
-            0,
-            max
-        ).trim() +
+        clean
+            .substring(
+                0,
+                max
+            )
+            .trim() +
         "..."
     );
+
+}
+
+
+// ======================================================
+// IMAGE
+// ======================================================
+
+function improveImage(
+    url
+) {
+
+    if (!url) {
+
+        return "";
+
+    }
+
+
+    return url
+
+        .replace(
+            /\/s72-c\//g,
+            "/s800/"
+        )
+
+        .replace(
+            /\/s72\//g,
+            "/s800/"
+        )
+
+        .replace(
+            /\/w72-h72-p-k-no-nu\//g,
+            "/s800/"
+        )
+
+        .replace(
+            /\/w\d+-h\d+-p-k-no-nu\//g,
+            "/s800/"
+        )
+
+        .replace(
+            /\/s\d+\//g,
+            "/s800/"
+        );
+
+}
+
+
+// ======================================================
+// LABEL MATCH
+// ======================================================
+
+function hasLabel(
+    post
+) {
+
+    /*
+     * No label selected:
+     * show everything.
+     */
+
+    if (
+        !selectedLabel
+    ) {
+
+        return true;
+
+    }
+
+
+    /*
+     * Make sure labels exist.
+     */
+
+    if (
+        !Array.isArray(
+            post.labels
+        )
+    ) {
+
+        return false;
+
+    }
+
+
+    /*
+     * EXACT LABEL MATCH
+     *
+     * Ankita Lokhande
+     *
+     * will match:
+     *
+     * Ankita Lokhande
+     *
+     * but NOT:
+     *
+     * Ankita
+     * Ankita Lokhande Photos
+     */
+
+    const wanted =
+        selectedLabel
+            .trim()
+            .toLowerCase();
+
+
+    return post.labels.some(
+        label =>
+
+            String(label)
+                .trim()
+                .toLowerCase() ===
+            wanted
+
+    );
+
+}
+
+
+// ======================================================
+// LABEL LINKS
+// ======================================================
+
+function createLabels(
+    labels
+) {
+
+    if (
+        !Array.isArray(
+            labels
+        ) ||
+        labels.length === 0
+    ) {
+
+        return "";
+
+    }
+
+
+    return `
+
+        <div class="post-labels">
+
+            ${labels
+                .map(
+                    label => `
+
+                        <a
+                            class="post-label"
+                            href="/blog?label=${encodeURIComponent(label)}"
+                        >
+
+                            ${escapeHtml(
+                                label
+                            )}
+
+                        </a>
+
+                    `
+                )
+                .join("")}
+
+        </div>
+
+    `;
+
 }
 
 
@@ -725,7 +1208,9 @@ function getExcerpt(
 // CARD
 // ======================================================
 
-function createCard(post) {
+function createCard(
+    post
+) {
 
     const title =
         escapeHtml(
@@ -742,7 +1227,9 @@ function createCard(post) {
     const image =
         post.image
             ? escapeHtml(
-                post.image
+                improveImage(
+                    post.image
+                )
             )
             : "";
 
@@ -776,12 +1263,14 @@ function createCard(post) {
                 ${
                     image
                         ? `
+
                             <img
                                 class="post-image"
                                 src="${image}"
                                 alt="${title}"
                                 loading="lazy"
                             >
+
                           `
                         : ""
                 }
@@ -797,7 +1286,9 @@ function createCard(post) {
                     <a
                         href="${url}"
                     >
+
                         ${title}
+
                     </a>
 
                 </h2>
@@ -821,8 +1312,15 @@ function createCard(post) {
                     class="read-more"
                     href="${url}"
                 >
+
                     Read More
+
                 </a>
+
+
+                ${createLabels(
+                    post.labels
+                )}
 
 
             </div>
@@ -830,6 +1328,65 @@ function createCard(post) {
         </article>
 
     `;
+
+}
+
+
+// ======================================================
+// PAGINATION URL
+// ======================================================
+
+function goToPage(
+    page
+) {
+
+    const url =
+        new URL(
+            window.location.href
+        );
+
+
+    /*
+     * Keep label.
+     */
+
+    if (
+        selectedLabel
+    ) {
+
+        url.searchParams.set(
+            "label",
+            selectedLabel
+        );
+
+    }
+
+
+    /*
+     * Remove page=1
+     */
+
+    if (
+        page <= 1
+    ) {
+
+        url.searchParams.delete(
+            "page"
+        );
+
+    } else {
+
+        url.searchParams.set(
+            "page",
+            page
+        );
+
+    }
+
+
+    window.location.href =
+        url.toString();
+
 }
 
 
@@ -858,10 +1415,14 @@ function createPagination(
     ) {
 
         return;
+
     }
 
 
-    // Previous
+    /*
+     * Previous
+     */
+
     const previous =
         document.createElement(
             "button"
@@ -901,7 +1462,10 @@ function createPagination(
     );
 
 
-    // Page numbers
+    /*
+     * Page numbers
+     */
+
     let start =
         Math.max(
             1,
@@ -959,6 +1523,10 @@ function createPagination(
             "page-button";
 
 
+        button.textContent =
+            page;
+
+
         if (
             page === currentPage
         ) {
@@ -968,10 +1536,6 @@ function createPagination(
             );
 
         }
-
-
-        button.textContent =
-            page;
 
 
         button.onclick =
@@ -991,7 +1555,10 @@ function createPagination(
     }
 
 
-    // Next
+    /*
+     * Next
+     */
+
     const next =
         document.createElement(
             "button"
@@ -1032,6 +1599,10 @@ function createPagination(
     );
 
 
+    /*
+     * Page information
+     */
+
     const info =
         document.createElement(
             "span"
@@ -1046,51 +1617,10 @@ function createPagination(
         `Page ${currentPage} of ${totalPages}`;
 
 
-    paginationContainer.insertBefore(
-        info,
-        paginationContainer.children[
-            Math.min(
-                3,
-                paginationContainer.children.length
-            )
-        ]
+    paginationContainer.appendChild(
+        info
     );
 
-}
-
-
-// ======================================================
-// GO TO PAGE
-// ======================================================
-
-function goToPage(page) {
-
-    const url =
-        new URL(
-            window.location.href
-        );
-
-
-    if (
-        page <= 1
-    ) {
-
-        url.searchParams.delete(
-            "page"
-        );
-
-    } else {
-
-        url.searchParams.set(
-            "page",
-            page
-        );
-
-    }
-
-
-    window.location.href =
-        url.toString();
 }
 
 
@@ -1102,13 +1632,6 @@ async function loadPosts() {
 
     const page =
         getPage();
-
-
-    const startIndex =
-        (
-            (page - 1) *
-            PER_PAGE
-        ) + 1;
 
 
     postsContainer.innerHTML = `
@@ -1124,12 +1647,21 @@ async function loadPosts() {
 
     try {
 
+
+        /*
+         * IMPORTANT:
+         *
+         * We request a larger batch because
+         * label filtering must happen against
+         * the actual Blogger labels.
+         */
+
         const response =
             await fetch(
 
                 `${API}` +
-                `?start-index=${startIndex}` +
-                `&max-results=${PER_PAGE}`,
+                `?start-index=1` +
+                `&max-results=150`,
 
                 {
                     cache:
@@ -1139,7 +1671,9 @@ async function loadPosts() {
             );
 
 
-        if (!response.ok) {
+        if (
+            !response.ok
+        ) {
 
             throw new Error(
                 `HTTP ${response.status}`
@@ -1164,7 +1698,7 @@ async function loadPosts() {
         }
 
 
-        const posts =
+        const allPosts =
             Array.isArray(
                 data.posts
             )
@@ -1172,15 +1706,116 @@ async function loadPosts() {
                 : [];
 
 
+        /*
+         * =================================================
+         * LABEL FILTER
+         * =================================================
+         *
+         * If URL is:
+         *
+         * /blog
+         *
+         * all posts are shown.
+         *
+         * If URL is:
+         *
+         * /blog?label=Ankita%20Lokhande
+         *
+         * only posts with EXACTLY that label
+         * are shown.
+         */
+
+        const filteredPosts =
+            allPosts.filter(
+                hasLabel
+            );
+
+
+        /*
+         * =================================================
+         * LABEL HEADER
+         * =================================================
+         */
+
         if (
-            posts.length === 0
+            selectedLabel
+        ) {
+
+            normalHeader.style.display =
+                "none";
+
+
+            labelHeader.style.display =
+                "block";
+
+
+            labelTitle.textContent =
+                `Label: ${selectedLabel}`;
+
+
+            labelDescription.textContent =
+                `${filteredPosts.length} post${
+                    filteredPosts.length === 1
+                        ? ""
+                        : "s"
+                } found with this label.`;
+
+        } else {
+
+            normalHeader.style.display =
+                "block";
+
+
+            labelHeader.style.display =
+                "none";
+
+        }
+
+
+        /*
+         * =================================================
+         * NO POSTS
+         * =================================================
+         */
+
+        if (
+            filteredPosts.length === 0
         ) {
 
             postsContainer.innerHTML = `
 
-                <div class="loading">
+                <div class="no-posts">
 
-                    No posts found.
+                    <h2>
+                        No Posts Found
+                    </h2>
+
+
+                    <p>
+
+                        No posts found with the label:
+
+                    </p>
+
+
+                    <strong>
+                        ${escapeHtml(
+                            selectedLabel
+                        )}
+                    </strong>
+
+
+                    <br><br>
+
+
+                    <a
+                        class="read-more"
+                        href="/blog"
+                    >
+
+                        ← View All Posts
+
+                    </a>
 
                 </div>
 
@@ -1192,11 +1827,68 @@ async function loadPosts() {
 
 
             return;
+
         }
 
 
+        /*
+         * =================================================
+         * PAGINATION
+         * =================================================
+         */
+
+        const totalPages =
+            Math.ceil(
+                filteredPosts.length /
+                PER_PAGE
+            );
+
+
+        /*
+         * If page number is too high,
+         * go back to page 1.
+         */
+
+        if (
+            page > totalPages
+        ) {
+
+            goToPage(
+                1
+            );
+
+            return;
+
+        }
+
+
+        const start =
+            (
+                page - 1
+            ) *
+            PER_PAGE;
+
+
+        const end =
+            start +
+            PER_PAGE;
+
+
+        const pagePosts =
+            filteredPosts.slice(
+                start,
+                end
+            );
+
+
+        /*
+         * =================================================
+         * DISPLAY
+         * =================================================
+         */
+
         postsContainer.innerHTML =
-            posts
+            pagePosts
                 .map(
                     createCard
                 )
@@ -1205,16 +1897,7 @@ async function loadPosts() {
 
         createPagination(
             page,
-            Number(data.total) ||
-            posts.length
-        );
-
-
-        window.scrollTo(
-            {
-                top: 0,
-                behavior: "smooth"
-            }
+            filteredPosts.length
         );
 
 
@@ -1234,27 +1917,41 @@ async function loadPosts() {
                     Unable to load posts right now.
                 </strong>
 
+
                 <br><br>
+
 
                 Please try again in a few seconds.
 
+
                 <br><br>
+
 
                 <button
                     class="page-button"
                     onclick="loadPosts()"
                 >
+
                     Try Again
+
                 </button>
 
             </div>
 
         `;
 
+
+        paginationContainer.innerHTML =
+            "";
+
     }
 
 }
 
+
+// ======================================================
+// START
+// ======================================================
 
 loadPosts();
 
