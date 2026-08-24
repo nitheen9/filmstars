@@ -1,6 +1,23 @@
 // ============================================================
-// functions/blogger-posts.js
+// FILMSTARS - BLOGGER POSTS API
 // ============================================================
+//
+// Route:
+// /blogger-posts
+//
+// Examples:
+//
+// /blogger-posts
+// /blogger-posts?page=2
+// /blogger-posts?label=Hollywood%20Actress
+// /blogger-posts?label=Hollywood%20Actress&page=2
+//
+// Blogger source:
+// https://tollywoodboost.blogspot.com/
+//
+// Supports old posts from 2011 through current posts.
+// ============================================================
+
 
 const BLOG_URL =
     "https://tollywoodboost.blogspot.com";
@@ -8,7 +25,9 @@ const BLOG_URL =
 const BLOG_FEED =
     "https://tollywoodboost.blogspot.com/feeds/posts/default";
 
-const PER_PAGE = 20;
+const PER_PAGE_DEFAULT = 20;
+
+const MAX_PER_PAGE = 50;
 
 
 // ============================================================
@@ -16,25 +35,35 @@ const PER_PAGE = 20;
 // ============================================================
 
 function getText(value) {
-    return value && value.$t
-        ? value.$t
-        : "";
+
+    if (
+        value &&
+        typeof value === "object" &&
+        "$t" in value
+    ) {
+        return value.$t || "";
+    }
+
+    return "";
 }
 
 
 // ============================================================
-// BLOGGER ALTERNATE URL
+// ALTERNATE BLOGGER URL
 // ============================================================
 
 function getAlternateUrl(entry) {
 
-    if (!Array.isArray(entry.link)) {
+    if (
+        !Array.isArray(entry.link)
+    ) {
         return "";
     }
 
     const link =
         entry.link.find(
-            item => item.rel === "alternate"
+            item =>
+                item.rel === "alternate"
         );
 
     return link
@@ -47,7 +76,9 @@ function getAlternateUrl(entry) {
 // BLOGGER URL -> FILMSTARS URL
 // ============================================================
 
-function convertToFilmstarsUrl(bloggerUrl) {
+function convertToFilmstarsUrl(
+    bloggerUrl
+) {
 
     if (!bloggerUrl) {
         return "";
@@ -80,7 +111,6 @@ function convertToFilmstarsUrl(bloggerUrl) {
     } catch {
 
         return "";
-
     }
 }
 
@@ -98,7 +128,7 @@ function upgradeImageUrl(
         return "";
     }
 
-    return url
+    return String(url)
 
         .replace(
             /\/s72-c\//g,
@@ -128,7 +158,7 @@ function upgradeImageUrl(
 
 
 // ============================================================
-// GET POST IMAGE
+// GET IMAGE
 // ============================================================
 
 function getPostImage(
@@ -146,7 +176,6 @@ function getPostImage(
             entry.media$thumbnail.url,
             size
         );
-
     }
 
 
@@ -163,7 +192,6 @@ function getPostImage(
                 match[1],
                 size
             );
-
         }
 
 
@@ -178,10 +206,9 @@ function getPostImage(
                 match[1],
                 size
             );
-
         }
-
     }
+
 
     return "";
 }
@@ -193,7 +220,9 @@ function getPostImage(
 
 function getLabels(entry) {
 
-    if (!Array.isArray(entry.category)) {
+    if (
+        !Array.isArray(entry.category)
+    ) {
         return [];
     }
 
@@ -209,10 +238,13 @@ function getLabels(entry) {
 
 
 // ============================================================
-// CREATE POST
+// CREATE POST OBJECT
 // ============================================================
 
-function createPost(entry) {
+function createPost(
+    entry,
+    imageSize = "s800"
+) {
 
     const content =
         getText(entry.content) ||
@@ -250,7 +282,7 @@ function createPost(entry) {
             getPostImage(
                 entry,
                 content,
-                "s800"
+                imageSize
             ),
 
         content:
@@ -258,7 +290,6 @@ function createPost(entry) {
 
         labels:
             getLabels(entry)
-
     };
 }
 
@@ -266,19 +297,24 @@ function createPost(entry) {
 // ============================================================
 // FETCH BLOGGER FEED
 // ============================================================
+//
+// IMPORTANT:
+// Blogger feed supports start-index and max-results.
+// We use the feed total to calculate pagination.
+//
+// Label feeds use:
+// /feeds/posts/default/-/LABEL
+// ============================================================
 
-async function fetchBlogger(
+async function fetchBloggerFeed(
     startIndex,
     maxResults,
     label = ""
 ) {
 
-    let feedUrl;
+    let feedUrl =
+        BLOG_FEED;
 
-
-    // --------------------------------------------------------
-    // LABEL FEED
-    // --------------------------------------------------------
 
     if (label) {
 
@@ -286,17 +322,6 @@ async function fetchBlogger(
             BLOG_FEED +
             "/-/" +
             encodeURIComponent(label);
-
-    }
-
-    // --------------------------------------------------------
-    // NORMAL FEED
-    // --------------------------------------------------------
-
-    else {
-
-        feedUrl =
-            BLOG_FEED;
 
     }
 
@@ -310,23 +335,14 @@ async function fetchBlogger(
         "json"
     );
 
-
     url.searchParams.set(
         "start-index",
         String(startIndex)
     );
 
-
     url.searchParams.set(
         "max-results",
         String(maxResults)
-    );
-
-
-    // Prevent Blogger cached/incorrect response
-    url.searchParams.set(
-        "orderby",
-        "published"
     );
 
 
@@ -345,10 +361,8 @@ async function fetchBlogger(
     if (!response.ok) {
 
         throw new Error(
-            "Blogger HTTP " +
-            response.status
+            `Blogger HTTP ${response.status}`
         );
-
     }
 
 
@@ -357,35 +371,25 @@ async function fetchBlogger(
 
 
 // ============================================================
-// GET TOTAL RESULTS
+// NUMBER HELPER
 // ============================================================
 
-function getTotalResults(data) {
+function getTotal(
+    feed
+) {
 
-    const total =
+    return (
         Number(
-            data.feed
+            feed
                 ?.openSearch$totalResults
                 ?.$t
-        );
-
-
-    if (
-        Number.isFinite(total) &&
-        total >= 0
-    ) {
-
-        return total;
-
-    }
-
-
-    return 0;
+        ) || 0
+    );
 }
 
 
 // ============================================================
-// MAIN BLOGGER POSTS HANDLER
+// API
 // ============================================================
 
 export async function onRequest(
@@ -399,10 +403,6 @@ export async function onRequest(
                 context.request.url
             );
 
-
-        // ----------------------------------------------------
-        // PAGE
-        // ----------------------------------------------------
 
         let page =
             parseInt(
@@ -419,32 +419,15 @@ export async function onRequest(
         ) {
 
             page = 1;
-
         }
 
-
-        // ----------------------------------------------------
-        // LABEL
-        // ----------------------------------------------------
-
-        const label =
-            (
-                requestUrl.searchParams.get(
-                    "label"
-                ) || ""
-            ).trim();
-
-
-        // ----------------------------------------------------
-        // PAGE SIZE
-        // ----------------------------------------------------
 
         let perPage =
             parseInt(
                 requestUrl.searchParams.get(
                     "max-results"
                 ) ||
-                String(PER_PAGE),
+                String(PER_PAGE_DEFAULT),
                 10
             );
 
@@ -455,27 +438,24 @@ export async function onRequest(
         ) {
 
             perPage =
-                PER_PAGE;
-
+                PER_PAGE_DEFAULT;
         }
 
 
-        // Blogger supports a maximum of 150
         perPage =
             Math.min(
                 perPage,
-                150
+                MAX_PER_PAGE
             );
 
 
-        // ----------------------------------------------------
-        // VERY IMPORTANT
-        //
-        // PAGE 1 = start-index 1
-        // PAGE 2 = start-index 21
-        // PAGE 3 = start-index 41
-        //
-        // ----------------------------------------------------
+        const label =
+            (
+                requestUrl.searchParams.get(
+                    "label"
+                ) || ""
+            ).trim();
+
 
         const startIndex =
             (
@@ -484,86 +464,60 @@ export async function onRequest(
             ) + 1;
 
 
-        console.log(
-            "Blogger request:",
-            {
-                page,
-                label,
-                perPage,
-                startIndex
-            }
-        );
-
-
-        // ----------------------------------------------------
-        // FETCH
-        // ----------------------------------------------------
-
         const data =
-            await fetchBlogger(
+            await fetchBloggerFeed(
                 startIndex,
                 perPage,
                 label
             );
 
 
-        // ----------------------------------------------------
-        // ENTRIES
-        // ----------------------------------------------------
+        const feed =
+            data.feed || {};
+
 
         const entries =
             Array.isArray(
-                data.feed?.entry
+                feed.entry
             )
-                ? data.feed.entry
+                ? feed.entry
                 : [];
 
 
-        // ----------------------------------------------------
-        // POSTS
-        // ----------------------------------------------------
-
         const posts =
             entries
-                .map(createPost)
+
+                .map(
+                    entry =>
+                        createPost(
+                            entry,
+                            "s800"
+                        )
+                )
+
                 .filter(
                     post =>
-                        post.url &&
-                        post.title
+                        post.url
                 );
 
 
-        // ----------------------------------------------------
-        // TOTAL
-        // ----------------------------------------------------
-
         const total =
-            getTotalResults(data);
+            getTotal(feed);
 
-
-        // ----------------------------------------------------
-        // TOTAL PAGES
-        // ----------------------------------------------------
 
         const totalPages =
             total > 0
                 ? Math.ceil(
-                    total /
-                    perPage
+                    total / perPage
                 )
                 : 0;
 
-
-        // ----------------------------------------------------
-        // RESPONSE
-        // ----------------------------------------------------
 
         return new Response(
 
             JSON.stringify({
 
-                success:
-                    true,
+                success: true,
 
                 blog:
                     "Tollywood Boost",
@@ -592,12 +546,11 @@ export async function onRequest(
                 totalPages:
                     totalPages,
 
-                hasPreviousPage:
+                hasPrevious:
                     page > 1,
 
-                hasNextPage:
-                    page <
-                    totalPages,
+                hasNext:
+                    page < totalPages,
 
                 posts:
                     posts
@@ -614,21 +567,17 @@ export async function onRequest(
                         "application/json; charset=UTF-8",
 
                     "Cache-Control":
-                        "public, max-age=300, s-maxage=300",
-
-                    "Access-Control-Allow-Origin":
-                        "*"
+                        "public, max-age=300, s-maxage=300"
 
                 }
 
             }
-
         );
 
     } catch (error) {
 
         console.error(
-            "Blogger Posts Error:",
+            "Blogger posts error:",
             error
         );
 
@@ -637,23 +586,22 @@ export async function onRequest(
 
             JSON.stringify({
 
-                success:
-                    false,
+                success: false,
 
                 error:
                     "Unable to load Blogger posts.",
 
                 details:
-                    error &&
-                    error.message
-                        ? error.message
-                        : String(error)
+                    String(
+                        error?.message ||
+                        error
+                    )
 
             }),
 
             {
 
-                status: 500,
+                status: 502,
 
                 headers: {
 
@@ -661,17 +609,11 @@ export async function onRequest(
                         "application/json; charset=UTF-8",
 
                     "Cache-Control":
-                        "no-cache",
-
-                    "Access-Control-Allow-Origin":
-                        "*"
+                        "no-cache"
 
                 }
 
             }
-
         );
-
     }
-
 }
