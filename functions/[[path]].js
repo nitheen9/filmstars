@@ -1638,7 +1638,9 @@ body {
 <div class="header-inner">
 
 <div class="logo">
+<a href="/">
 Film Stars
+</a>
 </div>
 
 
