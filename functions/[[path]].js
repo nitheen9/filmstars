@@ -761,7 +761,7 @@ function createLabel(
 
         <a
             class="post-label"
-            href="/blog?label=${encodeURIComponent(label)}"
+            href="/blog?search/label=${encodeURIComponent(label)}"
         >
 
             ${escapeHtml(label)}
