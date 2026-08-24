@@ -1,540 +1,954 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
 
-    <meta name="description"
-          content="Latest Tollywood news, celebrity updates, movie news and entertainment posts from Tollywood Boost.">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-    <title>Tollywood Boost - Latest Posts | Filmstars</title>
+<meta name="description"
+      content="Latest Tollywood movie news, actress updates, celebrity photos and entertainment posts.">
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<title>Tollywood Posts | Filmstars</title>
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f5f7fb;
-            color: #222;
-        }
+<style>
 
-        .container {
-            width: 92%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        header {
-            background: #111827;
-            color: white;
-            padding: 20px 0;
-        }
+body {
+    margin: 0;
+    padding: 0;
 
-        .header-inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-        }
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 
-        .logo {
-            font-size: 26px;
-            font-weight: bold;
-        }
+    background: #f5f7fb;
+    color: #222;
+}
 
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin-left: 18px;
-            font-size: 15px;
-        }
+.container {
+    width: 92%;
+    max-width: 1200px;
+    margin: auto;
+}
 
-        nav a:hover {
-            text-decoration: underline;
-        }
+header {
+    background: #111827;
+    color: white;
+    padding: 20px 0;
+}
 
-        .hero {
-            padding: 45px 0 25px;
-            text-align: center;
-        }
+.header-inner {
 
-        .hero h1 {
-            margin: 0 0 12px;
-            font-size: 36px;
-        }
+    display: flex;
 
-        .hero p {
-            margin: 0 auto;
-            max-width: 750px;
-            color: #666;
-            line-height: 1.6;
-        }
+    align-items: center;
 
-        .blog-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-            padding: 20px 0 50px;
-        }
+    justify-content: space-between;
+}
 
-        .post-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
-            transition: transform 0.2s ease,
-                        box-shadow 0.2s ease;
-        }
+.logo {
+    font-size: 26px;
+    font-weight: bold;
+}
 
-        .post-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
-        }
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 18px;
+}
 
-        .post-image {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            display: block;
-            background: #eee;
-        }
+nav a:hover {
+    text-decoration: underline;
+}
 
-        .post-content {
-            padding: 20px;
-        }
+.hero {
+    text-align: center;
+    padding: 45px 0 25px;
+}
 
-        .post-title {
-            margin: 0 0 10px;
-            font-size: 21px;
-            line-height: 1.35;
-        }
+.hero h1 {
+    margin: 0 0 12px;
+    font-size: 36px;
+}
 
-        .post-title a {
-            color: #111827;
-            text-decoration: none;
-        }
+.hero p {
+    color: #666;
+    line-height: 1.6;
+}
 
-        .post-title a:hover {
-            color: #2563eb;
-        }
+.blog-grid {
 
-        .post-date {
-            font-size: 13px;
-            color: #777;
-            margin-bottom: 12px;
-        }
+    display: grid;
 
-        .post-excerpt {
-            color: #555;
-            line-height: 1.6;
-            font-size: 15px;
-            margin-bottom: 18px;
-        }
+    grid-template-columns:
+        repeat(3, 1fr);
 
-        .read-more {
-            display: inline-block;
-            background: #2563eb;
-            color: white;
-            padding: 10px 16px;
-            border-radius: 7px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: bold;
-        }
+    gap: 25px;
 
-        .read-more:hover {
-            background: #1d4ed8;
-        }
+    padding:
+        20px 0 40px;
+}
 
-        .loading {
-            text-align: center;
-            padding: 50px 20px;
-            color: #666;
-            font-size: 17px;
-        }
+.post-card {
 
-        .error {
-            max-width: 700px;
-            margin: 30px auto;
-            background: #fff;
-            border: 1px solid #fecaca;
-            color: #991b1b;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
+    background: white;
 
-        .empty {
-            text-align: center;
-            padding: 50px 20px;
-            color: #666;
-        }
+    border:
+        1px solid #e5e7eb;
 
-        footer {
-            background: #111827;
-            color: #ccc;
-            text-align: center;
-            padding: 25px 15px;
-            margin-top: 20px;
-        }
+    border-radius: 12px;
 
-        footer a {
-            color: white;
-            text-decoration: none;
-        }
+    overflow: hidden;
 
-        @media (max-width: 900px) {
-            .blog-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
+    box-shadow:
+        0 3px 12px
+        rgba(0,0,0,.06);
 
-        @media (max-width: 600px) {
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+}
 
-            .header-inner {
-                flex-direction: column;
-                text-align: center;
-            }
+.post-card:hover {
 
-            nav a {
-                margin: 0 7px;
-            }
+    transform:
+        translateY(-4px);
 
-            .hero h1 {
-                font-size: 29px;
-            }
+    box-shadow:
+        0 8px 22px
+        rgba(0,0,0,.1);
+}
 
-            .blog-grid {
-                grid-template-columns: 1fr;
-            }
+.post-image {
 
-            .post-image {
-                height: 210px;
-            }
-        }
-    </style>
+    width: 100%;
+
+    height: 220px;
+
+    object-fit: cover;
+
+    display: block;
+
+    background: #eee;
+}
+
+.post-content {
+    padding: 20px;
+}
+
+.post-title {
+
+    margin: 0 0 10px;
+
+    font-size: 20px;
+
+    line-height: 1.4;
+}
+
+.post-title a {
+
+    color: #111827;
+
+    text-decoration: none;
+}
+
+.post-title a:hover {
+    color: #2563eb;
+}
+
+.post-date {
+
+    color: #777;
+
+    font-size: 13px;
+
+    margin-bottom: 12px;
+}
+
+.post-excerpt {
+
+    color: #555;
+
+    font-size: 15px;
+
+    line-height: 1.6;
+
+    margin-bottom: 18px;
+}
+
+.read-more {
+
+    display: inline-block;
+
+    padding:
+        10px 16px;
+
+    background:
+        #2563eb;
+
+    color: white;
+
+    border-radius: 7px;
+
+    text-decoration: none;
+
+    font-size: 14px;
+
+    font-weight: bold;
+}
+
+.read-more:hover {
+    background: #1d4ed8;
+}
+
+.loading {
+
+    text-align: center;
+
+    padding: 60px 20px;
+
+    color: #666;
+}
+
+.error {
+
+    max-width: 700px;
+
+    margin: 30px auto;
+
+    padding: 20px;
+
+    background: white;
+
+    border:
+        1px solid #fecaca;
+
+    color: #991b1b;
+
+    border-radius: 10px;
+
+    text-align: center;
+}
+
+
+/* PAGINATION */
+
+.pagination {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    padding:
+        10px 0 60px;
+}
+
+.pagination a,
+.pagination span {
+
+    min-width: 42px;
+
+    height: 42px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding:
+        0 13px;
+
+    border:
+        1px solid #ddd;
+
+    border-radius: 7px;
+
+    background: white;
+
+    color: #222;
+
+    text-decoration: none;
+
+    font-size: 14px;
+}
+
+.pagination a:hover {
+
+    background: #2563eb;
+
+    color: white;
+
+    border-color:
+        #2563eb;
+}
+
+.pagination .active {
+
+    background:
+        #2563eb;
+
+    color: white;
+
+    border-color:
+        #2563eb;
+
+    font-weight: bold;
+}
+
+.pagination .disabled {
+
+    color: #aaa;
+
+    background: #f5f5f5;
+
+    cursor: default;
+}
+
+footer {
+
+    background:
+        #111827;
+
+    color: #ccc;
+
+    text-align: center;
+
+    padding: 25px;
+}
+
+footer a {
+
+    color: white;
+
+    text-decoration: none;
+}
+
+
+@media (max-width: 900px) {
+
+    .blog-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .header-inner {
+
+        flex-direction: column;
+
+        gap: 15px;
+
+        text-align: center;
+    }
+
+    nav a {
+        margin: 0 7px;
+    }
+
+    .hero h1 {
+        font-size: 29px;
+    }
+
+    .blog-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .post-image {
+        height: 210px;
+    }
+
+}
+
+</style>
+
 </head>
+
 
 <body>
 
+
 <header>
-    <div class="container header-inner">
 
-        <div class="logo">
-            Filmstars
-        </div>
+<div class="container header-inner">
 
-        <nav>
-            <a href="/">Home</a>
-            <a href="/blog">Blog</a>
-            <a href="https://tollywoodboost.blogspot.com/"
-               target="_blank"
-               rel="noopener">
-                Tollywood Boost
-            </a>
-        </nav>
-
+    <div class="logo">
+        Filmstars
     </div>
+
+    <nav>
+
+        <a href="/">
+            Home
+        </a>
+
+        <a href="/blog">
+            Blog
+        </a>
+
+    </nav>
+
+</div>
+
 </header>
 
 
 <main>
 
-    <section class="hero">
 
-        <div class="container">
+<section class="hero">
 
-            <h1>
-                Latest Tollywood Posts
-            </h1>
+<div class="container">
 
-            <p>
-                Latest movie news, celebrity updates,
-                entertainment stories and Tollywood posts
-                from Tollywood Boost.
-            </p>
+    <h1>
+        Latest Tollywood Posts
+    </h1>
 
-        </div>
+    <p>
+        Latest movie news, celebrity updates,
+        actress photos and entertainment stories.
+    </p>
 
-    </section>
+</div>
+
+</section>
 
 
-    <section class="container">
+<section class="container">
 
-        <div id="loading"
-             class="loading">
 
-            Loading latest posts...
+<div id="loading"
+     class="loading">
 
-        </div>
+    Loading posts...
 
-        <div id="error"
-             class="error"
-             style="display:none;">
+</div>
 
-        </div>
 
-        <div id="posts"
-             class="blog-grid">
+<div id="error"
+     class="error"
+     style="display:none;">
 
-        </div>
+</div>
 
-        <div id="empty"
-             class="empty"
-             style="display:none;">
 
-            No posts found.
+<div id="posts"
+     class="blog-grid">
 
-        </div>
+</div>
 
-    </section>
+
+<div id="pagination"
+     class="pagination">
+
+</div>
+
+
+</section>
+
 
 </main>
 
 
 <footer>
 
-    <div>
-        © <span id="year"></span> Filmstars
-    </div>
-
-    <div style="margin-top:8px;">
-        Posts powered by
-        <a href="https://tollywoodboost.blogspot.com/"
-           target="_blank"
-           rel="noopener">
-            Tollywood Boost
-        </a>
-    </div>
+    © <span id="year"></span> Filmstars
 
 </footer>
 
 
 <script>
 
-    document.getElementById("year").textContent =
-        new Date().getFullYear();
+document.getElementById("year")
+    .textContent =
+    new Date().getFullYear();
 
 
-    function escapeHtml(value) {
+function escapeHtml(value) {
 
-        if (!value) {
-            return "";
-        }
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
 
-        return String(value)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+
+function formatDate(value) {
+
+    if (!value) {
+        return "";
     }
 
+    const date =
+        new Date(value);
 
-    function formatDate(dateString) {
+    if (isNaN(date.getTime())) {
+        return "";
+    }
 
-        if (!dateString) {
-            return "";
+    return date.toLocaleDateString(
+        "en-IN",
+        {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
         }
+    );
+}
 
-        const date = new Date(dateString);
 
-        if (isNaN(date.getTime())) {
-            return "";
-        }
+function createPostCard(post) {
 
-        return date.toLocaleDateString(
-            "en-IN",
-            {
-                day: "numeric",
-                month: "long",
-                year: "numeric"
+    const title =
+        escapeHtml(post.title);
+
+    const url =
+        escapeHtml(post.url);
+
+    const image =
+        escapeHtml(post.image);
+
+    const excerpt =
+        escapeHtml(post.excerpt);
+
+    const date =
+        formatDate(post.published);
+
+
+    return `
+
+        <article class="post-card">
+
+            ${
+                image
+                    ? `
+                    <img
+                        class="post-image"
+                        src="${image}"
+                        alt="${title}"
+                        loading="lazy"
+                    >
+                    `
+                    : `
+                    <div
+                        class="post-image"
+                        style="
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            color:#777;
+                        "
+                    >
+                        Filmstars
+                    </div>
+                    `
             }
+
+
+            <div class="post-content">
+
+                <h2 class="post-title">
+
+                    <a href="${url}">
+
+                        ${title}
+
+                    </a>
+
+                </h2>
+
+
+                ${
+                    date
+                        ? `
+                        <div class="post-date">
+
+                            Published ${date}
+
+                        </div>
+                        `
+                        : ""
+                }
+
+
+                <div class="post-excerpt">
+
+                    ${excerpt}
+
+                </div>
+
+
+                <a
+                    class="read-more"
+                    href="${url}"
+                >
+                    Read More
+                </a>
+
+            </div>
+
+        </article>
+
+    `;
+
+}
+
+
+function createPageUrl(page) {
+
+    if (page <= 1) {
+        return "/blog";
+    }
+
+    return "/blog?page=" + page;
+}
+
+
+function addPagination(
+    currentPage,
+    totalPages
+) {
+
+    const container =
+        document.getElementById(
+            "pagination"
         );
+
+    if (totalPages <= 1) {
+        container.innerHTML = "";
+        return;
     }
 
 
-    function createPostCard(post) {
+    let html = "";
 
-        const title =
-            escapeHtml(post.title);
 
-        const excerpt =
-            escapeHtml(post.excerpt);
+    /*
+     * Previous
+     */
 
-        const date =
-            formatDate(post.published);
+    if (currentPage > 1) {
 
-        const url =
-            post.url || "#";
+        html += `
 
-        let imageHtml = "";
+            <a href="${createPageUrl(
+                currentPage - 1
+            )}">
 
-        if (post.image) {
+                ← Previous
 
-            imageHtml = `
-                <img
-                    class="post-image"
-                    src="${escapeHtml(post.image)}"
-                    alt="${title}"
-                    loading="lazy"
-                    onerror="this.style.display='none';"
-                >
+            </a>
+
+        `;
+
+    } else {
+
+        html += `
+
+            <span class="disabled">
+
+                ← Previous
+
+            </span>
+
+        `;
+
+    }
+
+
+    /*
+     * Page numbers
+     */
+
+    let start =
+        Math.max(
+            1,
+            currentPage - 2
+        );
+
+    let end =
+        Math.min(
+            totalPages,
+            currentPage + 2
+        );
+
+
+    if (start > 1) {
+
+        html += `
+
+            <a href="${createPageUrl(1)}">
+                1
+            </a>
+
+        `;
+
+        if (start > 2) {
+
+            html += `
+                <span>...</span>
+            `;
+
+        }
+
+    }
+
+
+    for (
+        let i = start;
+        i <= end;
+        i++
+    ) {
+
+        if (i === currentPage) {
+
+            html += `
+
+                <span class="active">
+                    ${i}
+                </span>
+
             `;
 
         } else {
 
-            imageHtml = `
-                <div
-                    class="post-image"
-                    style="
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        color:#777;
-                    "
-                >
-                    Filmstars
-                </div>
+            html += `
+
+                <a href="${createPageUrl(i)}">
+                    ${i}
+                </a>
+
             `;
+
         }
 
+    }
 
-        return `
-            <article class="post-card">
 
-                ${imageHtml}
+    if (end < totalPages) {
 
-                <div class="post-content">
+        if (end < totalPages - 1) {
 
-                    <h2 class="post-title">
+            html += `
+                <span>...</span>
+            `;
 
-                        <a
-                            href="${escapeHtml(url)}"
-                            target="_blank"
-                            rel="noopener"
-                        >
-                            ${title}
-                        </a>
+        }
 
-                    </h2>
+        html += `
 
-                    ${
-                        date
-                        ? `
-                            <div class="post-date">
-                                Published ${date}
-                            </div>
-                          `
-                        : ""
-                    }
+            <a href="${createPageUrl(
+                totalPages
+            )}">
 
-                    <div class="post-excerpt">
-                        ${excerpt}
-                    </div>
+                ${totalPages}
 
-                    <a
-                        class="read-more"
-                        href="${escapeHtml(url)}"
-                        target="_blank"
-                        rel="noopener"
-                    >
-                        Read More
-                    </a>
+            </a>
 
-                </div>
-
-            </article>
         `;
+
     }
 
 
-    async function loadPosts() {
+    /*
+     * Next
+     */
 
-        const loading =
-            document.getElementById("loading");
+    if (currentPage < totalPages) {
 
-        const error =
-            document.getElementById("error");
+        html += `
 
-        const postsContainer =
-            document.getElementById("posts");
+            <a href="${createPageUrl(
+                currentPage + 1
+            )}">
 
-        const empty =
-            document.getElementById("empty");
+                Next →
 
+            </a>
 
-        try {
+        `;
 
-            const response =
-                await fetch("/blogger-posts", {
-                    method: "GET",
-                    headers: {
-                        "Accept": "application/json"
-                    }
-                });
+    } else {
 
+        html += `
 
-            if (!response.ok) {
+            <span class="disabled">
 
-                throw new Error(
-                    "Unable to load Blogger posts."
-                );
+                Next →
 
-            }
+            </span>
+
+        `;
+
+    }
 
 
-            const data =
-                await response.json();
+    container.innerHTML = html;
+}
 
 
-            loading.style.display = "none";
+async function loadPosts() {
+
+    const loading =
+        document.getElementById(
+            "loading"
+        );
+
+    const error =
+        document.getElementById(
+            "error"
+        );
+
+    const posts =
+        document.getElementById(
+            "posts"
+        );
 
 
-            if (
-                !data.success ||
-                !Array.isArray(data.posts) ||
-                data.posts.length === 0
-            ) {
-
-                empty.style.display = "block";
-                return;
-
-            }
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
 
 
-            postsContainer.innerHTML =
-                data.posts
-                    .map(createPostCard)
-                    .join("");
+    let page =
+        parseInt(
+            params.get("page") || "1",
+            10
+        );
 
 
-        } catch (err) {
+    if (
+        !Number.isFinite(page) ||
+        page < 1
+    ) {
 
-            console.error(err);
+        page = 1;
 
-            loading.style.display = "none";
+    }
 
-            error.textContent =
-                "Unable to load the latest posts right now. Please try again later.";
 
-            error.style.display = "block";
+    try {
+
+        const response =
+            await fetch(
+                "/blogger-posts?page=" +
+                page
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Unable to load posts."
+            );
 
         }
 
+
+        const data =
+            await response.json();
+
+
+        if (
+            !data.success ||
+            !Array.isArray(data.posts)
+        ) {
+
+            throw new Error(
+                "Invalid Blogger response."
+            );
+
+        }
+
+
+        loading.style.display =
+            "none";
+
+
+        posts.innerHTML =
+            data.posts
+                .map(
+                    createPostCard
+                )
+                .join("");
+
+
+        addPagination(
+            data.page,
+            data.totalPages
+        );
+
+
+        /*
+         * Update browser title.
+         */
+
+        document.title =
+            "Tollywood Posts - Page " +
+            data.page +
+            " | Filmstars";
+
+
+        /*
+         * Scroll to top when
+         * page loads.
+         */
+
+        window.scrollTo(
+            0,
+            0
+        );
+
+
+    } catch (errorObject) {
+
+        console.error(
+            errorObject
+        );
+
+
+        loading.style.display =
+            "none";
+
+
+        error.textContent =
+            "Unable to load posts right now. Please try again later.";
+
+
+        error.style.display =
+            "block";
+
     }
 
+}
 
-    loadPosts();
+
+loadPosts();
 
 </script>
 
+
 </body>
+
 </html>
