@@ -1,16 +1,18 @@
 // ============================================================
 // functions/[[path]].js
+// FILMSTARS - SINGLE BLOGGER POST HANDLER
+// Works with Blogger posts from 2011 through 2026+
 // ============================================================
 
 const BLOG_URL =
-    "https://tollywoodboost.blogspot.com";
+    "https://tollywoodboost.blogspot.com/";
 
 const BLOG_FEED =
     "https://tollywoodboost.blogspot.com/feeds/posts/default";
 
 
 // ============================================================
-// TEXT
+// BASIC TEXT
 // ============================================================
 
 function getText(value) {
@@ -28,7 +30,7 @@ function getText(value) {
 
 function getAlternateUrl(entry) {
 
-    if (!Array.isArray(entry.link)) {
+    if (!Array.isArray(entry?.link)) {
         return "";
     }
 
@@ -46,7 +48,7 @@ function getAlternateUrl(entry) {
 
 
 // ============================================================
-// BLOGGER URL -> FILMSTARS URL
+// CONVERT BLOGGER URL TO FILMSTARS URL
 // ============================================================
 
 function convertToFilmstarsUrl(
@@ -91,7 +93,7 @@ function convertToFilmstarsUrl(
 
 
 // ============================================================
-// GET SLUG
+// SLUG
 // ============================================================
 
 function getSlug(url) {
@@ -102,7 +104,7 @@ function getSlug(url) {
 
     try {
 
-        let pathname = "";
+        let pathname;
 
         if (
             url.startsWith("http://") ||
@@ -137,7 +139,7 @@ function getSlug(url) {
 
 
 // ============================================================
-// IMAGE URL
+// IMAGE URL UPGRADE
 // ============================================================
 
 function upgradeImageUrl(
@@ -149,7 +151,7 @@ function upgradeImageUrl(
         return "";
     }
 
-    return url
+    return String(url)
 
         .replace(
             /\/s72-c\//g,
@@ -180,7 +182,7 @@ function upgradeImageUrl(
 
 
 // ============================================================
-// GET POST IMAGE
+// GET IMAGE FROM POST
 // ============================================================
 
 function getPostImage(
@@ -189,9 +191,9 @@ function getPostImage(
     size = "s1600"
 ) {
 
+    // Blogger thumbnail
     if (
-        entry.media$thumbnail &&
-        entry.media$thumbnail.url
+        entry?.media$thumbnail?.url
     ) {
 
         return upgradeImageUrl(
@@ -204,6 +206,7 @@ function getPostImage(
 
     if (content) {
 
+        // data-src
         let match =
             content.match(
                 /data-src=["']([^"']+)["']/i
@@ -219,6 +222,7 @@ function getPostImage(
         }
 
 
+        // normal img src
         match =
             content.match(
                 /<img[^>]+src=["']([^"']+)["']/i
@@ -247,7 +251,7 @@ function getPostImage(
 
 function getLabels(entry) {
 
-    if (!Array.isArray(entry.category)) {
+    if (!Array.isArray(entry?.category)) {
         return [];
     }
 
@@ -264,25 +268,24 @@ function getLabels(entry) {
 
 
 // ============================================================
-// CREATE POST
+// CREATE POST OBJECT
 // ============================================================
 
-function createPost(entry) {
+function createPost(
+    entry
+) {
 
     const content =
         getText(entry.content) ||
         getText(entry.summary);
 
-
     const bloggerUrl =
         getAlternateUrl(entry);
-
 
     const filmstarsUrl =
         convertToFilmstarsUrl(
             bloggerUrl
         );
-
 
     return {
 
@@ -320,12 +323,11 @@ function createPost(entry) {
 
 
 // ============================================================
-// FETCH BLOGGER
+// FETCH BLOGGER FEED
 // ============================================================
 
 async function fetchBlogger(
-    startIndex = 1,
-    maxResults = 150
+    params = {}
 ) {
 
     const url =
@@ -333,23 +335,52 @@ async function fetchBlogger(
             BLOG_FEED
         );
 
-
     url.searchParams.set(
         "alt",
         "json"
     );
 
-
-    url.searchParams.set(
-        "start-index",
-        String(startIndex)
-    );
-
-
     url.searchParams.set(
         "max-results",
-        String(maxResults)
+        String(
+            params.maxResults || 150
+        )
     );
+
+    if (
+        params.startIndex
+    ) {
+
+        url.searchParams.set(
+            "start-index",
+            String(
+                params.startIndex
+            )
+        );
+
+    }
+
+    if (
+        params.publishedMin
+    ) {
+
+        url.searchParams.set(
+            "published-min",
+            params.publishedMin
+        );
+
+    }
+
+    if (
+        params.publishedMax
+    ) {
+
+        url.searchParams.set(
+            "published-max",
+            params.publishedMax
+        );
+
+    }
 
 
     const response =
@@ -367,8 +398,7 @@ async function fetchBlogger(
     if (!response.ok) {
 
         throw new Error(
-            "Blogger HTTP " +
-            response.status
+            `Blogger HTTP ${response.status}`
         );
 
     }
@@ -380,128 +410,362 @@ async function fetchBlogger(
 
 
 // ============================================================
-// FETCH MANY POSTS
-//
-// Used for single-post pages.
-//
-// Blogger allows up to 150 posts in one request.
-// We use multiple requests when necessary.
+// GET ENTRIES
 // ============================================================
 
-async function getAllPosts() {
+function getEntries(data) {
 
-    const allPosts = [];
+    return Array.isArray(
+        data?.feed?.entry
+    )
+        ? data.feed.entry
+        : [];
 
-    const batchSize = 150;
-
-    let startIndex = 1;
-
-    let total = 0;
-
-
-    // Safety limit.
-    // This avoids an endless loop if Blogger
-    // returns unexpected feed data.
-
-    const maxBatches = 20;
+}
 
 
-    for (
-        let batch = 0;
-        batch < maxBatches;
-        batch++
+// ============================================================
+// GET TOTAL
+// ============================================================
+
+function getTotal(data) {
+
+    return Number(
+        data?.feed
+            ?.openSearch$totalResults
+            ?.$t
+    ) || 0;
+
+}
+
+
+// ============================================================
+// FETCH ALL POSTS FROM A MONTH
+//
+// Example:
+//
+// 2017/03
+//
+// becomes:
+//
+// published-min=2017-03-01T00:00:00+00:00
+//
+// published-max=2017-04-01T00:00:00+00:00
+//
+// This allows old posts to work.
+// ============================================================
+
+async function fetchMonthPosts(
+    year,
+    month
+) {
+
+    const monthNumber =
+        Number(month);
+
+    const yearNumber =
+        Number(year);
+
+
+    if (
+        !Number.isInteger(yearNumber) ||
+        !Number.isInteger(monthNumber) ||
+        monthNumber < 1 ||
+        monthNumber > 12
     ) {
 
-        const data =
-            await fetchBlogger(
-                startIndex,
-                batchSize
-            );
+        return [];
+
+    }
 
 
-        const entries =
-            Array.isArray(
-                data.feed?.entry
+    const startDate =
+        new Date(
+            Date.UTC(
+                yearNumber,
+                monthNumber - 1,
+                1,
+                0,
+                0,
+                0
             )
-                ? data.feed.entry
-                : [];
-
-
-        if (
-            batch === 0
-        ) {
-
-            total =
-                Number(
-                    data.feed
-                        ?.openSearch$totalResults
-                        ?.$t
-                ) || 0;
-
-        }
-
-
-        if (
-            entries.length === 0
-        ) {
-
-            break;
-
-        }
-
-
-        const posts =
-            entries
-                .map(createPost)
-                .filter(
-                    post =>
-                        post.url
-                );
-
-
-        allPosts.push(
-            ...posts
         );
 
 
-        if (
-            entries.length <
-            batchSize
+    const endDate =
+        new Date(
+            Date.UTC(
+                yearNumber,
+                monthNumber,
+                1,
+                0,
+                0,
+                0
+            )
+        );
+
+
+    const publishedMin =
+        startDate.toISOString();
+
+
+    const publishedMax =
+        endDate.toISOString();
+
+
+    // --------------------------------------------------------
+    // First request
+    // --------------------------------------------------------
+
+    const firstData =
+        await fetchBlogger({
+            publishedMin:
+                publishedMin,
+
+            publishedMax:
+                publishedMax,
+
+            startIndex:
+                1,
+
+            maxResults:
+                150
+        });
+
+
+    let entries =
+        getEntries(
+            firstData
+        );
+
+
+    const total =
+        getTotal(
+            firstData
+        );
+
+
+    // --------------------------------------------------------
+    // If Blogger reports more than 150 posts for one month,
+    // fetch the remaining pages too.
+    // --------------------------------------------------------
+
+    if (
+        total > entries.length
+    ) {
+
+        let startIndex =
+            entries.length + 1;
+
+
+        while (
+            startIndex <= total &&
+            startIndex <= 1000
         ) {
 
-            break;
+            const data =
+                await fetchBlogger({
+                    publishedMin:
+                        publishedMin,
 
-        }
+                    publishedMax:
+                        publishedMax,
+
+                    startIndex:
+                        startIndex,
+
+                    maxResults:
+                        150
+                });
 
 
-        startIndex +=
-            entries.length;
+            const moreEntries =
+                getEntries(
+                    data
+                );
 
 
-        if (
-            total > 0 &&
-            allPosts.length >= total
-        ) {
+            if (
+                moreEntries.length === 0
+            ) {
+                break;
+            }
 
-            break;
+
+            entries =
+                entries.concat(
+                    moreEntries
+                );
+
+
+            startIndex +=
+                moreEntries.length;
+
+
+            if (
+                moreEntries.length < 150
+            ) {
+                break;
+            }
 
         }
 
     }
 
 
-    return allPosts;
+    return entries;
 
 }
 
 
 // ============================================================
-// HTML ESCAPE
+// FIND POST IN MONTH
 // ============================================================
 
-function escapeHtml(value) {
+async function findPostByArchive(
+    year,
+    month,
+    slug
+) {
 
-    return String(value || "")
+    const entries =
+        await fetchMonthPosts(
+            year,
+            month
+        );
+
+
+    const posts =
+        entries
+            .map(
+                entry =>
+                    createPost(entry)
+            )
+            .filter(
+                post =>
+                    post.url
+            );
+
+
+    // --------------------------------------------------------
+    // Exact Filmstars URL
+    // --------------------------------------------------------
+
+    const requestedPath =
+        `/${year}/${month}/${slug}.html`;
+
+
+    let index =
+        posts.findIndex(
+            post =>
+                post.url ===
+                requestedPath
+        );
+
+
+    if (
+        index !== -1
+    ) {
+
+        return {
+
+            posts:
+                posts,
+
+            index:
+                index
+
+        };
+
+    }
+
+
+    // --------------------------------------------------------
+    // Exact slug
+    // --------------------------------------------------------
+
+    index =
+        posts.findIndex(
+            post =>
+                getSlug(
+                    post.url
+                ) ===
+                slug
+        );
+
+
+    if (
+        index !== -1
+    ) {
+
+        return {
+
+            posts:
+                posts,
+
+            index:
+                index
+
+        };
+
+    }
+
+
+    // --------------------------------------------------------
+    // Blogger URL slug fallback
+    // --------------------------------------------------------
+
+    index =
+        posts.findIndex(
+            post =>
+                getSlug(
+                    post.bloggerUrl
+                ) ===
+                slug
+        );
+
+
+    if (
+        index !== -1
+    ) {
+
+        return {
+
+            posts:
+                posts,
+
+            index:
+                index
+
+        };
+
+    }
+
+
+    return {
+
+        posts:
+            posts,
+
+        index:
+            -1
+
+    };
+
+}
+
+
+// ============================================================
+// ESCAPE HTML
+// ============================================================
+
+function escapeHtml(
+    value
+) {
+
+    return String(
+        value || ""
+    )
 
         .replace(
             /&/g,
@@ -532,10 +796,12 @@ function escapeHtml(value) {
 
 
 // ============================================================
-// DATE
+// FORMAT DATE
 // ============================================================
 
-function formatDate(value) {
+function formatDate(
+    value
+) {
 
     if (!value) {
         return "";
@@ -553,7 +819,6 @@ function formatDate(value) {
     ) {
 
         return "";
-
     }
 
 
@@ -575,78 +840,16 @@ function formatDate(value) {
 
 
 // ============================================================
-// REMOVE FIRST IMAGE
+// CLEAN BLOGGER CONTENT
 //
 // IMPORTANT:
-//
-// The featured image is already shown separately
-// at the top of the article.
-//
-// Blogger content also contains the first image.
-//
-// This removes only the first image from the
-// content so it does not appear twice.
-// ============================================================
-
-function removeFirstImage(
-    html
-) {
-
-    if (!html) {
-        return "";
-    }
-
-
-    let result = html;
-
-
-    // --------------------------------------------------------
-    // Case 1:
-    // <figure> containing first image
-    // --------------------------------------------------------
-
-    result =
-        result.replace(
-            /<figure\b[^>]*>[\s\S]*?<img\b[^>]*>[\s\S]*?<\/figure>/i,
-            ""
-        );
-
-
-    // --------------------------------------------------------
-    // Case 2:
-    // Link containing first image
-    // --------------------------------------------------------
-
-    result =
-        result.replace(
-            /<a\b[^>]*>\s*<img\b[^>]*>\s*<\/a>/i,
-            ""
-        );
-
-
-    // --------------------------------------------------------
-    // Case 3:
-    // Normal first image
-    // --------------------------------------------------------
-
-    result =
-        result.replace(
-            /<img\b[^>]*>/i,
-            ""
-        );
-
-
-    return result;
-
-}
-
-
-// ============================================================
-// CLEAN BLOGGER CONTENT
+// This removes the first content image when it is the same
+// image already being displayed as the featured image.
 // ============================================================
 
 function cleanPostContent(
-    html
+    html,
+    featuredImage
 ) {
 
     if (!html) {
@@ -655,7 +858,7 @@ function cleanPostContent(
 
 
     let result =
-        html;
+        String(html);
 
 
     // --------------------------------------------------------
@@ -768,14 +971,106 @@ function cleanPostContent(
 
 
     // --------------------------------------------------------
-    // Convert data-src to src
+    // Upgrade all s-number image URLs
     // --------------------------------------------------------
 
     result =
         result.replace(
-            /<img\b([^>]*)>/gi,
+            /\/s\d+\//g,
+            "/s1600/"
+        );
+
+
+    // --------------------------------------------------------
+    // Remove first image if it is same as featured image
+    // --------------------------------------------------------
+
+    if (
+        featuredImage
+    ) {
+
+        const normalizedFeatured =
+            normalizeImageUrl(
+                featuredImage
+            );
+
+
+        let firstImageRemoved =
+            false;
+
+
+        result =
+            result.replace(
+                /<img\b[^>]*>/i,
+                function(
+                    imageTag
+                ) {
+
+                    if (
+                        firstImageRemoved
+                    ) {
+
+                        return imageTag;
+
+                    }
+
+
+                    const match =
+                        imageTag.match(
+                            /\b(?:src|data-src)\s*=\s*["']([^"']+)["']/i
+                        );
+
+
+                    if (!match) {
+
+                        return imageTag;
+
+                    }
+
+
+                    const imageUrl =
+                        upgradeImageUrl(
+                            match[1],
+                            "s1600"
+                        );
+
+
+                    const normalizedImage =
+                        normalizeImageUrl(
+                            imageUrl
+                        );
+
+
+                    if (
+                        normalizedImage ===
+                        normalizedFeatured
+                    ) {
+
+                        firstImageRemoved =
+                            true;
+
+                        return "";
+
+                    }
+
+
+                    return imageTag;
+
+                }
+            );
+
+    }
+
+
+    // --------------------------------------------------------
+    // Convert lazy data-src to src
+    // --------------------------------------------------------
+
+    result =
+        result.replace(
+            /<img\b([^>]*?)>/gi,
             function(
-                completeTag,
+                full,
                 attributes
             ) {
 
@@ -785,13 +1080,13 @@ function cleanPostContent(
 
                 const dataSrc =
                     attrs.match(
-                        /data-src=["']([^"']+)["']/i
+                        /\bdata-src\s*=\s*["']([^"']+)["']/i
                     );
 
 
                 if (
                     dataSrc &&
-                    !/\ssrc=/i.test(
+                    !/\bsrc\s*=/i.test(
                         attrs
                     )
                 ) {
@@ -802,29 +1097,25 @@ function cleanPostContent(
                 }
 
 
-                // Remove fixed width
-
+                // Remove fixed dimensions
                 attrs =
                     attrs.replace(
-                        /\swidth=["'][^"']*["']/gi,
+                        /\swidth\s*=\s*["'][^"']*["']/gi,
                         ""
                     );
 
 
-                // Remove fixed height
-
                 attrs =
                     attrs.replace(
-                        /\sheight=["'][^"']*["']/gi,
+                        /\sheight\s*=\s*["'][^"']*["']/gi,
                         ""
                     );
 
 
-                // Remove inline style
-
+                // Remove inline styles
                 attrs =
                     attrs.replace(
-                        /\sstyle=["'][^"']*["']/gi,
+                        /\sstyle\s*=\s*["'][^"']*["']/gi,
                         ""
                     );
 
@@ -840,12 +1131,12 @@ function cleanPostContent(
 
 
     // --------------------------------------------------------
-    // Upgrade image src
+    // Upgrade final image src
     // --------------------------------------------------------
 
     result =
         result.replace(
-            /(<img[^>]+(?:src|data-src)=["'])([^"']+)(["'])/gi,
+            /(<img\b[^>]*?\b(?:src|data-src)\s*=\s*["'])([^"']+)(["'])/gi,
             function(
                 full,
                 start,
@@ -867,6 +1158,71 @@ function cleanPostContent(
 
 
     return result;
+
+}
+
+
+// ============================================================
+// NORMALIZE IMAGE URL
+//
+// Removes Blogger size parameters so two versions of the
+// same image compare as equal.
+// ============================================================
+
+function normalizeImageUrl(
+    url
+) {
+
+    if (!url) {
+        return "";
+    }
+
+
+    try {
+
+        let value =
+            String(url)
+                .trim();
+
+
+        value =
+            value.replace(
+                /^https?:\/\//i,
+                ""
+            );
+
+
+        value =
+            value.replace(
+                /\/s\d+(-c)?\//gi,
+                "/"
+            );
+
+
+        value =
+            value.replace(
+                /\/w\d+-h\d+(?:-[^/]+)?\//gi,
+                "/"
+            );
+
+
+        value =
+            value.replace(
+                /\/s1600\//gi,
+                "/"
+            );
+
+
+        return value
+            .toLowerCase()
+            .split("?")[0];
+
+    } catch {
+
+        return String(url)
+            .toLowerCase();
+
+    }
 
 }
 
@@ -918,7 +1274,6 @@ ${
     src="${escapeHtml(post.image)}"
     alt="${escapeHtml(post.title)}"
     loading="lazy"
-    decoding="async"
 >
 
 `
@@ -935,9 +1290,7 @@ ${
 <a
     href="${escapeHtml(post.url)}"
 >
-
 ${escapeHtml(post.title)}
-
 </a>
 
 </h3>
@@ -982,8 +1335,8 @@ function createSinglePostPage(
 ) {
 
     const labels =
-        post.labels.length > 0
-
+        post.labels &&
+        post.labels.length
             ? `
 
 <div class="labels">
@@ -993,23 +1346,19 @@ Labels:
 </strong>
 
 ${post.labels
-    .map(createLabel)
+    .map(
+        createLabel
+    )
     .join("")}
 
 </div>
 
 `
-
             : "";
 
 
-    // --------------------------------------------------------
-    // Navigation
-    // --------------------------------------------------------
-
     const previousHtml =
         previous
-
             ? `
 
 <a
@@ -1028,7 +1377,6 @@ ${escapeHtml(previous.title)}
 </a>
 
 `
-
             : `
 
 <div
@@ -1050,7 +1398,6 @@ No previous post
 
     const nextHtml =
         next
-
             ? `
 
 <a
@@ -1069,7 +1416,6 @@ ${escapeHtml(next.title)}
 </a>
 
 `
-
             : `
 
 <div
@@ -1089,25 +1435,14 @@ No next post
 `;
 
 
-    // --------------------------------------------------------
-    // REMOVE DUPLICATE FIRST IMAGE
-    // --------------------------------------------------------
-
-    const bodyContent =
-        removeFirstImage(
-            post.content
-        );
-
-
-    const cleanedContent =
+    const content =
         cleanPostContent(
-            bodyContent
+            post.content,
+            post.image
         );
 
 
-    return `
-
-<!DOCTYPE html>
+    return `<!DOCTYPE html>
 
 <html lang="en">
 
@@ -1120,16 +1455,14 @@ No next post
     content="width=device-width, initial-scale=1.0"
 >
 
-
 <title>
-${escapeHtml(post.title)}
- | Filmstars
+${escapeHtml(post.title)} | Filmstars
 </title>
 
 
 <meta
     name="description"
-    content="${escapeHtml(post.title)}"
+    content="${escapeHtml(post.title)} - Filmstars"
 >
 
 
@@ -1177,7 +1510,6 @@ ${
     box-sizing: border-box;
 }
 
-
 body {
 
     margin: 0;
@@ -1193,7 +1525,6 @@ body {
 
 }
 
-
 .header {
 
     background: #fe5301;
@@ -1201,7 +1532,6 @@ body {
     color: white;
 
 }
-
 
 .header-inner {
 
@@ -1221,7 +1551,6 @@ body {
 
 }
 
-
 .logo {
 
     font-size: 36px;
@@ -1230,7 +1559,6 @@ body {
 
 }
 
-
 .logo a {
 
     color: white;
@@ -1238,7 +1566,6 @@ body {
     text-decoration: none;
 
 }
-
 
 .nav a {
 
@@ -1250,7 +1577,6 @@ body {
 
 }
 
-
 .main {
 
     width: 92%;
@@ -1261,7 +1587,6 @@ body {
         35px auto 70px;
 
 }
-
 
 .back {
 
@@ -1276,7 +1601,6 @@ body {
     font-weight: bold;
 
 }
-
 
 .post {
 
@@ -1294,7 +1618,6 @@ body {
 
 }
 
-
 .post-title {
 
     font-size: 30px;
@@ -1306,7 +1629,6 @@ body {
 
 }
 
-
 .post-date {
 
     color: #777;
@@ -1316,11 +1638,6 @@ body {
     margin-bottom: 28px;
 
 }
-
-
-/* ----------------------------------------------------------
-   FEATURED IMAGE
-   ---------------------------------------------------------- */
 
 .featured-image {
 
@@ -1345,11 +1662,6 @@ body {
 
 }
 
-
-/* ----------------------------------------------------------
-   POST CONTENT
-   ---------------------------------------------------------- */
-
 .post-content {
 
     font-size: 18px;
@@ -1358,14 +1670,12 @@ body {
 
 }
 
-
 .post-content p {
 
     margin:
         0 0 22px;
 
 }
-
 
 .post-content img {
 
@@ -1388,7 +1698,6 @@ body {
 
 }
 
-
 .post-content figure {
 
     max-width: 100%;
@@ -1398,42 +1707,11 @@ body {
 
 }
 
-
 .post-content a {
 
     color: #2563eb;
 
 }
-
-
-.post-content h2,
-.post-content h3,
-.post-content h4 {
-
-    line-height: 1.4;
-
-}
-
-
-.post-content table {
-
-    max-width: 100%;
-
-    overflow-x: auto;
-
-}
-
-
-.post-content iframe {
-
-    max-width: 100%;
-
-}
-
-
-/* ----------------------------------------------------------
-   LABELS
-   ---------------------------------------------------------- */
 
 .labels {
 
@@ -1448,13 +1726,11 @@ body {
 
 }
 
-
 .post-label {
 
     display: inline-block;
 
-    margin:
-        4px;
+    margin: 4px;
 
     padding:
         3px 12px;
@@ -1473,11 +1749,6 @@ body {
 
 }
 
-
-/* ----------------------------------------------------------
-   NAVIGATION
-   ---------------------------------------------------------- */
-
 .post-navigation-wrapper {
 
     display: grid;
@@ -1490,7 +1761,6 @@ body {
     margin-top: 30px;
 
 }
-
 
 .post-navigation {
 
@@ -1515,14 +1785,12 @@ body {
 
 }
 
-
 .post-navigation:hover {
 
     border-color:
         #2563eb;
 
 }
-
 
 .post-navigation span {
 
@@ -1534,13 +1802,11 @@ body {
 
 }
 
-
 .post-navigation strong {
 
     line-height: 1.45;
 
 }
-
 
 .post-navigation.next {
 
@@ -1548,24 +1814,17 @@ body {
 
 }
 
-
 .disabled {
 
     opacity: .45;
 
 }
 
-
-/* ----------------------------------------------------------
-   RELATED
-   ---------------------------------------------------------- */
-
 .related {
 
     margin-top: 55px;
 
 }
-
 
 .related h2 {
 
@@ -1575,7 +1834,6 @@ body {
     font-size: 29px;
 
 }
-
 
 .related-grid {
 
@@ -1587,7 +1845,6 @@ body {
     gap: 22px;
 
 }
-
 
 .related-card {
 
@@ -1605,7 +1862,6 @@ body {
 
 }
 
-
 .related-image {
 
     display: block;
@@ -1613,7 +1869,6 @@ body {
     background: #f2f2f2;
 
 }
-
 
 .related-image img {
 
@@ -1629,13 +1884,11 @@ body {
 
 }
 
-
 .related-info {
 
     padding: 15px;
 
 }
-
 
 .related-info h3 {
 
@@ -1648,7 +1901,6 @@ body {
 
 }
 
-
 .related-info h3 a {
 
     color: #222;
@@ -1656,7 +1908,6 @@ body {
     text-decoration: none;
 
 }
-
 
 .related-date {
 
@@ -1667,7 +1918,6 @@ body {
     margin-bottom: 12px;
 
 }
-
 
 .read-more {
 
@@ -1690,11 +1940,6 @@ body {
 
 }
 
-
-/* ----------------------------------------------------------
-   FOOTER
-   ---------------------------------------------------------- */
-
 .footer {
 
     padding:
@@ -1708,11 +1953,6 @@ body {
 
 }
 
-
-/* ----------------------------------------------------------
-   MOBILE
-   ---------------------------------------------------------- */
-
 @media(max-width:800px) {
 
     .related-grid {
@@ -1724,7 +1964,6 @@ body {
 
 }
 
-
 @media(max-width:600px) {
 
     .header-inner {
@@ -1732,10 +1971,7 @@ body {
         padding:
             17px 0;
 
-        gap: 14px;
-
     }
-
 
     .logo {
 
@@ -1743,21 +1979,11 @@ body {
 
     }
 
-
-    .nav a {
-
-        margin:
-            0 8px;
-
-    }
-
-
     .main {
 
         width: 94%;
 
     }
-
 
     .post {
 
@@ -1765,20 +1991,17 @@ body {
 
     }
 
-
     .post-title {
 
         font-size: 24px;
 
     }
 
-
     .post-content {
 
         font-size: 16px;
 
     }
-
 
     .featured-image {
 
@@ -1788,13 +2011,11 @@ body {
 
     }
 
-
     .post-content img {
 
         max-height: none;
 
     }
-
 
     .post-navigation-wrapper {
 
@@ -1803,13 +2024,11 @@ body {
 
     }
 
-
     .post-navigation.next {
 
         text-align: left;
 
     }
-
 
     .related-grid {
 
@@ -1817,7 +2036,6 @@ body {
             1fr;
 
     }
-
 
     .related-image img {
 
@@ -1833,9 +2051,7 @@ body {
 
 </head>
 
-
 <body>
-
 
 <header class="header">
 
@@ -1849,12 +2065,7 @@ Film Stars
 
 </div>
 
-
 <nav class="nav">
-
-<a href="/">
-Home
-</a>
 
 <a href="/blog">
 Blog
@@ -1869,7 +2080,6 @@ Blog
 
 <main class="main">
 
-
 <a
     class="back"
     href="/blog"
@@ -1879,7 +2089,6 @@ Blog
 
 
 <article class="post">
-
 
 <h1 class="post-title">
 
@@ -1918,13 +2127,12 @@ ${
 
 <div class="post-content">
 
-${cleanedContent}
+${content}
 
 </div>
 
 
 ${labels}
-
 
 </article>
 
@@ -1948,7 +2156,9 @@ Related Posts
 <div class="related-grid">
 
 ${related
-    .map(createRelatedCard)
+    .map(
+        createRelatedCard
+    )
     .join("")}
 
 </div>
@@ -1961,161 +2171,28 @@ ${related
 
 <footer class="footer">
 
-© ${new Date().getFullYear()}
-Filmstars
+© ${new Date().getFullYear()} Filmstars
 
 </footer>
 
-
 </body>
 
-</html>
-
-`;
+</html>`;
 
 }
 
 
 // ============================================================
-// SINGLE POST PAGE
+// POST NOT FOUND PAGE
 // ============================================================
 
-async function singlePostPage(
-    requestUrl
+function notFoundPage(
+    requestedPath
 ) {
 
-    const pathname =
-        requestUrl.pathname;
+    return new Response(
 
-
-    const match =
-        pathname.match(
-            /^\/(\d{4})\/(\d{2})\/([^/]+)\.html$/
-        );
-
-
-    if (!match) {
-
-        return null;
-
-    }
-
-
-    const year =
-        match[1];
-
-    const month =
-        match[2];
-
-    const slug =
-        match[3];
-
-
-    console.log(
-        "Looking for post:",
-        year,
-        month,
-        slug
-    );
-
-
-    // --------------------------------------------------------
-    // Get all posts
-    // --------------------------------------------------------
-
-    const posts =
-        await getAllPosts();
-
-
-    // --------------------------------------------------------
-    // Find current post
-    // --------------------------------------------------------
-
-    let currentIndex =
-        posts.findIndex(
-            post =>
-                post.url ===
-                pathname
-        );
-
-
-    // --------------------------------------------------------
-    // Find by slug
-    // --------------------------------------------------------
-
-    if (
-        currentIndex === -1
-    ) {
-
-        currentIndex =
-            posts.findIndex(
-                post =>
-                    getSlug(
-                        post.url
-                    ) ===
-                    slug
-            );
-
-    }
-
-
-    // --------------------------------------------------------
-    // Find by Blogger pathname
-    // --------------------------------------------------------
-
-    if (
-        currentIndex === -1
-    ) {
-
-        currentIndex =
-            posts.findIndex(
-                post => {
-
-                    if (
-                        !post.bloggerUrl
-                    ) {
-
-                        return false;
-
-                    }
-
-
-                    try {
-
-                        const bloggerPath =
-                            new URL(
-                                post.bloggerUrl
-                            ).pathname;
-
-
-                        return (
-                            bloggerPath ===
-                            pathname
-                        );
-
-                    } catch {
-
-                        return false;
-
-                    }
-
-                }
-            );
-
-    }
-
-
-    // --------------------------------------------------------
-    // NOT FOUND
-    // --------------------------------------------------------
-
-    if (
-        currentIndex === -1
-    ) {
-
-        return new Response(
-
-            `<!DOCTYPE html>
+`<!DOCTYPE html>
 
 <html lang="en">
 
@@ -2145,30 +2222,23 @@ body {
 
     margin: 0;
 
-    padding:
-        50px 20px;
+    padding: 50px 20px;
 
-    text-align:
-        center;
+    text-align: center;
 
 }
 
 .box {
 
-    max-width:
-        700px;
+    max-width: 700px;
 
-    margin:
-        auto;
+    margin: auto;
 
-    background:
-        white;
+    background: white;
 
-    padding:
-        40px;
+    padding: 40px;
 
-    border-radius:
-        12px;
+    border-radius: 12px;
 
 }
 
@@ -2177,11 +2247,19 @@ a {
     color:
         #2563eb;
 
-    text-decoration:
-        none;
+    text-decoration: none;
 
-    font-weight:
-        bold;
+    font-weight: bold;
+
+}
+
+.path {
+
+    color:
+        #777;
+
+    word-break:
+        break-all;
 
 }
 
@@ -2198,16 +2276,17 @@ Post Not Found
 </h1>
 
 <p>
-The requested Filmstars post
-could not be found.
+The requested Filmstars post could not be found.
+</p>
+
+<p class="path">
+${escapeHtml(requestedPath)}
 </p>
 
 <p>
-
 <a href="/blog">
 ← Back to Blog
 </a>
-
 </p>
 
 </div>
@@ -2216,56 +2295,179 @@ could not be found.
 
 </html>`,
 
-            {
+{
 
-                status:
-                    404,
+    status:
+        404,
 
-                headers: {
+    headers: {
 
-                    "Content-Type":
-                        "text/html; charset=UTF-8",
+        "Content-Type":
+            "text/html; charset=UTF-8",
 
-                    "Cache-Control":
-                        "no-cache"
+        "Cache-Control":
+            "no-cache, no-store"
 
-                }
+    }
 
-            }
+}
 
+);
+
+}
+
+
+// ============================================================
+// SINGLE POST HANDLER
+// ============================================================
+
+async function singlePostPage(
+    requestUrl
+) {
+
+    const pathname =
+        requestUrl.pathname;
+
+
+    // --------------------------------------------------------
+    // Match:
+    //
+    // /2026/06/post.html
+    // /2017/03/post.html
+    // /2011/01/post.html
+    // --------------------------------------------------------
+
+    const match =
+        pathname.match(
+            /^\/(\d{4})\/(\d{2})\/([^/]+)\.html$/
         );
+
+
+    if (!match) {
+
+        return null;
 
     }
 
 
+    const year =
+        match[1];
+
+    const month =
+        match[2];
+
+    const slug =
+        match[3];
+
+
+    console.log(
+        "Filmstars single post:",
+        year,
+        month,
+        slug
+    );
+
+
     // --------------------------------------------------------
-    // CURRENT POST
+    // Find directly in the requested Blogger month
     // --------------------------------------------------------
+
+    const result =
+        await findPostByArchive(
+            year,
+            month,
+            slug
+        );
+
+
+    const posts =
+        result.posts;
+
+
+    const currentIndex =
+        result.index;
+
+
+    // --------------------------------------------------------
+    // NOT FOUND
+    // --------------------------------------------------------
+
+    if (
+        currentIndex === -1
+    ) {
+
+        return notFoundPage(
+            pathname
+        );
+
+    }
+
 
     const current =
         posts[currentIndex];
 
 
     // --------------------------------------------------------
-    // PREVIOUS / NEXT
+    // Sort posts newest -> oldest
+    // --------------------------------------------------------
+
+    posts.sort(
+        (a, b) => {
+
+            return (
+                new Date(
+                    b.published
+                ) -
+                new Date(
+                    a.published
+                )
+            );
+
+        }
+    );
+
+
+    // --------------------------------------------------------
+    // Find current post again after sorting
+    // --------------------------------------------------------
+
+    const sortedIndex =
+        posts.findIndex(
+            post =>
+                post.url ===
+                current.url
+        );
+
+
+    // --------------------------------------------------------
+    // Previous / Next
+    //
+    // Blogger order:
+    //
+    // newest
+    // ↓
+    // oldest
+    //
+    // Previous = older
+    // Next = newer
     // --------------------------------------------------------
 
     const previous =
-        currentIndex <
+        sortedIndex <
         posts.length - 1
 
             ? posts[
-                currentIndex + 1
+                sortedIndex + 1
             ]
 
             : null;
 
 
     const next =
-        currentIndex > 0
+        sortedIndex > 0
 
             ? posts[
-                currentIndex - 1
+                sortedIndex - 1
             ]
 
             : null;
@@ -2277,7 +2479,7 @@ could not be found.
 
     const currentLabels =
         new Set(
-            current.labels
+            current.labels || []
         );
 
 
@@ -2293,12 +2495,16 @@ could not be found.
             .map(
                 post => {
 
-                    let score = 0;
+                    let score =
+                        0;
 
 
                     for (
                         const label
-                        of post.labels
+                        of (
+                            post.labels ||
+                            []
+                        )
                     ) {
 
                         if (
@@ -2419,25 +2625,9 @@ export async function onRequest(
         );
 
 
-    // --------------------------------------------------------
-    // DO NOT HANDLE STATIC FILES
-    // --------------------------------------------------------
-
-    if (
-        requestUrl.pathname ===
-            "/blogger-posts" ||
-        requestUrl.pathname ===
-            "/blogger-posts/"
-    ) {
-
-        return context.next();
-
-    }
-
-
-    // --------------------------------------------------------
-    // SINGLE POST
-    // --------------------------------------------------------
+    // ========================================================
+    // SINGLE BLOGGER POST
+    // ========================================================
 
     if (
         /^\/\d{4}\/\d{2}\/[^/]+\.html$/
@@ -2455,76 +2645,131 @@ export async function onRequest(
         } catch (error) {
 
             console.error(
-                "Single post error:",
+                "Filmstars single post error:",
                 error
             );
 
 
             return new Response(
 
-                `<!DOCTYPE html>
+`<!DOCTYPE html>
 
-<html>
+<html lang="en">
 
 <head>
 
 <meta charset="UTF-8">
 
 <title>
-Error | Filmstars
+Unable to Load Post | Filmstars
 </title>
+
+<style>
+
+body {
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    background:
+        #f5f6f8;
+
+    padding:
+        50px 20px;
+
+    text-align:
+        center;
+
+}
+
+.box {
+
+    max-width:
+        700px;
+
+    margin:
+        auto;
+
+    background:
+        white;
+
+    padding:
+        40px;
+
+    border-radius:
+        12px;
+
+}
+
+a {
+
+    color:
+        #2563eb;
+
+}
+
+</style>
 
 </head>
 
 <body>
 
+<div class="box">
+
 <h1>
-Unable to load post
+Unable to Load Post
 </h1>
 
 <p>
-Please try again later.
+The Blogger post could not be loaded right now.
 </p>
 
 <p>
-
 <a href="/blog">
 ← Back to Blog
 </a>
-
 </p>
+
+</div>
 
 </body>
 
 </html>`,
 
-                {
+{
 
-                    status:
-                        500,
+    status:
+        500,
 
-                    headers: {
+    headers: {
 
-                        "Content-Type":
-                            "text/html; charset=UTF-8",
+        "Content-Type":
+            "text/html; charset=UTF-8",
 
-                        "Cache-Control":
-                            "no-cache"
+        "Cache-Control":
+            "no-cache"
 
-                    }
+    }
 
-                }
+}
 
-            );
+);
 
         }
 
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // EVERYTHING ELSE
-    // --------------------------------------------------------
+    //
+    // Let Cloudflare Pages serve:
+    //
+    // index.html
+    // blog.html
+    // other HTML files
+    // ========================================================
 
     return context.next();
 
