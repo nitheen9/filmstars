@@ -1049,9 +1049,9 @@ body {
 
 .header {
 
-    background: #111827;
+    background: #fe5301;
 
-    color: white;
+    color: #fdfdff;
 
 }
 
@@ -1077,7 +1077,7 @@ body {
 
 .logo {
 
-    font-size: 27px;
+    font-size: 36px;
 
     font-weight: bold;
 
@@ -1113,7 +1113,7 @@ body {
 
     margin-bottom: 18px;
 
-    color: #2563eb;
+    color: #47164F;
 
     text-decoration: none;
 
@@ -1141,7 +1141,7 @@ body {
 
 .post-title {
 
-    font-size: 40px;
+    font-size: 28px;
 
     line-height: 1.25;
 
@@ -1274,13 +1274,14 @@ body {
 
     border-radius: 20px;
 
-    background: #eef2ff;
+    background: #47164F;
 
-    color: #3730a3;
+    color: #fdfdff;
 
     text-decoration: none;
 
     font-size: 13px;
+    font-weight: 600;
 
 }
 
@@ -1333,7 +1334,7 @@ body {
 
 .post-navigation span {
 
-    color: #2563eb;
+    color: #47164F;
 
     font-size: 13px;
 
@@ -1385,7 +1386,7 @@ body {
     display: grid;
 
     grid-template-columns:
-        repeat(3, 1fr);
+        repeat(4, 1fr);
 
     gap: 22px;
 
@@ -1426,7 +1427,7 @@ body {
 
     height: 300px;
 
-    object-fit: contain;
+    object-fit: fill;
 
     background: #f2f2f2;
 
@@ -1479,7 +1480,7 @@ body {
     padding:
         7px 11px;
 
-    background: #2563eb;
+    background: #47164F;
 
     color: white;
 
@@ -1563,7 +1564,7 @@ body {
 
     .post-title {
 
-        font-size: 29px;
+        font-size: 24px;
 
     }
 
@@ -1637,7 +1638,7 @@ body {
 <div class="header-inner">
 
 <div class="logo">
-Filmstars
+Film Stars
 </div>
 
 
