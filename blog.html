@@ -24,247 +24,439 @@
 }
 
 body {
+
     margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
     background: #f5f6f8;
+
     color: #222;
 }
 
+
 .header {
+
     background: #fe5301;
+
     color: white;
 }
 
+
 .header-inner {
+
     width: 92%;
+
     max-width: 1200px;
+
     min-height: 68px;
+
     margin: auto;
+
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 }
 
+
 .logo {
+
     font-size: 36px;
+
     font-weight: bold;
 }
 
+
 .logo a {
+
     color: white;
+
     text-decoration: none;
 }
+
 
 .nav a {
+
     color: white;
+
     text-decoration: none;
+
     margin-left: 22px;
+
 }
 
+
 .container {
+
     width: 92%;
+
     max-width: 1200px;
+
     margin: 35px auto 70px;
 }
 
+
 .page-title {
+
     margin: 0 0 8px;
+
     font-size: 36px;
 }
 
+
 .page-description {
+
     margin: 0 0 30px;
+
     color: #666;
 }
 
+
 .posts-grid {
+
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
     gap: 24px;
 }
 
+
 .post-card {
+
     overflow: hidden;
+
     background: white;
-    border: 1px solid #e5e7eb;
+
+    border:
+        1px solid #e5e7eb;
+
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,.05);
+
+    box-shadow:
+        0 4px 15px rgba(0,0,0,.05);
+
+    transition:
+        transform .15s ease,
+        box-shadow .15s ease;
 }
+
 
 .post-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,.10);
+
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 8px 25px rgba(0,0,0,.10);
 }
+
 
 .post-image-link {
+
     display: block;
+
     background: #f1f1f1;
+
+    overflow: hidden;
 }
 
+
 .post-image {
+
     width: 100%;
-    height: 380px;
+
+    height: 350px;
+
     display: block;
 
     /*
-     * contain prevents cutting faces/body.
+     * contain keeps face/body proportions.
+     * It does NOT stretch or crop.
      */
+
     object-fit: contain;
 
     background: #f1f1f1;
 }
 
+
 .post-content {
+
     padding: 18px;
 }
 
+
 .post-title {
+
     margin: 0 0 10px;
+
     font-size: 20px;
+
     line-height: 1.4;
 }
 
+
 .post-title a {
+
     color: #222;
+
     text-decoration: none;
 }
 
+
 .post-date {
+
     color: #777;
+
     font-size: 13px;
+
     margin-bottom: 12px;
 }
 
+
 .post-excerpt {
+
     color: #555;
+
     line-height: 1.6;
+
     font-size: 14px;
+
     margin-bottom: 15px;
 }
 
+
 .read-more {
+
     display: inline-block;
-    padding: 8px 13px;
+
+    padding:
+        8px 13px;
+
     border-radius: 5px;
+
     background: #47164F;
+
     color: white;
+
     text-decoration: none;
+
     font-size: 13px;
+
     font-weight: bold;
 }
 
+
 .loading {
+
     grid-column: 1 / -1;
+
     text-align: center;
+
     padding: 50px 10px;
+
     color: #666;
 }
 
+
 .error {
+
     grid-column: 1 / -1;
+
     background: white;
+
     padding: 25px;
+
     border-radius: 10px;
-    border: 1px solid #fecaca;
+
+    border:
+        1px solid #fecaca;
+
     color: #b91c1c;
+
+    text-align: center;
 }
 
+
+.current-label {
+
+    display: inline-block;
+
+    margin-bottom: 25px;
+
+    padding:
+        8px 15px;
+
+    background: #47164F;
+
+    color: white;
+
+    border-radius: 20px;
+
+    font-size: 14px;
+
+    font-weight: bold;
+}
+
+
 .pagination {
+
     display: flex;
+
     justify-content: center;
+
     align-items: center;
+
     flex-wrap: wrap;
+
     gap: 8px;
+
     margin-top: 40px;
 }
 
+
 .page-button {
-    border: 1px solid #d1d5db;
+
+    border:
+        1px solid #d1d5db;
+
     background: white;
+
     color: #222;
-    padding: 9px 14px;
+
+    padding:
+        9px 14px;
+
     border-radius: 6px;
+
     cursor: pointer;
+
     font-size: 14px;
+
+    text-decoration: none;
 }
+
 
 .page-button:hover {
-    border-color: #2563eb;
-    color: #2563eb;
+
+    border-color:
+        #2563eb;
+
+    color:
+        #2563eb;
 }
+
 
 .page-button.active {
-    background: #47164F;
+
+    background:
+        #47164F;
+
     color: white;
-    border-color: #47164F;
+
+    border-color:
+        #47164F;
 }
 
-.page-button:disabled {
+
+.page-button.disabled {
+
     opacity: .45;
-    cursor: not-allowed;
+
+    pointer-events: none;
 }
+
 
 .page-info {
+
     color: #666;
+
     font-size: 14px;
-    margin: 0 8px;
+
+    margin:
+        0 8px;
 }
 
-.label-heading {
-    display: inline-block;
-    margin-bottom: 25px;
-    padding: 8px 14px;
-    background: #47164F;
-    color: white;
-    border-radius: 20px;
-    font-size: 15px;
-}
 
 .footer {
+
     background: #111827;
+
     color: #aaa;
+
     text-align: center;
+
     padding: 30px 15px;
 }
 
-@media(max-width:900px) {
+
+@media (max-width: 900px) {
 
     .posts-grid {
-        grid-template-columns: repeat(2, 1fr);
+
+        grid-template-columns:
+            repeat(2, 1fr);
     }
 
 }
 
-@media(max-width:600px) {
+
+@media (max-width: 600px) {
 
     .header-inner {
-        padding: 17px 0;
+
+        padding:
+            17px 0;
+
         gap: 14px;
     }
 
+
     .logo {
+
         font-size: 28px;
     }
 
+
     .nav a {
-        margin: 0 8px;
+
+        margin:
+            0 8px;
     }
 
+
     .container {
+
         width: 94%;
     }
 
+
     .page-title {
+
         font-size: 29px;
     }
 
+
     .posts-grid {
-        grid-template-columns: 1fr;
+
+        grid-template-columns:
+            1fr;
     }
 
+
     .post-image {
+
         height: auto;
+
         max-height: 800px;
+
         object-fit: contain;
     }
 
@@ -274,17 +466,22 @@ body {
 
 </head>
 
+
 <body>
+
 
 <header class="header">
 
 <div class="header-inner">
 
 <div class="logo">
+
 <a href="/">
 Film Stars
 </a>
+
 </div>
+
 
 <nav class="nav">
 
@@ -301,12 +498,14 @@ Home
 
 <main class="container">
 
+
 <h1
     id="pageTitle"
     class="page-title"
 >
 Filmstars Blog
 </h1>
+
 
 <p
     id="pageDescription"
@@ -315,11 +514,12 @@ Filmstars Blog
 Latest posts from Tollywood Boost
 </p>
 
+
 <div
-    id="labelHeading"
-    class="label-heading"
-    style="display:none"
-></div>
+    id="labelBox"
+>
+</div>
+
 
 <div
     id="posts"
@@ -327,15 +527,20 @@ Latest posts from Tollywood Boost
 >
 
 <div class="loading">
+
 Loading posts...
+
 </div>
 
 </div>
+
 
 <div
     id="pagination"
     class="pagination"
-></div>
+>
+</div>
+
 
 </main>
 
@@ -349,11 +554,14 @@ Loading posts...
 
 <script>
 
-const API =
-    "/blogger-posts";
 
-const PER_PAGE =
-    20;
+// ============================================================
+// API
+// ============================================================
+
+const API = "/blogger-posts";
+
+const PER_PAGE = 20;
 
 
 const postsContainer =
@@ -361,24 +569,28 @@ const postsContainer =
         "posts"
     );
 
+
 const paginationContainer =
     document.getElementById(
         "pagination"
     );
+
 
 const pageTitle =
     document.getElementById(
         "pageTitle"
     );
 
+
 const pageDescription =
     document.getElementById(
         "pageDescription"
     );
 
-const labelHeading =
+
+const labelBox =
     document.getElementById(
-        "labelHeading"
+        "labelBox"
     );
 
 
@@ -399,27 +611,32 @@ function getParameters() {
             window.location.search
         );
 
+
     let page =
         parseInt(
             params.get("page") || "1",
             10
         );
 
+
     if (
         !Number.isFinite(page) ||
         page < 1
     ) {
+
         page = 1;
     }
+
 
     const label =
         (
             params.get("label") || ""
         ).trim();
 
+
     return {
-        page: page,
-        label: label
+        page,
+        label
     };
 }
 
@@ -431,11 +648,31 @@ function getParameters() {
 function escapeHtml(value) {
 
     return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 }
 
 
@@ -449,16 +686,20 @@ function formatDate(value) {
         return "";
     }
 
+
     const date =
         new Date(value);
+
 
     if (
         Number.isNaN(
             date.getTime()
         )
     ) {
+
         return "";
     }
+
 
     return date.toLocaleDateString(
         "en-IN",
@@ -484,18 +725,22 @@ function getExcerpt(
         return "";
     }
 
+
     const div =
         document.createElement(
             "div"
         );
 
+
     div.innerHTML =
         html;
+
 
     const text =
         div.textContent ||
         div.innerText ||
         "";
+
 
     const clean =
         text
@@ -505,17 +750,22 @@ function getExcerpt(
             )
             .trim();
 
+
     if (
         clean.length <= max
     ) {
+
         return clean;
     }
 
+
     return (
-        clean.substring(
-            0,
-            max
-        ).trim() +
+        clean
+            .substring(
+                0,
+                max
+            )
+            .trim() +
         "..."
     );
 }
@@ -532,10 +782,11 @@ function createCard(post) {
             post.title
         );
 
+
     const url =
-        escapeHtml(
-            post.url
-        );
+        post.url ||
+        "";
+
 
     const image =
         post.image
@@ -544,13 +795,31 @@ function createCard(post) {
             )
             : "";
 
+
+    const date =
+        escapeHtml(
+            formatDate(
+                post.published
+            )
+        );
+
+
+    const excerpt =
+        escapeHtml(
+            getExcerpt(
+                post.content
+            )
+        );
+
+
     return `
 
 <article class="post-card">
 
+
 <a
     class="post-image-link"
-    href="${url}"
+    href="${escapeHtml(url)}"
 >
 
 ${
@@ -572,51 +841,55 @@ ${
 
 <div class="post-content">
 
+
 <h2 class="post-title">
 
-<a href="${url}">
+<a
+    href="${escapeHtml(url)}"
+>
+
 ${title}
+
 </a>
 
 </h2>
 
 
 <div class="post-date">
-${escapeHtml(
-    formatDate(
-        post.published
-    )
-)}
+
+${date}
+
 </div>
 
 
 <div class="post-excerpt">
-${escapeHtml(
-    getExcerpt(
-        post.content
-    )
-)}
+
+${excerpt}
+
 </div>
 
 
 <a
     class="read-more"
-    href="${url}"
+    href="${escapeHtml(url)}"
 >
+
 Read More
+
 </a>
 
+
 </div>
+
 
 </article>
 
 `;
-
 }
 
 
 // ============================================================
-// PAGINATION URL
+// PAGE URL
 // ============================================================
 
 function makePageUrl(
@@ -629,32 +902,44 @@ function makePageUrl(
             window.location.href
         );
 
-    url.search = "";
 
-    if (
-        label
-    ) {
+    url.searchParams.delete(
+        "page"
+    );
+
+
+    url.searchParams.delete(
+        "label"
+    );
+
+
+    if (label) {
 
         url.searchParams.set(
             "label",
             label
         );
-
     }
 
-    if (
-        page > 1
-    ) {
+
+    if (page > 1) {
 
         url.searchParams.set(
             "page",
             page
         );
-
     }
 
-    return url.pathname +
-        url.search;
+
+    return (
+        url.pathname +
+        (
+            url.searchParams.toString()
+                ? "?" +
+                  url.searchParams.toString()
+                : ""
+        )
+    );
 }
 
 
@@ -671,9 +956,11 @@ function createPagination(
     paginationContainer.innerHTML =
         "";
 
+
     if (
         totalPages <= 1
     ) {
+
         return;
     }
 
@@ -687,11 +974,14 @@ function createPagination(
             "a"
         );
 
+
     previous.className =
         "page-button";
 
+
     previous.textContent =
         "← Previous";
+
 
     if (
         currentPage > 1
@@ -705,13 +995,12 @@ function createPagination(
 
     } else {
 
-        previous.style.pointerEvents =
-            "none";
-
-        previous.style.opacity =
-            ".45";
+        previous.classList.add(
+            "disabled"
+        );
 
     }
+
 
     paginationContainer.appendChild(
         previous
@@ -727,6 +1016,7 @@ function createPagination(
             1,
             currentPage - 2
         );
+
 
     let end =
         Math.min(
@@ -744,7 +1034,6 @@ function createPagination(
                 totalPages,
                 5
             );
-
     }
 
 
@@ -758,57 +1047,6 @@ function createPagination(
                 1,
                 totalPages - 4
             );
-
-    }
-
-
-    if (
-        start > 1
-    ) {
-
-        const first =
-            document.createElement(
-                "a"
-            );
-
-        first.className =
-            "page-button";
-
-        first.textContent =
-            "1";
-
-        first.href =
-            makePageUrl(
-                1,
-                label
-            );
-
-        paginationContainer.appendChild(
-            first
-        );
-
-
-        if (
-            start > 2
-        ) {
-
-            const dots =
-                document.createElement(
-                    "span"
-                );
-
-            dots.className =
-                "page-info";
-
-            dots.textContent =
-                "...";
-
-            paginationContainer.appendChild(
-                dots
-            );
-
-        }
-
     }
 
 
@@ -818,87 +1056,40 @@ function createPagination(
         page++
     ) {
 
-        const button =
+        const link =
             document.createElement(
                 "a"
             );
 
-        button.className =
+
+        link.className =
             "page-button";
 
-        button.textContent =
+
+        link.textContent =
             page;
 
-        button.href =
+
+        link.href =
             makePageUrl(
                 page,
                 label
             );
 
+
         if (
             page === currentPage
         ) {
 
-            button.classList.add(
+            link.classList.add(
                 "active"
             );
-
-        }
-
-        paginationContainer.appendChild(
-            button
-        );
-
-    }
-
-
-    if (
-        end < totalPages
-    ) {
-
-        if (
-            end < totalPages - 1
-        ) {
-
-            const dots =
-                document.createElement(
-                    "span"
-                );
-
-            dots.className =
-                "page-info";
-
-            dots.textContent =
-                "...";
-
-            paginationContainer.appendChild(
-                dots
-            );
-
         }
 
 
-        const last =
-            document.createElement(
-                "a"
-            );
-
-        last.className =
-            "page-button";
-
-        last.textContent =
-            totalPages;
-
-        last.href =
-            makePageUrl(
-                totalPages,
-                label
-            );
-
         paginationContainer.appendChild(
-            last
+            link
         );
-
     }
 
 
@@ -911,11 +1102,14 @@ function createPagination(
             "a"
         );
 
+
     next.className =
         "page-button";
 
+
     next.textContent =
         "Next →";
+
 
     if (
         currentPage <
@@ -930,34 +1124,38 @@ function createPagination(
 
     } else {
 
-        next.style.pointerEvents =
-            "none";
-
-        next.style.opacity =
-            ".45";
-
+        next.classList.add(
+            "disabled"
+        );
     }
+
 
     paginationContainer.appendChild(
         next
     );
 
 
+    /*
+     * Page info
+     */
+
     const info =
         document.createElement(
             "span"
         );
 
+
     info.className =
         "page-info";
+
 
     info.textContent =
         `Page ${currentPage} of ${totalPages}`;
 
+
     paginationContainer.appendChild(
         info
     );
-
 }
 
 
@@ -975,7 +1173,7 @@ async function loadPosts() {
 
 
     /*
-     * Label heading
+     * Page title
      */
 
     if (label) {
@@ -984,20 +1182,19 @@ async function loadPosts() {
             label;
 
         pageDescription.textContent =
-            "Posts published under the " +
-            label +
-            " label.";
+            `Posts with label: ${label}`;
 
-        labelHeading.textContent =
-            "Label: " +
-            label;
 
-        labelHeading.style.display =
-            "inline-block";
+        labelBox.innerHTML = `
 
-        document.title =
-            label +
-            " - Filmstars Blog";
+<span class="current-label">
+
+Label:
+${escapeHtml(label)}
+
+</span>
+
+`;
 
     } else {
 
@@ -1007,66 +1204,59 @@ async function loadPosts() {
         pageDescription.textContent =
             "Latest posts from Tollywood Boost";
 
-        labelHeading.style.display =
-            "none";
-
-        document.title =
-            "Filmstars Blog";
-
+        labelBox.innerHTML =
+            "";
     }
 
 
     postsContainer.innerHTML = `
 
 <div class="loading">
+
 Loading posts...
+
 </div>
 
 `;
 
 
-    /*
-     * IMPORTANT:
-     *
-     * label is sent directly to
-     * /blogger-posts.
-     *
-     * The server then requests:
-     *
-     * Blogger /feeds/posts/default/-/LABEL
-     *
-     */
-
-    const apiUrl =
-        new URL(
-            API,
-            window.location.origin
-        );
-
-
-    apiUrl.searchParams.set(
-        "page",
-        page
-    );
-
-
-    if (
-        label
-    ) {
-
-        apiUrl.searchParams.set(
-            "label",
-            label
-        );
-
-    }
+    paginationContainer.innerHTML =
+        "";
 
 
     try {
 
+        const url =
+            new URL(
+                API,
+                window.location.origin
+            );
+
+
+        url.searchParams.set(
+            "page",
+            page
+        );
+
+
+        if (label) {
+
+            url.searchParams.set(
+                "label",
+                label
+            );
+        }
+
+
+        console.log(
+            "Loading Blogger:",
+            url.toString()
+        );
+
+
         const response =
             await fetch(
-                apiUrl.toString(),
+                url.toString(),
                 {
                     cache:
                         "no-store"
@@ -1077,15 +1267,19 @@ Loading posts...
         if (!response.ok) {
 
             throw new Error(
-                "HTTP " +
-                response.status
+                `HTTP ${response.status}`
             );
-
         }
 
 
         const data =
             await response.json();
+
+
+        console.log(
+            "Blogger response:",
+            data
+        );
 
 
         if (
@@ -1096,7 +1290,6 @@ Loading posts...
                 data.error ||
                 "Unable to load posts"
             );
-
         }
 
 
@@ -1116,28 +1309,22 @@ Loading posts...
 
 <div class="loading">
 
-No posts found
-${
-    label
-        ? " for label: " +
-          escapeHtml(label)
-        : ""
-}.
+No posts found.
 
 </div>
 
 `;
 
-            paginationContainer.innerHTML =
-                "";
-
             return;
-
         }
 
 
         postsContainer.innerHTML =
             posts
+                .filter(
+                    post =>
+                        post.url
+                )
                 .map(
                     createCard
                 )
@@ -1147,19 +1334,21 @@ ${
         const totalPages =
             Number(
                 data.totalPages
-            ) ||
-            Math.ceil(
-                Number(
-                    data.total
-                ) /
-                PER_PAGE
-            );
+            ) || 1;
 
 
         createPagination(
             page,
             totalPages,
             label
+        );
+
+
+        window.scrollTo(
+            {
+                top: 0,
+                behavior: "smooth"
+            }
         );
 
 
@@ -1181,7 +1370,7 @@ Unable to load posts right now.
 
 <br><br>
 
-Please try again.
+Please try again later.
 
 <br><br>
 
@@ -1195,15 +1384,14 @@ Try Again
 </div>
 
 `;
-
     }
-
 }
 
 
 loadPosts();
 
 </script>
+
 
 </body>
 
