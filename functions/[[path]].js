@@ -1657,10 +1657,6 @@ Film Stars
 Home
 </a>
 
-<a href="/blog">
-Blog
-</a>
-
 </nav>
 
 </div>
