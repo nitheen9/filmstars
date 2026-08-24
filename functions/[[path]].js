@@ -1,15 +1,15 @@
 // ============================================================
-// FILMSTARS - SINGLE BLOG POST HANDLER
+// FILMSTARS - SINGLE BLOGGER POST HANDLER
 // ============================================================
 //
 // Handles:
+//
 // /2011/03/example.html
 // /2017/03/singer-ellie-goulding-at-harpers-bazaar.html
 // /2026/06/example.html
 //
-// IMPORTANT:
-// We search Blogger by the exact post URL.
-// We do NOT only download the latest 150 posts.
+// Source:
+// https://tollywoodboost.blogspot.com
 //
 // ============================================================
 
@@ -32,7 +32,10 @@ function getText(value) {
         typeof value === "object" &&
         "$t" in value
     ) {
-        return value.$t || "";
+
+        return String(
+            value.$t || ""
+        );
     }
 
     return "";
@@ -40,25 +43,25 @@ function getText(value) {
 
 
 // ============================================================
-// BLOGGER ALTERNATE URL
+// ALTERNATE URL
 // ============================================================
 
 function getAlternateUrl(entry) {
 
-    if (
-        !Array.isArray(entry.link)
-    ) {
+    if (!Array.isArray(entry?.link)) {
         return "";
     }
 
-    const link =
+    const item =
         entry.link.find(
-            item =>
-                item.rel === "alternate"
+            link =>
+                link &&
+                link.rel === "alternate" &&
+                link.href
         );
 
-    return link
-        ? link.href
+    return item
+        ? item.href
         : "";
 }
 
@@ -107,49 +110,63 @@ function convertToFilmstarsUrl(
 
 
 // ============================================================
-// IMAGE
+// IMAGE URL
 // ============================================================
 
 function upgradeImageUrl(
-    url,
+    imageUrl,
     size = "s1600"
 ) {
 
-    if (!url) {
+    if (!imageUrl) {
         return "";
     }
 
-    return String(url)
+    let url =
+        String(imageUrl);
 
-        .replace(
-            /\/s72-c\//g,
-            `/${size}/`
-        )
 
-        .replace(
-            /\/s72\//g,
-            `/${size}/`
-        )
-
-        .replace(
-            /\/w72-h72-p-k-no-nu\//g,
-            `/${size}/`
-        )
-
-        .replace(
-            /\/w\d+-h\d+-p-k-no-nu\//g,
-            `/${size}/`
-        )
-
-        .replace(
-            /\/s\d+\//g,
+    url =
+        url.replace(
+            /\/s72-c\//gi,
             `/${size}/`
         );
+
+
+    url =
+        url.replace(
+            /\/s72\//gi,
+            `/${size}/`
+        );
+
+
+    url =
+        url.replace(
+            /\/w72-h72-p-k-no-nu\//gi,
+            `/${size}/`
+        );
+
+
+    url =
+        url.replace(
+            /\/w\d+-h\d+-p-k-no-nu\//gi,
+            `/${size}/`
+        );
+
+
+    url =
+        url.replace(
+            /\/s\d+(?:-[a-z]+)?\//gi,
+            `/${size}/`
+        );
+
+
+    return url;
 }
 
 
 // ============================================================
-// IMAGE FROM POST
+// POST IMAGE
 // ============================================================
 
 function getPostImage(
@@ -158,8 +175,7 @@ function getPostImage(
 ) {
 
     if (
-        entry.media$thumbnail &&
-        entry.media$thumbnail.url
+        entry?.media$thumbnail?.url
     ) {
 
         return upgradeImageUrl(
@@ -169,34 +185,38 @@ function getPostImage(
     }
 
 
-    if (content) {
-
-        let match =
-            content.match(
-                /data-src=["']([^"']+)["']/i
-            );
-
-        if (match) {
-
-            return upgradeImageUrl(
-                match[1],
-                "s1600"
-            );
-        }
+    if (!content) {
+        return "";
+    }
 
 
-        match =
-            content.match(
-                /<img[^>]+src=["']([^"']+)["']/i
-            );
+    let match =
+        content.match(
+            /data-src\s*=\s*["']([^"']+)["']/i
+        );
 
-        if (match) {
 
-            return upgradeImageUrl(
-                match[1],
-                "s1600"
-            );
-        }
+    if (match) {
+
+        return upgradeImageUrl(
+            match[1],
+            "s1600"
+        );
+    }
+
+
+    match =
+        content.match(
+            /<img\b[^>]*src\s*=\s*["']([^"']+)["']/i
+        );
+
+
+    if (match) {
+
+        return upgradeImageUrl(
+            match[1],
+            "s1600"
+        );
     }
 
 
@@ -210,19 +230,17 @@ function getPostImage(
 
 function getLabels(entry) {
 
-    if (
-        !Array.isArray(entry.category)
-    ) {
+    if (!Array.isArray(entry?.category)) {
         return [];
     }
 
     return entry.category
-
         .map(
             category =>
-                category.term || ""
+                String(
+                    category?.term || ""
+                ).trim()
         )
-
         .filter(Boolean);
 }
 
@@ -236,8 +254,8 @@ function createPost(
 ) {
 
     const content =
-        getText(entry.content) ||
-        getText(entry.summary);
+        getText(entry?.content) ||
+        getText(entry?.summary);
 
 
     const bloggerUrl =
@@ -247,7 +265,7 @@ function createPost(
     return {
 
         title:
-            getText(entry.title),
+            getText(entry?.title),
 
         url:
             convertToFilmstarsUrl(
@@ -258,10 +276,10 @@ function createPost(
             bloggerUrl,
 
         published:
-            getText(entry.published),
+            getText(entry?.published),
 
         updated:
-            getText(entry.updated),
+            getText(entry?.updated),
 
         image:
             getPostImage(
@@ -274,20 +292,47 @@ function createPost(
 
         labels:
             getLabels(entry)
+
     };
 }
 
 
 // ============================================================
-// FETCH BLOGGER POST BY EXACT URL
+// MATCH BLOGGER PATH
 // ============================================================
-//
-// Blogger's feed supports a search query.
-// We use the slug as the search query.
-//
-// Then we verify the complete Blogger pathname.
-//
-// This works for old posts as well.
+
+function isCorrectPost(
+    entry,
+    targetPath
+) {
+
+    const url =
+        getAlternateUrl(entry);
+
+
+    if (!url) {
+        return false;
+    }
+
+
+    try {
+
+        const pathname =
+            new URL(url).pathname;
+
+
+        return pathname ===
+            targetPath;
+
+    } catch {
+
+        return false;
+    }
+}
+
+
+// ============================================================
+// FIND POST
 // ============================================================
 
 async function findPost(
@@ -300,203 +345,319 @@ async function findPost(
         `/${year}/${month}/${slug}.html`;
 
 
-    // --------------------------------------------------------
-    // First attempt:
-    // search Blogger feed
-    // --------------------------------------------------------
+    // ========================================================
+    // METHOD 1
+    // Exact slug search
+    // ========================================================
 
-    const searchUrl =
-        new URL(
-            BLOG_FEED
+    try {
+
+        const url =
+            new URL(
+                BLOG_FEED
+            );
+
+
+        url.searchParams.set(
+            "alt",
+            "json"
         );
 
 
-    searchUrl.searchParams.set(
-        "alt",
-        "json"
-    );
-
-    searchUrl.searchParams.set(
-        "q",
-        slug
-    );
-
-    searchUrl.searchParams.set(
-        "max-results",
-        "20"
-    );
+        url.searchParams.set(
+            "q",
+            slug
+        );
 
 
-    const response =
-        await fetch(
-            searchUrl.toString(),
-            {
-                headers: {
-                    "Accept":
-                        "application/json"
+        url.searchParams.set(
+            "max-results",
+            "50"
+        );
+
+
+        const response =
+            await fetch(
+                url.toString(),
+                {
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
+                }
+            );
+
+
+        if (response.ok) {
+
+            const data =
+                await response.json();
+
+
+            const entries =
+                Array.isArray(
+                    data?.feed?.entry
+                )
+                    ? data.feed.entry
+                    : [];
+
+
+            for (
+                const entry
+                of entries
+            ) {
+
+                if (
+                    isCorrectPost(
+                        entry,
+                        targetPath
+                    )
+                ) {
+
+                    return createPost(
+                        entry
+                    );
                 }
             }
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Slug search failed:",
+            error
         );
+    }
 
 
-    if (
-        response.ok
+    // ========================================================
+    // METHOD 2
+    // Search by title/slug using Blogger q variations
+    // ========================================================
+
+    const searchTerms = [
+
+        slug,
+
+        slug.replace(
+            /-/g,
+            " "
+        )
+
+    ];
+
+
+    for (
+        const searchTerm
+        of searchTerms
     ) {
 
-        const data =
-            await response.json();
+        try {
 
-
-        const entries =
-            Array.isArray(
-                data.feed?.entry
-            )
-                ? data.feed.entry
-                : [];
-
-
-        for (
-            const entry
-            of entries
-        ) {
-
-            const post =
-                createPost(
-                    entry
+            const url =
+                new URL(
+                    BLOG_FEED
                 );
 
 
-            if (!post.bloggerUrl) {
+            url.searchParams.set(
+                "alt",
+                "json"
+            );
+
+
+            url.searchParams.set(
+                "q",
+                searchTerm
+            );
+
+
+            url.searchParams.set(
+                "max-results",
+                "100"
+            );
+
+
+            const response =
+                await fetch(
+                    url.toString(),
+                    {
+                        headers: {
+                            "Accept":
+                                "application/json"
+                        }
+                    }
+                );
+
+
+            if (!response.ok) {
                 continue;
             }
 
 
-            try {
+            const data =
+                await response.json();
 
-                const bloggerPath =
-                    new URL(
-                        post.bloggerUrl
-                    ).pathname;
 
+            const entries =
+                Array.isArray(
+                    data?.feed?.entry
+                )
+                    ? data.feed.entry
+                    : [];
+
+
+            for (
+                const entry
+                of entries
+            ) {
 
                 if (
-                    bloggerPath ===
-                    targetPath
+                    isCorrectPost(
+                        entry,
+                        targetPath
+                    )
                 ) {
 
-                    return post;
+                    return createPost(
+                        entry
+                    );
                 }
-
-            } catch {
-
-                // continue
             }
+
+        } catch (error) {
+
+            console.error(
+                "Search fallback failed:",
+                error
+            );
         }
     }
 
 
-    // --------------------------------------------------------
-    // Second attempt:
-    // Fetch posts around the target year/month.
+    // ========================================================
+    // METHOD 3
+    // Fetch posts from the exact month.
     //
-    // This is useful for very old Blogger posts where q
-    // does not return the expected result.
-    // --------------------------------------------------------
+    // This is important for old posts.
+    // ========================================================
 
-    const yearMonthUrl =
-        new URL(
-            BLOG_FEED
+    try {
+
+        const start =
+            `${year}-${month}-01T00:00:00Z`;
+
+
+        const monthDate =
+            new Date(
+                Date.UTC(
+                    Number(year),
+                    Number(month),
+                    0
+                )
+            );
+
+
+        const lastDay =
+            String(
+                monthDate.getUTCDate()
+            ).padStart(
+                2,
+                "0"
+            );
+
+
+        const end =
+            `${year}-${month}-${lastDay}T23:59:59Z`;
+
+
+        const url =
+            new URL(
+                BLOG_FEED
+            );
+
+
+        url.searchParams.set(
+            "alt",
+            "json"
         );
 
 
-    yearMonthUrl.searchParams.set(
-        "alt",
-        "json"
-    );
-
-    yearMonthUrl.searchParams.set(
-        "published-min",
-        `${year}-${month}-01T00:00:00Z`
-    );
-
-    yearMonthUrl.searchParams.set(
-        "published-max",
-        `${year}-${month}-31T23:59:59Z`
-    );
-
-    yearMonthUrl.searchParams.set(
-        "max-results",
-        "100"
-    );
+        url.searchParams.set(
+            "published-min",
+            start
+        );
 
 
-    const secondResponse =
-        await fetch(
-            yearMonthUrl.toString(),
-            {
-                headers: {
-                    "Accept":
-                        "application/json"
+        url.searchParams.set(
+            "published-max",
+            end
+        );
+
+
+        url.searchParams.set(
+            "max-results",
+            "500"
+        );
+
+
+        const response =
+            await fetch(
+                url.toString(),
+                {
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
                 }
-            }
-        );
+            );
 
 
-    if (
-        secondResponse.ok
-    ) {
+        if (response.ok) {
 
-        const secondData =
-            await secondResponse.json();
+            const data =
+                await response.json();
 
 
-        const entries =
-            Array.isArray(
-                secondData.feed?.entry
-            )
-                ? secondData.feed.entry
-                : [];
+            const entries =
+                Array.isArray(
+                    data?.feed?.entry
+                )
+                    ? data.feed.entry
+                    : [];
 
 
-        for (
-            const entry
-            of entries
-        ) {
-
-            const post =
-                createPost(
-                    entry
-                );
-
-
-            if (!post.bloggerUrl) {
-                continue;
-            }
-
-
-            try {
-
-                const bloggerPath =
-                    new URL(
-                        post.bloggerUrl
-                    ).pathname;
-
+            for (
+                const entry
+                of entries
+            ) {
 
                 if (
-                    bloggerPath ===
-                    targetPath
+                    isCorrectPost(
+                        entry,
+                        targetPath
+                    )
                 ) {
 
-                    return post;
+                    return createPost(
+                        entry
+                    );
                 }
-
-            } catch {
-
-                // continue
             }
         }
+
+    } catch (error) {
+
+        console.error(
+            "Monthly search failed:",
+            error
+        );
     }
 
+
+    // ========================================================
+    // NOT FOUND
+    // ========================================================
 
     return null;
 }
@@ -563,7 +724,6 @@ function formatDate(
             date.getTime()
         )
     ) {
-
         return "";
     }
 
@@ -596,7 +756,7 @@ function cleanPostContent(
         String(html);
 
 
-    // Remove scripts
+    // Remove dangerous elements
     result =
         result.replace(
             /<script[\s\S]*?<\/script>/gi,
@@ -604,7 +764,6 @@ function cleanPostContent(
         );
 
 
-    // Remove styles
     result =
         result.replace(
             /<style[\s\S]*?<\/style>/gi,
@@ -612,7 +771,6 @@ function cleanPostContent(
         );
 
 
-    // Remove iframe
     result =
         result.replace(
             /<iframe[\s\S]*?<\/iframe>/gi,
@@ -620,7 +778,6 @@ function cleanPostContent(
         );
 
 
-    // Remove object
     result =
         result.replace(
             /<object[\s\S]*?<\/object>/gi,
@@ -628,7 +785,6 @@ function cleanPostContent(
         );
 
 
-    // Remove embed
     result =
         result.replace(
             /<embed[^>]*>/gi,
@@ -644,7 +800,7 @@ function cleanPostContent(
         );
 
 
-    // Remove javascript URLs
+    // Remove javascript
     result =
         result.replace(
             /javascript\s*:/gi,
@@ -652,51 +808,22 @@ function cleanPostContent(
         );
 
 
-    // Blogger image sizes
+    // Blogger image formats
     result =
-        result.replace(
-            /\/s72-c\//g,
-            "/s1600/"
-        );
-
-
-    result =
-        result.replace(
-            /\/s72\//g,
-            "/s1600/"
-        );
-
-
-    result =
-        result.replace(
-            /\/w72-h72-p-k-no-nu\//g,
-            "/s1600/"
-        );
-
-
-    result =
-        result.replace(
-            /\/w\d+-h\d+-p-k-no-nu\//g,
-            "/s1600/"
-        );
-
-
-    result =
-        result.replace(
-            /\/s\d+\//g,
-            "/s1600/"
+        upgradeAllImages(
+            result
         );
 
 
     // --------------------------------------------------------
-    // Fix images
+    // Lazy images
     // --------------------------------------------------------
 
     result =
         result.replace(
             /<img\b([^>]*)>/gi,
             function(
-                completeTag,
+                complete,
                 attributes
             ) {
 
@@ -706,69 +833,45 @@ function cleanPostContent(
 
                 const dataSrc =
                     attrs.match(
-                        /data-src=["']([^"']+)["']/i
+                        /data-src\s*=\s*["']([^"']+)["']/i
                     );
 
 
                 if (
                     dataSrc &&
-                    !/\ssrc=/i.test(
+                    !/\ssrc\s*=/i.test(
                         attrs
                     )
                 ) {
 
                     attrs +=
-                        ` src="${dataSrc[1]}"`;
+                        ` src="${escapeHtml(dataSrc[1])}"`;
                 }
 
 
+                // Remove fixed Blogger dimensions
                 attrs =
                     attrs.replace(
-                        /\swidth=["'][^"']*["']/gi,
+                        /\swidth\s*=\s*["'][^"']*["']/gi,
                         ""
                     );
 
 
                 attrs =
                     attrs.replace(
-                        /\sheight=["'][^"']*["']/gi,
+                        /\sheight\s*=\s*["'][^"']*["']/gi,
                         ""
                     );
 
 
                 attrs =
                     attrs.replace(
-                        /\sstyle=["'][^"']*["']/gi,
+                        /\sstyle\s*=\s*["'][^"']*["']/gi,
                         ""
                     );
 
 
-                return (
-                    `<img${attrs}>`
-                );
-            }
-        );
-
-
-    // Upgrade image src
-    result =
-        result.replace(
-            /(<img[^>]+(?:src|data-src)=["'])([^"']+)(["'])/gi,
-            function(
-                full,
-                start,
-                imageUrl,
-                end
-            ) {
-
-                return (
-                    start +
-                    upgradeImageUrl(
-                        imageUrl,
-                        "s1600"
-                    ) +
-                    end
-                );
+                return `<img${attrs}>`;
             }
         );
 
@@ -778,7 +881,99 @@ function cleanPostContent(
 
 
 // ============================================================
-// LABEL LINK
+// UPGRADE ALL IMAGES
+// ============================================================
+
+function upgradeAllImages(
+    html
+) {
+
+    if (!html) {
+        return "";
+    }
+
+
+    return html.replace(
+        /((?:src|data-src)\s*=\s*["'])([^"']+)(["'])/gi,
+        function(
+            full,
+            start,
+            imageUrl,
+            end
+        ) {
+
+            return (
+                start +
+                upgradeImageUrl(
+                    imageUrl,
+                    "s1600"
+                ) +
+                end
+            );
+        }
+    );
+}
+
+
+// ============================================================
+// REMOVE DUPLICATE FIRST IMAGE
+// ============================================================
+
+function removeDuplicateFeaturedImage(
+    content,
+    featuredImage
+) {
+
+    if (
+        !content ||
+        !featuredImage
+    ) {
+        return content;
+    }
+
+
+    const firstImage =
+        content.match(
+            /<img\b[^>]*src\s*=\s*["']([^"']+)["'][^>]*>/i
+        );
+
+
+    if (!firstImage) {
+        return content;
+    }
+
+
+    const firstUrl =
+        upgradeImageUrl(
+            firstImage[1],
+            "s1600"
+        );
+
+
+    const featuredUrl =
+        upgradeImageUrl(
+            featuredImage,
+            "s1600"
+        );
+
+
+    if (
+        firstUrl === featuredUrl
+    ) {
+
+        return content.replace(
+            firstImage[0],
+            ""
+        );
+    }
+
+
+    return content;
+}
+
+
+// ============================================================
+// LABEL
 // ============================================================
 
 function createLabel(
@@ -786,14 +981,12 @@ function createLabel(
 ) {
 
     return `
-
 <a
     class="post-label"
     href="/blog?label=${encodeURIComponent(label)}"
 >
-    ${escapeHtml(label)}
+${escapeHtml(label)}
 </a>
-
 `;
 }
 
@@ -806,16 +999,37 @@ function createPage(
     post
 ) {
 
+    let content =
+        cleanPostContent(
+            post.content
+        );
+
+
+    const featuredImage =
+        post.image
+            ? upgradeImageUrl(
+                post.image,
+                "s1600"
+            )
+            : "";
+
+
+    // Remove same image if Blogger content starts with it
+    content =
+        removeDuplicateFeaturedImage(
+            content,
+            featuredImage
+        );
+
+
     const labels =
-        post.labels &&
+        Array.isArray(post.labels) &&
         post.labels.length
             ? `
 
 <div class="labels">
 
-<strong>
-Labels:
-</strong>
+<strong>Labels:</strong>
 
 ${post.labels
     .map(createLabel)
@@ -827,73 +1041,10 @@ ${post.labels
             : "";
 
 
-    // --------------------------------------------------------
-    // IMPORTANT:
-    //
-    // Do NOT display post.image separately here if the
-    // Blogger content already starts with the same image.
-    //
-    // This fixes your previous "same image twice" problem.
-    // --------------------------------------------------------
-
-    let content =
-        cleanPostContent(
-            post.content
+    const description =
+        escapeHtml(
+            post.title
         );
-
-
-    const featuredImage =
-        post.image
-            ? escapeHtml(
-                post.image
-            )
-            : "";
-
-
-    // Remove the first content image when it is the
-    // same image as the featured image.
-    if (
-        featuredImage &&
-        content
-    ) {
-
-        const firstImage =
-            content.match(
-                /<img\b[^>]*src=["']([^"']+)["'][^>]*>/i
-            );
-
-
-        if (
-            firstImage
-        ) {
-
-            const firstImageUrl =
-                upgradeImageUrl(
-                    firstImage[1],
-                    "s1600"
-                );
-
-
-            const featuredUrl =
-                upgradeImageUrl(
-                    post.image,
-                    "s1600"
-                );
-
-
-            if (
-                firstImageUrl ===
-                featuredUrl
-            ) {
-
-                content =
-                    content.replace(
-                        firstImage[0],
-                        ""
-                    );
-            }
-        }
-    }
 
 
     return `<!DOCTYPE html>
@@ -910,13 +1061,21 @@ ${post.labels
 >
 
 <title>
-${escapeHtml(post.title)}
- | Filmstars
+${escapeHtml(post.title)} | Filmstars
 </title>
 
 <meta
     name="description"
-    content="${escapeHtml(post.title)}"
+    content="${description}"
+>
+
+<link
+    rel="canonical"
+    href="${escapeHtml(
+        convertToFilmstarsUrl(
+            post.bloggerUrl
+        )
+    )}"
 >
 
 <meta
@@ -929,15 +1088,22 @@ ${escapeHtml(post.title)}
     content="article"
 >
 
+<meta
+    property="og:url"
+    content="${escapeHtml(
+        convertToFilmstarsUrl(
+            post.bloggerUrl
+        )
+    )}"
+>
+
 ${
     featuredImage
         ? `
-
 <meta
     property="og:image"
-    content="${featuredImage}"
+    content="${escapeHtml(featuredImage)}"
 >
-
 `
         : ""
 }
@@ -983,7 +1149,7 @@ body {
 .nav a {
     color: white;
     text-decoration: none;
-    margin-left: 22px;
+    margin-left: 20px;
 }
 
 .main {
@@ -1009,15 +1175,15 @@ body {
 }
 
 .post-title {
-    font-size: 30px;
-    line-height: 1.3;
+    font-size: 32px;
+    line-height: 1.35;
     margin: 0 0 12px;
 }
 
 .post-date {
     color: #777;
     font-size: 14px;
-    margin-bottom: 28px;
+    margin-bottom: 30px;
 }
 
 .featured-image {
@@ -1056,12 +1222,17 @@ body {
     margin: 30px auto;
 }
 
+.post-content table {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
 .post-content a {
     color: #2563eb;
 }
 
 .labels {
-    border-top: 1px solid #eeeeee;
+    border-top: 1px solid #eee;
     margin-top: 30px;
     padding-top: 20px;
     line-height: 2.5;
@@ -1073,7 +1244,7 @@ body {
     padding: 3px 12px;
     border-radius: 20px;
     background: #47164F;
-    color: white;
+    color: white !important;
     text-decoration: none;
     font-size: 13px;
     font-weight: 600;
@@ -1109,8 +1280,8 @@ body {
     }
 
     .featured-image {
-        max-height: none;
         width: 100%;
+        max-height: none;
     }
 
     .post-content img {
@@ -1187,13 +1358,11 @@ ${escapeHtml(
 ${
     featuredImage
         ? `
-
 <img
     class="featured-image"
-    src="${featuredImage}"
+    src="${escapeHtml(featuredImage)}"
     alt="${escapeHtml(post.title)}"
 >
-
 `
         : ""
 }
@@ -1215,8 +1384,7 @@ ${labels}
 
 <footer class="footer">
 
-© ${new Date().getFullYear()}
-Filmstars
+© ${new Date().getFullYear()} Filmstars
 
 </footer>
 
@@ -1227,7 +1395,7 @@ Filmstars
 
 
 // ============================================================
-// MAIN ROUTER
+// ROUTER
 // ============================================================
 
 export async function onRequest(
@@ -1239,45 +1407,56 @@ export async function onRequest(
             context.request.url
         );
 
+
     const pathname =
         requestUrl.pathname;
 
 
-    // ========================================================
-    // IMPORTANT:
-    //
-    // Do NOT intercept normal static pages.
-    // ========================================================
+    // --------------------------------------------------------
+    // Never intercept normal pages
+    // --------------------------------------------------------
+
+    const staticPages = [
+
+        "/",
+        "/index.html",
+
+        "/blog",
+        "/blog/",
+        "/blog.html",
+
+        "/about",
+        "/about/",
+        "/about.html",
+
+        "/contact",
+        "/contact/",
+        "/contact.html",
+
+        "/privacy-policy",
+        "/privacy-policy/",
+        "/privacy-policy.html",
+
+        "/disclaimer",
+        "/disclaimer/",
+        "/disclaimer.html"
+
+    ];
+
 
     if (
-        pathname === "/" ||
-        pathname === "/index.html" ||
-        pathname === "/blog" ||
-        pathname === "/blog/" ||
-        pathname === "/blog.html" ||
-        pathname === "/about" ||
-        pathname === "/about/" ||
-        pathname === "/about.html" ||
-        pathname === "/contact" ||
-        pathname === "/contact/" ||
-        pathname === "/contact.html" ||
-        pathname === "/privacy-policy" ||
-        pathname === "/privacy-policy/" ||
-        pathname === "/privacy-policy.html" ||
-        pathname === "/disclaimer" ||
-        pathname === "/disclaimer/" ||
-        pathname === "/disclaimer.html"
+        staticPages.includes(
+            pathname
+        )
     ) {
 
         return context.next();
     }
 
 
-    // ========================================================
-    // ONLY HANDLE:
-    //
-    // /YYYY/MM/slug.html
-    // ========================================================
+    // --------------------------------------------------------
+    // Only /YYYY/MM/slug.html
+    // --------------------------------------------------------
 
     const match =
         pathname.match(
@@ -1299,6 +1478,21 @@ export async function onRequest(
 
     const slug =
         match[3];
+
+
+    // Validate month
+
+    const monthNumber =
+        Number(month);
+
+
+    if (
+        monthNumber < 1 ||
+        monthNumber > 12
+    ) {
+
+        return context.next();
+    }
 
 
     try {
@@ -1341,7 +1535,7 @@ Post Not Found
 </h1>
 
 <p>
-The requested post could not be found in Blogger.
+The requested Blogger post could not be found.
 </p>
 
 <p>
@@ -1387,12 +1581,13 @@ The requested post could not be found in Blogger.
                         "text/html; charset=UTF-8",
 
                     "Cache-Control":
-                        "public, max-age=300, s-maxage=300"
+                        "public, max-age=60, s-maxage=60"
 
                 }
 
             }
         );
+
 
     } catch (error) {
 
@@ -1406,14 +1601,14 @@ The requested post could not be found in Blogger.
 
             `<!DOCTYPE html>
 
-<html>
+<html lang="en">
 
 <head>
 
 <meta charset="UTF-8">
 
 <title>
-Error | Filmstars
+Unable to Load Post | Filmstars
 </title>
 
 </head>
@@ -1440,7 +1635,7 @@ Please try again later.
 
             {
 
-                status: 500,
+                status: 502,
 
                 headers: {
 
