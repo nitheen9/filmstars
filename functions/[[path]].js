@@ -1084,7 +1084,7 @@ body {
 }
 .logo a {
 
-    fcolor: #fdfdff;
+    color: #fdfdff;
     cursor: pointer;
     text-decoration: unset;
 
