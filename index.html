@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-<title>Filmstars - Tollywood & Indian Actress Photos</title>
+<title>
+Filmstars
+</title>
 
 <meta
     name="description"
-    content="Latest Tollywood, Bollywood and Indian actress photos, movie updates and celebrity posts."
+    content="Latest film stars and celebrity posts."
 >
+
 
 <style>
 
@@ -19,249 +26,398 @@
     box-sizing: border-box;
 }
 
+
 body {
+
     margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
     background: #f5f6f8;
+
     color: #222;
+
 }
+
 
 .header {
+
     background: #111827;
+
     color: white;
+
 }
+
 
 .header-inner {
+
     width: 92%;
-    max-width: 1250px;
-    margin: auto;
+
+    max-width: 1200px;
+
     min-height: 68px;
 
+    margin: auto;
+
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
+
 }
+
 
 .logo {
+
     font-size: 27px;
-    font-weight: 700;
+
+    font-weight: bold;
+
 }
+
 
 .nav a {
+
     color: white;
+
     text-decoration: none;
+
     margin-left: 22px;
-    font-size: 15px;
+
 }
 
-.nav a:hover {
-    color: #93c5fd;
-}
 
 .hero {
+
     width: 92%;
-    max-width: 1250px;
-    margin: 35px auto 25px;
+
+    max-width: 1200px;
+
+    margin:
+        40px auto 30px;
+
 }
+
 
 .hero h1 {
-    margin: 0 0 10px;
-    font-size: 34px;
+
+    margin:
+        0 0 10px;
+
+    font-size: 40px;
+
 }
+
 
 .hero p {
+
     margin: 0;
+
     color: #666;
-    font-size: 16px;
+
+    font-size: 17px;
+
 }
 
-.posts-container {
+
+.container {
+
     width: 92%;
-    max-width: 1250px;
-    margin: 0 auto 60px;
+
+    max-width: 1200px;
+
+    margin:
+        0 auto 70px;
+
 }
+
+
+.section-title {
+
+    font-size: 29px;
+
+    margin:
+        0 0 25px;
+
+}
+
 
 .posts-grid {
+
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
     gap: 24px;
+
 }
+
 
 .post-card {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
+
     overflow: hidden;
 
+    background: white;
+
+    border:
+        1px solid #e5e7eb;
+
+    border-radius: 12px;
+
     box-shadow:
-        0 3px 14px rgba(0, 0, 0, 0.06);
+        0 4px 15px rgba(0,0,0,.05);
 
     transition:
-        transform .2s ease,
-        box-shadow .2s ease;
+        transform .15s ease,
+        box-shadow .15s ease;
+
 }
+
 
 .post-card:hover {
-    transform: translateY(-3px);
+
+    transform:
+        translateY(-3px);
 
     box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.10);
+        0 8px 25px rgba(0,0,0,.10);
+
 }
+
 
 .post-image-link {
+
     display: block;
+
     background: #f1f1f1;
-    text-decoration: none;
+
 }
 
-.post-card-image {
+
+.post-image {
+
     width: 100%;
-    height: 400px;
+
+    height: 360px;
 
     display: block;
 
-    /*
-     * IMPORTANT:
-     * contain keeps the complete portrait.
-     * It does not crop the face or body.
-     */
     object-fit: contain;
 
     background: #f1f1f1;
+
 }
+
 
 .post-content {
-    padding: 17px;
+
+    padding: 18px;
+
 }
+
 
 .post-title {
-    margin: 0 0 9px;
 
-    font-size: 19px;
+    margin:
+        0 0 10px;
+
+    font-size: 20px;
+
     line-height: 1.4;
+
 }
+
 
 .post-title a {
+
     color: #222;
+
     text-decoration: none;
+
 }
 
-.post-title a:hover {
-    color: #2563eb;
-}
 
 .post-date {
+
     color: #777;
-    font-size: 12px;
+
+    font-size: 13px;
+
     margin-bottom: 12px;
+
 }
+
 
 .post-excerpt {
+
     color: #555;
+
+    line-height: 1.6;
+
     font-size: 14px;
-    line-height: 1.55;
+
+    margin-bottom: 15px;
+
 }
 
+
 .read-more {
+
     display: inline-block;
 
-    margin-top: 14px;
+    padding:
+        8px 13px;
 
-    padding: 8px 13px;
+    border-radius: 5px;
+
+    background: #2563eb;
+
+    color: white;
+
+    text-decoration: none;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+}
+
+
+.loading {
+
+    text-align: center;
+
+    padding: 50px 10px;
+
+    color: #666;
+
+}
+
+
+.error {
+
+    background: white;
+
+    padding: 25px;
+
+    border-radius: 10px;
+
+    border:
+        1px solid #fecaca;
+
+    color: #b91c1c;
+
+}
+
+
+.view-blog {
+
+    text-align: center;
+
+    margin-top: 35px;
+
+}
+
+
+.view-blog a {
+
+    display: inline-block;
+
+    background: #2563eb;
+
+    color: white;
+
+    text-decoration: none;
+
+    padding:
+        11px 20px;
 
     border-radius: 6px;
 
-    background: #2563eb;
-    color: white;
-
-    font-size: 13px;
     font-weight: bold;
 
-    text-decoration: none;
 }
 
-.read-more:hover {
-    background: #1d4ed8;
-}
-
-.loading {
-    text-align: center;
-    padding: 50px;
-    color: #777;
-}
-
-.error {
-    background: #fff1f2;
-    color: #b91c1c;
-    border: 1px solid #fecdd3;
-
-    padding: 20px;
-    border-radius: 8px;
-
-    text-align: center;
-}
 
 .footer {
+
     background: #111827;
+
     color: #aaa;
+
     text-align: center;
-    padding: 28px 15px;
+
+    padding:
+        30px 15px;
+
 }
 
-@media (max-width: 1100px) {
+
+@media (
+    max-width: 900px
+) {
 
     .posts-grid {
-        grid-template-columns: repeat(3, 1fr);
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
     }
 
 }
 
-@media (max-width: 800px) {
 
-    .posts-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .post-card-image {
-        height: 380px;
-    }
-
-}
-
-@media (max-width: 600px) {
+@media (
+    max-width: 600px
+) {
 
     .header-inner {
-        min-height: auto;
-        padding: 17px 0;
 
-        flex-direction: column;
+        padding:
+            17px 0;
+
+        flex-direction:
+            column;
+
         gap: 14px;
+
     }
+
 
     .nav a {
-        margin: 0 8px;
+
+        margin:
+            0 8px;
+
     }
 
-    .hero {
-        margin-top: 25px;
-    }
 
     .hero h1 {
-        font-size: 28px;
+
+        font-size: 30px;
+
     }
+
 
     .posts-grid {
-        grid-template-columns: 1fr;
+
+        grid-template-columns:
+            1fr;
+
     }
 
-    /*
-     * On phones let the image use its natural
-     * portrait height.
-     */
-    .post-card-image {
+
+    .post-image {
+
         height: auto;
+
         max-height: 700px;
-        object-fit: contain;
+
     }
 
 }
@@ -270,27 +426,32 @@ body {
 
 </head>
 
+
 <body>
+
 
 <header class="header">
 
 <div class="header-inner">
 
-    <div class="logo">
-        Filmstars
-    </div>
 
-    <nav class="nav">
+<div class="logo">
+Filmstars
+</div>
 
-        <a href="/">
-            Home
-        </a>
 
-        <a href="/blog">
-            Blog
-        </a>
+<nav class="nav">
 
-    </nav>
+<a href="/">
+Home
+</a>
+
+<a href="/blog">
+Blog
+</a>
+
+</nav>
+
 
 </div>
 
@@ -299,254 +460,82 @@ body {
 
 <section class="hero">
 
-    <h1>
-        Latest Tollywood Posts
-    </h1>
+<h1>
+Filmstars
+</h1>
 
-    <p>
-        Latest movie news, celebrity updates, actress photos and entertainment stories.
-    </p>
+
+<p>
+Latest celebrity and filmstar posts
+</p>
 
 </section>
 
 
-<main class="posts-container">
+<main class="container">
 
-    <div id="posts" class="posts-grid">
 
-        <div class="loading">
-            Loading posts...
-        </div>
+<h2 class="section-title">
+Latest Posts
+</h2>
 
-    </div>
+
+<div
+    id="posts"
+    class="posts-grid"
+>
+
+<div class="loading">
+Loading posts...
+</div>
+
+</div>
+
+
+<div class="view-blog">
+
+<a href="/blog">
+View All Posts →
+</a>
+
+</div>
+
 
 </main>
 
 
 <footer class="footer">
 
-    © <span id="year"></span> Filmstars
+© <span id="year"></span> Filmstars
 
 </footer>
 
 
 <script>
 
-const BLOG_FEED =
-    "https://tollywoodboost.blogspot.com/feeds/posts/default";
+const API =
+    "/api/blogger";
 
 
-const POSTS_TO_SHOW = 12;
+const POSTS_TO_SHOW =
+    12;
 
 
-function getText(value) {
-
-    return value && value.$t
-        ? value.$t
-        : "";
-
-}
-
-
-function getBloggerUrl(entry) {
-
-    if (!Array.isArray(entry.link)) {
-        return "";
-    }
-
-    const link =
-        entry.link.find(
-            x => x.rel === "alternate"
-        );
-
-    return link
-        ? link.href
-        : "";
-
-}
-
-
-function filmstarsUrl(bloggerUrl) {
-
-    try {
-
-        const url =
-            new URL(bloggerUrl);
-
-        const match =
-            url.pathname.match(
-                /^\/(\d{4})\/(\d{2})\/(.+)\.html$/
-            );
-
-        if (!match) {
-            return bloggerUrl;
-        }
-
-        return (
-            "/" +
-            match[1] +
-            "/" +
-            match[2] +
-            "/" +
-            match[3] +
-            ".html"
-        );
-
-    } catch {
-
-        return bloggerUrl;
-
-    }
-
-}
-
-
-function largeImage(url) {
-
-    if (!url) {
-        return "";
-    }
-
-    /*
-     * Blogger thumbnail -> large image.
-     */
-
-    return url
-
-        .replace(
-            /\/s72-c\//g,
-            "/s800/"
-        )
-
-        .replace(
-            /\/s72\//g,
-            "/s800/"
-        )
-
-        .replace(
-            /\/w72-h72-p-k-no-nu\//g,
-            "/s800/"
-        );
-
-}
-
-
-function findImage(content) {
-
-    if (!content) {
-        return "";
-    }
-
-    const match =
-        content.match(
-            /<img[^>]+src=["']([^"']+)["']/i
-        );
-
-    return match
-        ? largeImage(match[1])
-        : "";
-
-}
-
-
-function getImage(entry) {
-
-    /*
-     * Do NOT use s72-c directly.
-     */
-
-    if (
-        entry.media$thumbnail &&
-        entry.media$thumbnail.url
-    ) {
-
-        return largeImage(
-            entry.media$thumbnail.url
-        );
-
-    }
-
-    const content =
-        getText(entry.content);
-
-    return findImage(content);
-
-}
-
-
-function plainText(html) {
-
-    return (html || "")
-
-        .replace(
-            /<script[\s\S]*?<\/script>/gi,
-            ""
-        )
-
-        .replace(
-            /<style[\s\S]*?<\/style>/gi,
-            ""
-        )
-
-        .replace(
-            /<[^>]+>/g,
-            " "
-        )
-
-        .replace(
-            /&nbsp;/gi,
-            " "
-        )
-
-        .replace(
-            /&amp;/gi,
-            "&"
-        )
-
-        .replace(
-            /&quot;/gi,
-            '"'
-        )
-
-        .replace(
-            /&#39;/gi,
-            "'"
-        )
-
-        .replace(
-            /\s+/g,
-            " "
-        )
-
-        .trim();
-
-}
-
-
-function formatDate(value) {
-
-    if (!value) {
-        return "";
-    }
-
-    const date =
-        new Date(value);
-
-    if (isNaN(date.getTime())) {
-        return "";
-    }
-
-    return date.toLocaleDateString(
-        "en-IN",
-        {
-            day: "numeric",
-            month: "long",
-            year: "numeric"
-        }
+const postsContainer =
+    document.getElementById(
+        "posts"
     );
 
-}
 
+document.getElementById(
+    "year"
+).textContent =
+    new Date().getFullYear();
+
+
+// ======================================================
+// ESCAPE
+// ======================================================
 
 function escapeHtml(value) {
 
@@ -576,40 +565,141 @@ function escapeHtml(value) {
             /'/g,
             "&#039;"
         );
-
 }
 
 
-function createCard(entry) {
+// ======================================================
+// DATE
+// ======================================================
 
-    const title =
-        getText(entry.title);
+function formatDate(value) {
 
-    const bloggerUrl =
-        getBloggerUrl(entry);
+    if (!value) {
+        return "";
+    }
 
-    const url =
-        filmstarsUrl(
-            bloggerUrl
-        );
-
-    const image =
-        getImage(entry);
-
-    const content =
-        getText(entry.content);
-
-    const excerpt =
-        plainText(content);
-
-    const shortExcerpt =
-        excerpt.length > 130
-            ? excerpt.substring(0, 130) + "..."
-            : excerpt;
 
     const date =
-        formatDate(
-            getText(entry.published)
+        new Date(value);
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "";
+    }
+
+
+    return date.toLocaleDateString(
+        "en-IN",
+        {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        }
+    );
+}
+
+
+// ======================================================
+// EXCERPT
+// ======================================================
+
+function getExcerpt(
+    html,
+    max = 130
+) {
+
+    if (!html) {
+        return "";
+    }
+
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.innerHTML =
+        html;
+
+
+    const text =
+        div.textContent ||
+        div.innerText ||
+        "";
+
+
+    const clean =
+        text
+            .replace(
+                /\s+/g,
+                " "
+            )
+            .trim();
+
+
+    if (
+        clean.length <= max
+    ) {
+
+        return clean;
+    }
+
+
+    return (
+        clean.substring(
+            0,
+            max
+        ).trim() +
+        "..."
+    );
+}
+
+
+// ======================================================
+// CARD
+// ======================================================
+
+function createCard(post) {
+
+    const title =
+        escapeHtml(
+            post.title
+        );
+
+
+    const url =
+        escapeHtml(
+            post.url
+        );
+
+
+    const image =
+        post.image
+            ? escapeHtml(
+                post.image
+            )
+            : "";
+
+
+    const date =
+        escapeHtml(
+            formatDate(
+                post.published
+            )
+        );
+
+
+    const excerpt =
+        escapeHtml(
+            getExcerpt(
+                post.content
+            )
         );
 
 
@@ -617,35 +707,25 @@ function createCard(entry) {
 
         <article class="post-card">
 
+
             <a
                 class="post-image-link"
-                href="${escapeHtml(url)}"
+                href="${url}"
             >
 
                 ${
                     image
                         ? `
-                        <img
-                            class="post-card-image"
-                            src="${escapeHtml(image)}"
-                            alt="${escapeHtml(title)}"
-                            loading="lazy"
-                            decoding="async"
-                        >
-                        `
-                        : `
-                        <div
-                            style="
-                                height:400px;
-                                display:flex;
-                                align-items:center;
-                                justify-content:center;
-                                color:#777;
-                            "
-                        >
-                            No Image
-                        </div>
-                        `
+
+                            <img
+                                class="post-image"
+                                src="${image}"
+                                alt="${title}"
+                                loading="lazy"
+                            >
+
+                          `
+                        : ""
                 }
 
             </a>
@@ -653,128 +733,187 @@ function createCard(entry) {
 
             <div class="post-content">
 
+
                 <h2 class="post-title">
 
                     <a
-                        href="${escapeHtml(url)}"
+                        href="${url}"
                     >
-                        ${escapeHtml(title)}
+
+                        ${title}
+
                     </a>
 
                 </h2>
 
 
-                ${
-                    date
-                        ? `
-                        <div class="post-date">
-                            ${escapeHtml(date)}
-                        </div>
-                        `
-                        : ""
-                }
+                <div class="post-date">
+
+                    ${date}
+
+                </div>
 
 
                 <div class="post-excerpt">
 
-                    ${escapeHtml(shortExcerpt)}
+                    ${excerpt}
 
                 </div>
 
 
                 <a
                     class="read-more"
-                    href="${escapeHtml(url)}"
+                    href="${url}"
                 >
                     Read More
                 </a>
 
+
             </div>
+
 
         </article>
 
     `;
-
 }
 
 
+// ======================================================
+// LOAD HOMEPAGE POSTS
+// ======================================================
+
 async function loadPosts() {
 
-    const container =
-        document.getElementById(
-            "posts"
-        );
+    postsContainer.innerHTML = `
+
+        <div class="loading">
+
+            Loading posts...
+
+        </div>
+
+    `;
+
 
     try {
 
         const response =
             await fetch(
-                BLOG_FEED +
-                "?alt=json&max-results=" +
-                POSTS_TO_SHOW
+
+                `${API}` +
+                `?start-index=1` +
+                `&max-results=${POSTS_TO_SHOW}`,
+
+                {
+                    cache:
+                        "no-store"
+                }
+
             );
 
+
         if (!response.ok) {
+
             throw new Error(
-                "Feed request failed"
+                `HTTP ${response.status}`
             );
+
         }
+
 
         const data =
             await response.json();
 
-        const entries =
+
+        if (
+            !data.success
+        ) {
+
+            throw new Error(
+                data.error ||
+                "Unable to load posts"
+            );
+
+        }
+
+
+        const posts =
             Array.isArray(
-                data.feed?.entry
+                data.posts
             )
-                ? data.feed.entry
+                ? data.posts
                 : [];
 
 
-        if (!entries.length) {
+        if (
+            posts.length === 0
+        ) {
 
-            container.innerHTML =
-                `
-                <div class="error">
+            postsContainer.innerHTML = `
+
+                <div class="loading">
+
                     No posts found.
+
                 </div>
-                `;
+
+            `;
+
 
             return;
         }
 
 
-        container.innerHTML =
-            entries
-                .map(createCard)
+        postsContainer.innerHTML =
+            posts
+                .map(
+                    createCard
+                )
                 .join("");
 
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Filmstars error:",
+            error
+        );
 
-        container.innerHTML =
-            `
+
+        postsContainer.innerHTML = `
+
             <div class="error">
-                Unable to load posts right now.
+
+                <strong>
+                    Unable to load posts right now.
+                </strong>
+
+                <br><br>
+
+                Please try again later.
+
+                <br><br>
+
+                <button
+                    onclick="loadPosts()"
+                >
+                    Try Again
+                </button>
+
             </div>
-            `;
+
+        `;
 
     }
 
 }
 
 
-document.getElementById(
-    "year"
-).textContent =
-    new Date().getFullYear();
-
-
 loadPosts();
 
 </script>
 
+
 </body>
+
 </html>
