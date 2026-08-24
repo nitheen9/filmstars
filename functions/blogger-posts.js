@@ -1,156 +1,269 @@
 const BLOGGER_FEED =
-  "https://tollywoodboost.blogspot.com/feeds/posts/default?alt=json&max-results=20";
+    "https://tollywoodboost.blogspot.com/feeds/posts/default";
 
-export async function onRequestGet() {
-  try {
-    const response = await fetch(BLOGGER_FEED, {
-      headers: {
-        "User-Agent": "Mozilla/5.0"
-      }
-    });
+const POSTS_PER_PAGE = 20;
 
-    if (!response.ok) {
-      return Response.json(
-        {
-          success: false,
-          error: "Unable to fetch Blogger feed."
-        },
-        {
-          status: 502,
-          headers: {
-            "Cache-Control": "no-store"
-          }
-        }
-      );
+function getText(value) {
+    return value && value.$t ? value.$t : "";
+}
+
+function getAlternateUrl(entry) {
+    if (!Array.isArray(entry.link)) {
+        return "";
     }
 
-    const data = await response.json();
+    const link = entry.link.find(
+        item => item.rel === "alternate"
+    );
 
-    const entries =
-      data &&
-      data.feed &&
-      data.feed.entry
-        ? data.feed.entry
-        : [];
+    return link && link.href ? link.href : "";
+}
 
-    const posts = entries.map((entry) => {
-      const title =
-        entry.title && entry.title.$t
-          ? entry.title.$t
-          : "Untitled Post";
+function makeLargeImage(url) {
+    if (!url) {
+        return "";
+    }
 
-      const published =
-        entry.published && entry.published.$t
-          ? entry.published.$t
-          : "";
+    return url
+        .replace(/\/s72-c\//, "/s600/")
+        .replace(/\/s72\//, "/s600/")
+        .replace(/\/w72-h72-p-k-no-nu\//, "/w900/")
+        .replace(/\/s1600\//, "/s1600/");
+}
 
-      const updated =
-        entry.updated && entry.updated.$t
-          ? entry.updated.$t
-          : published;
+function getFilmstarsUrl(bloggerUrl) {
+    try {
+        const url = new URL(bloggerUrl);
 
-      let url = "";
-
-      if (Array.isArray(entry.link)) {
-        const alternate = entry.link.find(
-          (link) => link.rel === "alternate"
+        const match = url.pathname.match(
+            /^\/(\d{4})\/(\d{2})\/([^/]+)\.html$/
         );
 
-        if (alternate && alternate.href) {
-          url = alternate.href;
+        if (!match) {
+            return bloggerUrl;
         }
-      }
 
-      let content = "";
+        return `/${match[1]}/${match[2]}/${match[3]}.html`;
+    } catch {
+        return bloggerUrl;
+    }
+}
 
-      if (entry.content && entry.content.$t) {
-        content = entry.content.$t;
-      } else if (entry.summary && entry.summary.$t) {
-        content = entry.summary.$t;
-      }
+function getFirstImage(html) {
+    if (!html) {
+        return "";
+    }
 
-      let image = "";
+    const match = html.match(
+        /<img[^>]+src=["']([^"']+)["']/i
+    );
 
-      /*
-       * Blogger normally provides media$thumbnail
-       */
-      if (
-        entry.media$thumbnail &&
-        entry.media$thumbnail.url
-      ) {
-        image = entry.media$thumbnail.url;
-      }
+    if (!match) {
+        return "";
+    }
 
-      /*
-       * If Blogger does not provide media$thumbnail,
-       * try to find the first image inside the post HTML.
-       */
-      if (!image && content) {
-        const imageMatch = content.match(
-          /<img[^>]+src=["']([^"']+)["']/i
-        );
+    return makeLargeImage(match[1]);
+}
 
-        if (imageMatch && imageMatch[1]) {
-          image = imageMatch[1];
-        }
-      }
-
-      /*
-       * Remove HTML to create a clean excerpt.
-       */
-      const text = content
+function htmlToText(html) {
+    return (html || "")
         .replace(/<script[\s\S]*?<\/script>/gi, "")
         .replace(/<style[\s\S]*?<\/style>/gi, "")
-        .replace(/<[^>]*>/g, " ")
+        .replace(/<[^>]+>/g, " ")
         .replace(/&nbsp;/gi, " ")
         .replace(/&amp;/gi, "&")
         .replace(/&quot;/gi, '"')
         .replace(/&#39;/gi, "'")
         .replace(/\s+/g, " ")
         .trim();
+}
 
-      const excerpt =
-        text.length > 220
-          ? text.substring(0, 220).trim() + "..."
-          : text;
+function createExcerpt(html) {
+    const text = htmlToText(html);
 
-      return {
-        title,
-        url,
-        published,
-        updated,
-        image,
-        excerpt
-      };
-    });
+    if (text.length <= 220) {
+        return text;
+    }
 
-    return Response.json(
-      {
-        success: true,
-        blog: "Tollywood Boost",
-        source: "https://tollywoodboost.blogspot.com/",
-        count: posts.length,
-        posts
-      },
-      {
-        headers: {
-          "Cache-Control":
-            "public, max-age=300, s-maxage=300"
+    return text.substring(0, 220).trim() + "...";
+}
+
+export async function onRequestGet(context) {
+
+    try {
+
+        const requestUrl =
+            new URL(context.request.url);
+
+        let page =
+            parseInt(
+                requestUrl.searchParams.get("page") || "1",
+                10
+            );
+
+        if (!Number.isFinite(page) || page < 1) {
+            page = 1;
         }
-      }
-    );
-  } catch (error) {
-    return Response.json(
-      {
-        success: false,
-        error: "Server error while loading Blogger posts."
-      },
-      {
-        status: 500,
-        headers: {
-          "Cache-Control": "no-store"
+
+        const startIndex =
+            ((page - 1) * POSTS_PER_PAGE) + 1;
+
+        const feedUrl =
+            `${BLOGGER_FEED}?alt=json&start-index=${startIndex}&max-results=${POSTS_PER_PAGE}`;
+
+        const response =
+            await fetch(feedUrl, {
+                headers: {
+                    "User-Agent":
+                        "Mozilla/5.0 Filmstars Pages"
+                }
+            });
+
+        if (!response.ok) {
+
+            return Response.json(
+                {
+                    success: false,
+                    error:
+                        "Unable to fetch Blogger feed."
+                },
+                {
+                    status: 502
+                }
+            );
         }
-      }
-    );
-  }
+
+        const data =
+            await response.json();
+
+        const feed =
+            data.feed || {};
+
+        const entries =
+            Array.isArray(feed.entry)
+                ? feed.entry
+                : [];
+
+        const totalResults =
+            feed["openSearch$totalResults"] &&
+            feed["openSearch$totalResults"].$t
+                ? parseInt(
+                    feed["openSearch$totalResults"].$t,
+                    10
+                )
+                : 0;
+
+        const totalPages =
+            totalResults > 0
+                ? Math.ceil(
+                    totalResults / POSTS_PER_PAGE
+                )
+                : 1;
+
+        const posts =
+            entries.map(entry => {
+
+                const bloggerUrl =
+                    getAlternateUrl(entry);
+
+                const content =
+                    getText(entry.content) ||
+                    getText(entry.summary);
+
+                let image = "";
+
+                if (
+                    entry.media$thumbnail &&
+                    entry.media$thumbnail.url
+                ) {
+                    image =
+                        makeLargeImage(
+                            entry.media$thumbnail.url
+                        );
+                }
+
+                if (!image) {
+                    image =
+                        getFirstImage(content);
+                }
+
+                return {
+
+                    title:
+                        getText(entry.title) ||
+                        "Untitled Post",
+
+                    url:
+                        getFilmstarsUrl(
+                            bloggerUrl
+                        ),
+
+                    bloggerUrl,
+
+                    published:
+                        getText(entry.published),
+
+                    updated:
+                        getText(entry.updated),
+
+                    image,
+
+                    excerpt:
+                        createExcerpt(content)
+
+                };
+
+            });
+
+
+        return Response.json(
+            {
+                success: true,
+
+                blog:
+                    "Tollywood Boost",
+
+                source:
+                    "https://tollywoodboost.blogspot.com/",
+
+                page,
+
+                perPage:
+                    POSTS_PER_PAGE,
+
+                totalPosts:
+                    totalResults,
+
+                totalPages,
+
+                posts
+            },
+            {
+                headers: {
+                    "Cache-Control":
+                        "public, max-age=300, s-maxage=300"
+                }
+            }
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        return Response.json(
+            {
+                success: false,
+                error:
+                    "Server error while loading Blogger posts."
+            },
+            {
+                status: 500,
+                headers: {
+                    "Cache-Control":
+                        "no-store"
+                }
+            }
+        );
+
+    }
 }
