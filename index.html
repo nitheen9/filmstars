@@ -5,20 +5,14 @@
 
 <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>
-Filmstars
-</title>
+<title>Film Stars</title>
 
 <meta
     name="description"
-    content="Latest film stars and celebrity posts."
+    content="Latest film stars and celebrity posts from Tollywood Boost."
 >
-
 
 <style>
 
@@ -26,417 +20,261 @@ Filmstars
     box-sizing: border-box;
 }
 
-
 body {
-
     margin: 0;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
+    font-family: Arial, Helvetica, sans-serif;
     background: #f5f6f8;
-
     color: #222;
-
 }
-
 
 .header {
-
     background: #fe5301;
-
     color: white;
-
 }
 
-
 .header-inner {
-
     width: 92%;
-
     max-width: 1200px;
-
     min-height: 68px;
-
     margin: auto;
 
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
-
 }
-
 
 .logo {
-
     font-size: 36px;
-
     font-weight: bold;
-    float: left;
-    width: 22%;
 }
 
+.logo a {
+    color: white;
+    text-decoration: none;
+}
 
 .nav a {
-
     color: white;
-
     text-decoration: none;
-
     margin-left: 22px;
-
-}
-.header-menu {
-    float: left;
-    width: 100%;
-}
-    
-.main-menu {
-    position: static;    
     font-weight: bold;
-}    
+}
 
 .hero {
-
     width: 92%;
-
     max-width: 1200px;
-
-    margin:
-        40px auto 30px;
-
+    margin: 40px auto 30px;
 }
-
 
 .hero h1 {
-
-    margin:
-        0 0 10px;
-
+    margin: 0 0 10px;
     font-size: 40px;
-
 }
-
 
 .hero p {
-
     margin: 0;
-
     color: #666;
-
     font-size: 17px;
-
 }
-
 
 .container {
-
     width: 92%;
-
     max-width: 1200px;
-
-    margin:
-        0 auto 70px;
-
+    margin: 0 auto 70px;
 }
+
 .title-wrap {
-  
     width: 100%;
     height: 40px;
-    background-color: #47164F;   
-    margin: 25px 0 25px;
+    background: #47164F;
+    margin: 25px 0;
 }
-
 
 .section-title {
-   
-    height: 40px;   
-    color: #ffffff;
+    height: 40px;
+    color: white;
     text-transform: uppercase;
     line-height: 40px;
-    padding: 0 15px;  
+    padding: 0 15px;
     font-size: 16px;
-    margin: 25px 0 25px;
-
+    margin: 0;
 }
-
 
 .posts-grid {
-
     display: grid;
-
-    grid-template-columns:
-        repeat(4, 1fr);
-
+    grid-template-columns: repeat(4, 1fr);
     gap: 24px;
-
 }
 
-
 .post-card {
-
     overflow: hidden;
-
     background: white;
-
-    border:
-        1px solid #e5e7eb;
-
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
 
-    box-shadow:
-        0 4px 15px rgba(0,0,0,.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,.05);
 
     transition:
         transform .15s ease,
         box-shadow .15s ease;
-
 }
-
 
 .post-card:hover {
-
-    transform:
-        translateY(-3px);
-
-    box-shadow:
-        0 8px 25px rgba(0,0,0,.10);
-
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,.10);
 }
-
 
 .post-image-link {
-
     display: block;
-
-    background: #47164F;
-
+    background: #f1f1f1;
+    overflow: hidden;
 }
 
+/*
+    IMPORTANT:
+    Do not use object-fit: fill.
+    It distorts faces and bodies.
+
+    contain keeps the complete image visible.
+*/
 
 .post-image {
-
     width: 100%;
-
     height: 360px;
 
     display: block;
 
-    object-fit: fill;
+    object-fit: contain;
 
     background: #f1f1f1;
-
 }
-
 
 .post-content {
-
     padding: 18px;
-
 }
-
 
 .post-title {
-
-    margin:
-        0 0 10px;
-
+    margin: 0 0 10px;
     font-size: 20px;
-
     line-height: 1.4;
-
 }
-
 
 .post-title a {
-
     color: #222;
-
     text-decoration: none;
-
 }
-
 
 .post-date {
-
     color: #777;
-
     font-size: 13px;
-
     margin-bottom: 12px;
-
 }
-
 
 .post-excerpt {
-
     color: #555;
-
     line-height: 1.6;
-
     font-size: 14px;
-
     margin-bottom: 15px;
-
 }
 
-
 .read-more {
-
     display: inline-block;
-
-    padding:
-        8px 13px;
+    padding: 8px 13px;
 
     border-radius: 5px;
 
     background: #47164F;
-
     color: white;
 
     text-decoration: none;
 
     font-size: 13px;
-
     font-weight: bold;
-
 }
-
 
 .loading {
-
     text-align: center;
-
     padding: 50px 10px;
-
     color: #666;
-
 }
 
-
 .error {
-
     background: white;
-
     padding: 25px;
-
     border-radius: 10px;
 
-    border:
-        1px solid #fecaca;
+    border: 1px solid #fecaca;
 
     color: #b91c1c;
 
+    grid-column: 1 / -1;
 }
-
 
 .view-blog {
-
     text-align: center;
-
     margin-top: 35px;
-
 }
 
-
 .view-blog a {
-
     display: inline-block;
 
     background: #47164F;
-
     color: white;
 
     text-decoration: none;
 
-    padding:
-        11px 20px;
+    padding: 11px 20px;
 
     border-radius: 6px;
 
     font-weight: bold;
-
 }
 
-
 .footer {
-
     background: #111827;
-
     color: #aaa;
 
     text-align: center;
 
-    padding:
-        30px 15px;
-
+    padding: 30px 15px;
 }
 
-
-@media (
-    max-width: 900px
-) {
+@media (max-width: 900px) {
 
     .posts-grid {
-
-        grid-template-columns:
-            repeat(2, 1fr);
-
+        grid-template-columns: repeat(2, 1fr);
     }
 
 }
 
-
-@media (
-    max-width: 600px
-) {
+@media (max-width: 600px) {
 
     .header-inner {
-
-        padding:
-            17px 0;
-
-        flex-direction:
-            unset;
-
-        gap: 14px;
-
+        width: 94%;
+        min-height: 65px;
     }
 
+    .logo {
+        font-size: 28px;
+    }
 
     .nav a {
-
-        margin:
-            0 8px;
-
+        margin-left: 10px;
+        font-size: 14px;
     }
-
 
     .hero h1 {
-
         font-size: 30px;
-
     }
-
 
     .posts-grid {
-
-        grid-template-columns:
-            1fr;
-
+        grid-template-columns: 1fr;
     }
 
-
     .post-image {
-
         height: auto;
-
         max-height: 700px;
-
+        object-fit: contain;
     }
 
 }
@@ -445,146 +283,121 @@ body {
 
 </head>
 
-
 <body>
-
 
 <header class="header">
 
-<div class="header-inner">
+    <div class="header-inner">
 
+        <div class="logo">
 
-<div class="logo">
-Film Stars
-</div>
+            <a href="/">
+                Film Stars
+            </a>
 
-<div class="header-menu">
-    <div class="main-menu section">
-<nav class="nav">
+        </div>
 
-<a href="/">
-Home
-</a>
-    <a href="/blog?label=Hollywood%20Actress">
-        Hollywood Actress
-    </a>
+        <nav class="nav">
 
-</nav>
-</div>
-</div>
+            <a href="/">
+                Home
+            </a>
 
-</div>
+            <a href="/blog">
+                Blog
+            </a>
+
+        </nav>
+
+    </div>
 
 </header>
 
-<!-- 
+
 <section class="hero">
 
-<h1>
-Filmstars
-</h1>
+    <h1>
+        Film Stars
+    </h1>
 
-
-<p>
-Latest celebrity and filmstar posts
-</p>
+    <p>
+        Latest celebrity and filmstar posts
+    </p>
 
 </section>
--->
+
 
 <main class="container">
 
-<div class="title-wrap">
-<h2 class="section-title">
-Latest Posts
-</h2>
-</div>
+    <div class="title-wrap">
 
-<div
-    id="posts"
-    class="posts-grid"
->
+        <h2 class="section-title">
+            Latest Posts
+        </h2>
 
-<div class="loading">
-Loading posts...
-</div>
-
-</div>
+    </div>
 
 
-<div class="view-blog">
+    <div
+        id="posts"
+        class="posts-grid"
+    >
 
-<a href="/blog">
-View All Posts →
-</a>
+        <div class="loading">
+            Loading posts...
+        </div>
 
-</div>
+    </div>
 
+
+    <div class="view-blog">
+
+        <a href="/blog">
+            View All Posts →
+        </a>
+
+    </div>
 
 </main>
 
 
 <footer class="footer">
 
-© <span id="year"></span> Filmstars
+    © <span id="year"></span> Filmstars
 
 </footer>
 
 
 <script>
 
-const API =
-    "/api/blogger";
+const API = "/api/blogger";
 
-
-const POSTS_TO_SHOW =
-    16;
-
+const POSTS_TO_SHOW = 16;
 
 const postsContainer =
-    document.getElementById(
-        "posts"
-    );
+    document.getElementById("posts");
 
-
-document.getElementById(
-    "year"
-).textContent =
+document.getElementById("year").textContent =
     new Date().getFullYear();
 
 
 // ======================================================
-// ESCAPE
+// ESCAPE HTML
 // ======================================================
 
 function escapeHtml(value) {
 
     return String(value || "")
 
-        .replace(
-            /&/g,
-            "&amp;"
-        )
+        .replace(/&/g, "&amp;")
 
-        .replace(
-            /</g,
-            "&lt;"
-        )
+        .replace(/</g, "&lt;")
 
-        .replace(
-            />/g,
-            "&gt;"
-        )
+        .replace(/>/g, "&gt;")
 
-        .replace(
-            /"/g,
-            "&quot;"
-        )
+        .replace(/"/g, "&quot;")
 
-        .replace(
-            /'/g,
-            "&#039;"
-        );
+        .replace(/'/g, "&#039;");
 }
 
 
@@ -598,20 +411,11 @@ function formatDate(value) {
         return "";
     }
 
+    const date = new Date(value);
 
-    const date =
-        new Date(value);
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
+    if (Number.isNaN(date.getTime())) {
         return "";
     }
-
 
     return date.toLocaleDateString(
         "en-IN",
@@ -628,56 +432,34 @@ function formatDate(value) {
 // EXCERPT
 // ======================================================
 
-function getExcerpt(
-    html,
-    max = 130
-) {
+function getExcerpt(html, max = 130) {
 
     if (!html) {
         return "";
     }
 
-
     const div =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
-
-    div.innerHTML =
-        html;
-
+    div.innerHTML = html;
 
     const text =
         div.textContent ||
         div.innerText ||
         "";
 
-
     const clean =
         text
-            .replace(
-                /\s+/g,
-                " "
-            )
+            .replace(/\s+/g, " ")
             .trim();
 
-
-    if (
-        clean.length <= max
-    ) {
-
+    if (clean.length <= max) {
         return clean;
     }
 
-
-    return (
-        clean.substring(
-            0,
-            max
-        ).trim() +
-        "..."
-    );
+    return clean
+        .substring(0, max)
+        .trim() + "...";
 }
 
 
@@ -687,39 +469,37 @@ function getExcerpt(
 
 function createCard(post) {
 
-    const title =
-        escapeHtml(
-            post.title
-        );
+    /*
+        IMPORTANT:
 
+        post.url must already be:
+
+        /2026/06/example.html
+
+        NOT:
+
+        https://tollywoodboost.blogspot.com/...
+    */
+
+    const title =
+        escapeHtml(post.title);
 
     const url =
-        escapeHtml(
-            post.url
-        );
-
+        escapeHtml(post.url);
 
     const image =
         post.image
-            ? escapeHtml(
-                post.image
-            )
+            ? escapeHtml(post.image)
             : "";
-
 
     const date =
         escapeHtml(
-            formatDate(
-                post.published
-            )
+            formatDate(post.published)
         );
-
 
     const excerpt =
         escapeHtml(
-            getExcerpt(
-                post.content
-            )
+            getExcerpt(post.content)
         );
 
 
@@ -727,57 +507,48 @@ function createCard(post) {
 
         <article class="post-card">
 
+            ${
+                image
+                    ? `
 
-            <a
-                class="post-image-link"
-                href="${url}"
-            >
+                    <a
+                        class="post-image-link"
+                        href="${url}"
+                    >
 
-                ${
-                    image
-                        ? `
+                        <img
+                            class="post-image"
+                            src="${image}"
+                            alt="${title}"
+                            loading="lazy"
+                            decoding="async"
+                        >
 
-                            <img
-                                class="post-image"
-                                src="${image}"
-                                alt="${title}"
-                                loading="lazy"
-                            >
+                    </a>
 
-                          `
-                        : ""
-                }
-
-            </a>
+                    `
+                    : ""
+            }
 
 
             <div class="post-content">
 
-
                 <h2 class="post-title">
 
-                    <a
-                        href="${url}"
-                    >
-
+                    <a href="${url}">
                         ${title}
-
                     </a>
 
                 </h2>
 
 
                 <div class="post-date">
-
                     ${date}
-
                 </div>
 
 
                 <div class="post-excerpt">
-
                     ${excerpt}
-
                 </div>
 
 
@@ -788,9 +559,7 @@ function createCard(post) {
                     Read More
                 </a>
 
-
             </div>
-
 
         </article>
 
@@ -799,7 +568,7 @@ function createCard(post) {
 
 
 // ======================================================
-// LOAD HOMEPAGE POSTS
+// LOAD POSTS
 // ======================================================
 
 async function loadPosts() {
@@ -807,9 +576,7 @@ async function loadPosts() {
     postsContainer.innerHTML = `
 
         <div class="loading">
-
             Loading posts...
-
         </div>
 
     `;
@@ -817,25 +584,32 @@ async function loadPosts() {
 
     try {
 
+        const url =
+            API +
+            "?start-index=1" +
+            "&max-results=" +
+            POSTS_TO_SHOW;
+
+
         const response =
             await fetch(
-
-                `${API}` +
-                `?start-index=1` +
-                `&max-results=${POSTS_TO_SHOW}`,
-
+                url,
                 {
-                    cache:
-                        "no-store"
+                    method: "GET",
+                    cache: "no-store",
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
                 }
-
             );
 
 
         if (!response.ok) {
 
             throw new Error(
-                `HTTP ${response.status}`
+                "HTTP " +
+                response.status
             );
 
         }
@@ -845,29 +619,29 @@ async function loadPosts() {
             await response.json();
 
 
-        if (
-            !data.success
-        ) {
+        console.log(
+            "Blogger API:",
+            data
+        );
+
+
+        if (!data.success) {
 
             throw new Error(
                 data.error ||
-                "Unable to load posts"
+                "API returned success=false"
             );
 
         }
 
 
         const posts =
-            Array.isArray(
-                data.posts
-            )
+            Array.isArray(data.posts)
                 ? data.posts
                 : [];
 
 
-        if (
-            posts.length === 0
-        ) {
+        if (posts.length === 0) {
 
             postsContainer.innerHTML = `
 
@@ -879,23 +653,22 @@ async function loadPosts() {
 
             `;
 
-
             return;
         }
 
 
         postsContainer.innerHTML =
             posts
-                .map(
-                    createCard
-                )
+                .map(createCard)
                 .join("");
 
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(
-            "Filmstars error:",
+            "Filmstars Blogger error:",
             error
         );
 
@@ -915,6 +688,7 @@ async function loadPosts() {
                 <br><br>
 
                 <button
+                    type="button"
                     onclick="loadPosts()"
                 >
                     Try Again
@@ -932,7 +706,6 @@ async function loadPosts() {
 loadPosts();
 
 </script>
-
 
 </body>
 
