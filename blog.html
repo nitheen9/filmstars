@@ -73,8 +73,18 @@ body {
 }
 
 .page-description {
-    margin: 0 0 30px;
+    margin: 0 0 25px;
     color: #666;
+}
+
+.label-heading {
+    display: inline-block;
+    margin-bottom: 25px;
+    padding: 8px 14px;
+    background: #47164F;
+    color: white;
+    border-radius: 20px;
+    font-size: 15px;
 }
 
 .posts-grid {
@@ -89,6 +99,7 @@ body {
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,.05);
+    transition: transform .15s ease, box-shadow .15s ease;
 }
 
 .post-card:hover {
@@ -105,12 +116,7 @@ body {
     width: 100%;
     height: 380px;
     display: block;
-
-    /*
-     * contain prevents cutting faces/body.
-     */
     object-fit: contain;
-
     background: #f1f1f1;
 }
 
@@ -179,12 +185,13 @@ body {
 }
 
 .page-button {
+    display: inline-block;
     border: 1px solid #d1d5db;
     background: white;
     color: #222;
     padding: 9px 14px;
     border-radius: 6px;
-    cursor: pointer;
+    text-decoration: none;
     font-size: 14px;
 }
 
@@ -199,25 +206,10 @@ body {
     border-color: #47164F;
 }
 
-.page-button:disabled {
-    opacity: .45;
-    cursor: not-allowed;
-}
-
 .page-info {
     color: #666;
     font-size: 14px;
     margin: 0 8px;
-}
-
-.label-heading {
-    display: inline-block;
-    margin-bottom: 25px;
-    padding: 8px 14px;
-    background: #47164F;
-    color: white;
-    border-radius: 20px;
-    font-size: 15px;
 }
 
 .footer {
@@ -239,15 +231,10 @@ body {
 
     .header-inner {
         padding: 17px 0;
-        gap: 14px;
     }
 
     .logo {
         font-size: 28px;
-    }
-
-    .nav a {
-        margin: 0 8px;
     }
 
     .container {
@@ -265,7 +252,6 @@ body {
     .post-image {
         height: auto;
         max-height: 800px;
-        object-fit: contain;
     }
 
 }
@@ -281,9 +267,11 @@ body {
 <div class="header-inner">
 
 <div class="logo">
+
 <a href="/">
 Film Stars
 </a>
+
 </div>
 
 <nav class="nav">
@@ -389,7 +377,7 @@ document.getElementById(
 
 
 // ============================================================
-// URL PARAMETERS
+// PARAMETERS
 // ============================================================
 
 function getParameters() {
@@ -399,27 +387,34 @@ function getParameters() {
             window.location.search
         );
 
+
     let page =
         parseInt(
-            params.get("page") || "1",
+            params.get("page") ||
+            "1",
             10
         );
+
 
     if (
         !Number.isFinite(page) ||
         page < 1
     ) {
+
         page = 1;
     }
 
+
     const label =
         (
-            params.get("label") || ""
+            params.get("label") ||
+            ""
         ).trim();
 
+
     return {
-        page: page,
-        label: label
+        page,
+        label
     };
 }
 
@@ -428,14 +423,38 @@ function getParameters() {
 // ESCAPE
 // ============================================================
 
-function escapeHtml(value) {
+function escapeHtml(
+    value
+) {
 
-    return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    return String(
+        value || ""
+    )
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 }
 
 
@@ -443,22 +462,28 @@ function escapeHtml(value) {
 // DATE
 // ============================================================
 
-function formatDate(value) {
+function formatDate(
+    value
+) {
 
     if (!value) {
         return "";
     }
 
+
     const date =
         new Date(value);
+
 
     if (
         Number.isNaN(
             date.getTime()
         )
     ) {
+
         return "";
     }
+
 
     return date.toLocaleDateString(
         "en-IN",
@@ -484,18 +509,22 @@ function getExcerpt(
         return "";
     }
 
+
     const div =
         document.createElement(
             "div"
         );
 
+
     div.innerHTML =
         html;
+
 
     const text =
         div.textContent ||
         div.innerText ||
         "";
+
 
     const clean =
         text
@@ -505,11 +534,14 @@ function getExcerpt(
             )
             .trim();
 
+
     if (
         clean.length <= max
     ) {
+
         return clean;
     }
+
 
     return (
         clean.substring(
@@ -525,17 +557,21 @@ function getExcerpt(
 // CARD
 // ============================================================
 
-function createCard(post) {
+function createCard(
+    post
+) {
 
     const title =
         escapeHtml(
             post.title
         );
 
+
     const url =
         escapeHtml(
             post.url
         );
+
 
     const image =
         post.image
@@ -543,6 +579,7 @@ function createCard(post) {
                 post.image
             )
             : "";
+
 
     return `
 
@@ -556,6 +593,7 @@ function createCard(post) {
 ${
     image
         ? `
+
 <img
     class="post-image"
     src="${image}"
@@ -563,6 +601,7 @@ ${
     loading="lazy"
     decoding="async"
 >
+
 `
         : ""
 }
@@ -582,20 +621,24 @@ ${title}
 
 
 <div class="post-date">
+
 ${escapeHtml(
     formatDate(
         post.published
     )
 )}
+
 </div>
 
 
 <div class="post-excerpt">
+
 ${escapeHtml(
     getExcerpt(
         post.content
     )
 )}
+
 </div>
 
 
@@ -616,7 +659,7 @@ Read More
 
 
 // ============================================================
-// PAGINATION URL
+// PAGE URL
 // ============================================================
 
 function makePageUrl(
@@ -624,37 +667,40 @@ function makePageUrl(
     label
 ) {
 
-    const url =
-        new URL(
-            window.location.href
-        );
+    const params =
+        new URLSearchParams();
 
-    url.search = "";
 
-    if (
-        label
-    ) {
+    if (label) {
 
-        url.searchParams.set(
+        params.set(
             "label",
             label
         );
-
     }
 
-    if (
-        page > 1
-    ) {
 
-        url.searchParams.set(
+    if (page > 1) {
+
+        params.set(
             "page",
-            page
+            String(page)
         );
-
     }
 
-    return url.pathname +
-        url.search;
+
+    const query =
+        params.toString();
+
+
+    return (
+        "/blog" +
+        (
+            query
+                ? "?" + query
+                : ""
+        )
+    );
 }
 
 
@@ -671,31 +717,30 @@ function createPagination(
     paginationContainer.innerHTML =
         "";
 
+
     if (
         totalPages <= 1
     ) {
+
         return;
     }
 
 
-    /*
-     * Previous
-     */
-
-    const previous =
-        document.createElement(
-            "a"
-        );
-
-    previous.className =
-        "page-button";
-
-    previous.textContent =
-        "← Previous";
+    // Previous
 
     if (
         currentPage > 1
     ) {
+
+        const previous =
+            document.createElement(
+                "a"
+            );
+
+
+        previous.className =
+            "page-button";
+
 
         previous.href =
             makePageUrl(
@@ -703,30 +748,25 @@ function createPagination(
                 label
             );
 
-    } else {
 
-        previous.style.pointerEvents =
-            "none";
+        previous.textContent =
+            "← Previous";
 
-        previous.style.opacity =
-            ".45";
 
+        paginationContainer.appendChild(
+            previous
+        );
     }
 
-    paginationContainer.appendChild(
-        previous
-    );
 
-
-    /*
-     * Page numbers
-     */
+    // Page numbers
 
     let start =
         Math.max(
             1,
             currentPage - 2
         );
+
 
     let end =
         Math.min(
@@ -744,7 +784,6 @@ function createPagination(
                 totalPages,
                 5
             );
-
     }
 
 
@@ -758,7 +797,6 @@ function createPagination(
                 1,
                 totalPages - 4
             );
-
     }
 
 
@@ -771,17 +809,21 @@ function createPagination(
                 "a"
             );
 
+
         first.className =
             "page-button";
 
-        first.textContent =
-            "1";
 
         first.href =
             makePageUrl(
                 1,
                 label
             );
+
+
+        first.textContent =
+            "1";
+
 
         paginationContainer.appendChild(
             first
@@ -797,58 +839,62 @@ function createPagination(
                     "span"
                 );
 
+
             dots.className =
                 "page-info";
+
 
             dots.textContent =
                 "...";
 
+
             paginationContainer.appendChild(
                 dots
             );
-
         }
-
     }
 
 
     for (
-        let page = start;
-        page <= end;
-        page++
+        let i = start;
+        i <= end;
+        i++
     ) {
 
-        const button =
+        const link =
             document.createElement(
                 "a"
             );
 
-        button.className =
+
+        link.className =
             "page-button";
 
-        button.textContent =
-            page;
 
-        button.href =
+        link.href =
             makePageUrl(
-                page,
+                i,
                 label
             );
 
+
+        link.textContent =
+            String(i);
+
+
         if (
-            page === currentPage
+            i === currentPage
         ) {
 
-            button.classList.add(
+            link.classList.add(
                 "active"
             );
-
         }
 
-        paginationContainer.appendChild(
-            button
-        );
 
+        paginationContainer.appendChild(
+            link
+        );
     }
 
 
@@ -865,16 +911,18 @@ function createPagination(
                     "span"
                 );
 
+
             dots.className =
                 "page-info";
+
 
             dots.textContent =
                 "...";
 
+
             paginationContainer.appendChild(
                 dots
             );
-
         }
 
 
@@ -883,11 +931,10 @@ function createPagination(
                 "a"
             );
 
+
         last.className =
             "page-button";
 
-        last.textContent =
-            totalPages;
 
         last.href =
             makePageUrl(
@@ -895,32 +942,33 @@ function createPagination(
                 label
             );
 
+
+        last.textContent =
+            String(totalPages);
+
+
         paginationContainer.appendChild(
             last
         );
-
     }
 
 
-    /*
-     * Next
-     */
-
-    const next =
-        document.createElement(
-            "a"
-        );
-
-    next.className =
-        "page-button";
-
-    next.textContent =
-        "Next →";
+    // Next
 
     if (
         currentPage <
         totalPages
     ) {
+
+        const next =
+            document.createElement(
+                "a"
+            );
+
+
+        next.className =
+            "page-button";
+
 
         next.href =
             makePageUrl(
@@ -928,41 +976,41 @@ function createPagination(
                 label
             );
 
-    } else {
 
-        next.style.pointerEvents =
-            "none";
+        next.textContent =
+            "Next →";
 
-        next.style.opacity =
-            ".45";
 
+        paginationContainer.appendChild(
+            next
+        );
     }
 
-    paginationContainer.appendChild(
-        next
-    );
 
+    // Info
 
     const info =
         document.createElement(
             "span"
         );
 
+
     info.className =
         "page-info";
+
 
     info.textContent =
         `Page ${currentPage} of ${totalPages}`;
 
+
     paginationContainer.appendChild(
         info
     );
-
 }
 
 
 // ============================================================
-// LOAD POSTS
+// LOAD
 // ============================================================
 
 async function loadPosts() {
@@ -974,26 +1022,30 @@ async function loadPosts() {
         getParameters();
 
 
-    /*
-     * Label heading
-     */
+    // --------------------------------------------------------
+    // Header
+    // --------------------------------------------------------
 
     if (label) {
 
         pageTitle.textContent =
             label;
 
+
         pageDescription.textContent =
             "Posts published under the " +
             label +
             " label.";
 
+
         labelHeading.textContent =
             "Label: " +
             label;
 
+
         labelHeading.style.display =
             "inline-block";
+
 
         document.title =
             label +
@@ -1004,15 +1056,17 @@ async function loadPosts() {
         pageTitle.textContent =
             "Filmstars Blog";
 
+
         pageDescription.textContent =
             "Latest posts from Tollywood Boost";
+
 
         labelHeading.style.display =
             "none";
 
+
         document.title =
             "Filmstars Blog";
-
     }
 
 
@@ -1025,17 +1079,13 @@ Loading posts...
 `;
 
 
-    /*
-     * IMPORTANT:
-     *
-     * label is sent directly to
-     * /blogger-posts.
-     *
-     * The server then requests:
-     *
-     * Blogger /feeds/posts/default/-/LABEL
-     *
-     */
+    paginationContainer.innerHTML =
+        "";
+
+
+    // --------------------------------------------------------
+    // API URL
+    // --------------------------------------------------------
 
     const apiUrl =
         new URL(
@@ -1046,20 +1096,29 @@ Loading posts...
 
     apiUrl.searchParams.set(
         "page",
-        page
+        String(page)
     );
 
 
-    if (
-        label
-    ) {
+    apiUrl.searchParams.set(
+        "max-results",
+        String(PER_PAGE)
+    );
+
+
+    if (label) {
 
         apiUrl.searchParams.set(
             "label",
             label
         );
-
     }
+
+
+    console.log(
+        "Filmstars API:",
+        apiUrl.toString()
+    );
 
 
     try {
@@ -1068,8 +1127,16 @@ Loading posts...
             await fetch(
                 apiUrl.toString(),
                 {
+                    method:
+                        "GET",
+
                     cache:
-                        "no-store"
+                        "no-store",
+
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
                 }
             );
 
@@ -1080,7 +1147,6 @@ Loading posts...
                 "HTTP " +
                 response.status
             );
-
         }
 
 
@@ -1088,15 +1154,21 @@ Loading posts...
             await response.json();
 
 
+        console.log(
+            "Filmstars API data:",
+            data
+        );
+
+
         if (
-            !data.success
+            !data ||
+            data.success !== true
         ) {
 
             throw new Error(
-                data.error ||
-                "Unable to load posts"
+                data?.error ||
+                "API returned an error"
             );
-
         }
 
 
@@ -1119,7 +1191,7 @@ Loading posts...
 No posts found
 ${
     label
-        ? " for label: " +
+        ? " for " +
           escapeHtml(label)
         : ""
 }.
@@ -1128,11 +1200,7 @@ ${
 
 `;
 
-            paginationContainer.innerHTML =
-                "";
-
             return;
-
         }
 
 
@@ -1144,15 +1212,23 @@ ${
                 .join("");
 
 
+        const total =
+            Number(
+                data.total
+            ) || 0;
+
+
         const totalPages =
             Number(
                 data.totalPages
             ) ||
-            Math.ceil(
-                Number(
-                    data.total
-                ) /
-                PER_PAGE
+            (
+                total > 0
+                    ? Math.ceil(
+                        total /
+                        PER_PAGE
+                    )
+                    : 1
             );
 
 
@@ -1181,7 +1257,9 @@ Unable to load posts right now.
 
 <br><br>
 
-Please try again.
+${escapeHtml(
+    error.message
+)}
 
 <br><br>
 
@@ -1195,11 +1273,13 @@ Try Again
 </div>
 
 `;
-
     }
-
 }
 
+
+// ============================================================
+// START
+// ============================================================
 
 loadPosts();
 
