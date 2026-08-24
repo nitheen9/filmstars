@@ -1,1637 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-Filmstars Blog
-</title>
-
-<meta
-    name="description"
-    content="Latest celebrity and filmstar posts from Filmstars."
->
-
-
-<style>
-
-* {
-    box-sizing: border-box;
-}
-
-
-body {
-
-    margin: 0;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-    background: #f5f6f8;
-
-    color: #222;
-
-}
-
-
-.header {
-
-    background: #fe5301;
-
-    color: white;
-
-}
-
-
-.header-inner {
-
-    width: 92%;
-
-    max-width: 1200px;
-
-    min-height: 68px;
-
-    margin: auto;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-}
-
-
-.logo {
-
-    font-size: 36px;
-
-    font-weight: bold;
-
-}
-
-
-.logo a {
-
-    color: #fdfdff;
-
-    cursor: pointer;
-
-    text-decoration: unset;
-
-}
-
-
-.nav a {
-
-    color: white;
-
-    text-decoration: none;
-
-    margin-left: 22px;
-
-}
-
-
-.container {
-
-    width: 92%;
-
-    max-width: 1200px;
-
-    margin: 35px auto 70px;
-
-}
-
-
-.page-title {
-
-    margin:
-        0 0 8px;
-
-    font-size: 36px;
-
-}
-
-
-.page-description {
-
-    margin:
-        0 0 30px;
-
-    color: #666;
-
-}
-
-
-/* ======================================================
-   LABEL HEADER
-====================================================== */
-
-.label-header {
-
-    display: none;
-
-    margin-bottom: 30px;
-
-}
-
-
-.label-header h1 {
-
-    margin:
-        0 0 8px;
-
-    font-size: 32px;
-
-}
-
-
-.label-header p {
-
-    margin: 0;
-
-    color: #666;
-
-}
-
-
-.view-all {
-
-    display: inline-block;
-
-    margin-top: 12px;
-
-    color: #47164F;
-
-    font-weight: bold;
-
-    text-decoration: none;
-
-}
-
-
-/* ======================================================
-   POSTS
-====================================================== */
-
-.posts-grid {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(4, 1fr);
-
-    gap: 24px;
-
-}
-
-
-.post-card {
-
-    overflow: hidden;
-
-    background: white;
-
-    border:
-        1px solid #e5e7eb;
-
-    border-radius: 12px;
-
-    box-shadow:
-        0 4px 15px rgba(0,0,0,.05);
-
-    transition:
-        transform .15s ease,
-        box-shadow .15s ease;
-
-}
-
-
-.post-card:hover {
-
-    transform:
-        translateY(-3px);
-
-    box-shadow:
-        0 8px 25px rgba(0,0,0,.10);
-
-}
-
-
-.post-image-link {
-
-    display: block;
-
-    background: #f1f1f1;
-
-}
-
-
-/*
- * Keep the original card size.
- * contain prevents faces/body from being cropped.
- */
-
-.post-image {
-
-    width: 100%;
-
-    height: 350px;
-
-    display: block;
-
-    object-fit: contain;
-
-    background: #f1f1f1;
-
-}
-
-
-.post-content {
-
-    padding: 18px;
-
-}
-
-
-.post-title {
-
-    margin:
-        0 0 10px;
-
-    font-size: 20px;
-
-    line-height: 1.4;
-
-}
-
-
-.post-title a {
-
-    color: #222;
-
-    text-decoration: none;
-
-}
-
-
-.post-title a:hover {
-
-    color: #47164F;
-
-}
-
-
-.post-date {
-
-    color: #777;
-
-    font-size: 13px;
-
-    margin-bottom: 12px;
-
-}
-
-
-.post-excerpt {
-
-    color: #555;
-
-    line-height: 1.6;
-
-    font-size: 14px;
-
-    margin-bottom: 15px;
-
-}
-
-
-.read-more {
-
-    display: inline-block;
-
-    padding:
-        8px 13px;
-
-    border-radius: 5px;
-
-    background: #47164F;
-
-    color: white;
-
-    text-decoration: none;
-
-    font-size: 13px;
-
-    font-weight: bold;
-
-}
-
-
-/* ======================================================
-   LABELS ON CARDS
-====================================================== */
-
-.post-labels {
-
-    margin-top: 13px;
-
-    line-height: 1.9;
-
-}
-
-
-.post-label {
-
-    display: inline-block;
-
-    padding:
-        3px 9px;
-
-    margin:
-        2px 3px 2px 0;
-
-    border-radius: 15px;
-
-    background: #f0e7f2;
-
-    color: #47164F;
-
-    text-decoration: none;
-
-    font-size: 11px;
-
-}
-
-
-.post-label:hover {
-
-    background: #47164F;
-
-    color: white;
-
-}
-
-
-/* ======================================================
-   LOADING
-====================================================== */
-
-.loading {
-
-    text-align: center;
-
-    padding: 50px 10px;
-
-    color: #666;
-
-    grid-column: 1 / -1;
-
-}
-
-
-/* ======================================================
-   ERROR
-====================================================== */
-
-.error {
-
-    background: white;
-
-    padding: 25px;
-
-    border-radius: 10px;
-
-    border:
-        1px solid #fecaca;
-
-    color: #b91c1c;
-
-    grid-column: 1 / -1;
-
-    text-align: center;
-
-}
-
-
-/* ======================================================
-   NO POSTS
-====================================================== */
-
-.no-posts {
-
-    background: white;
-
-    padding: 45px 25px;
-
-    border-radius: 10px;
-
-    text-align: center;
-
-    color: #666;
-
-    grid-column: 1 / -1;
-
-}
-
-
-.no-posts h2 {
-
-    margin-top: 0;
-
-    color: #333;
-
-}
-
-
-/* ======================================================
-   PAGINATION
-====================================================== */
-
-.pagination {
-
-    display: flex;
-
-    justify-content: center;
-
-    align-items: center;
-
-    flex-wrap: wrap;
-
-    gap: 8px;
-
-    margin-top: 40px;
-
-}
-
-
-.page-button {
-
-    border:
-        1px solid #d1d5db;
-
-    background: white;
-
-    color: #222;
-
-    padding:
-        9px 14px;
-
-    border-radius: 6px;
-
-    cursor: pointer;
-
-    font-size: 14px;
-
-}
-
-
-.page-button:hover {
-
-    border-color:
-        #47164F;
-
-    color:
-        #47164F;
-
-}
-
-
-.page-button.active {
-
-    background:
-        #47164F;
-
-    color: white;
-
-    border-color:
-        #47164F;
-
-}
-
-
-.page-button:disabled {
-
-    opacity: .45;
-
-    cursor: not-allowed;
-
-}
-
-
-.page-info {
-
-    color: #666;
-
-    font-size: 14px;
-
-    margin:
-        0 8px;
-
-}
-
-
-/* ======================================================
-   FOOTER
-====================================================== */
-
-.footer {
-
-    background: #111827;
-
-    color: #aaa;
-
-    text-align: center;
-
-    padding: 30px 15px;
-
-}
-
-
-/* ======================================================
-   TABLET
-====================================================== */
-
-@media (
-    max-width: 1100px
-) {
-
-    .posts-grid {
-
-        grid-template-columns:
-            repeat(3, 1fr);
-
-    }
-
-}
-
-
-/* ======================================================
-   SMALL TABLET
-====================================================== */
-
-@media (
-    max-width: 900px
-) {
-
-    .posts-grid {
-
-        grid-template-columns:
-            repeat(2, 1fr);
-
-    }
-
-}
-
-
-/* ======================================================
-   MOBILE
-====================================================== */
-
-@media (
-    max-width: 600px
-) {
-
-    .header-inner {
-
-        padding:
-            17px 0;
-
-        flex-direction:
-            inherit;
-
-        gap: 14px;
-
-    }
-
-
-    .nav a {
-
-        margin:
-            0 8px;
-
-    }
-
-
-    .container {
-
-        width: 94%;
-
-    }
-
-
-    .page-title {
-
-        font-size: 29px;
-
-    }
-
-
-    .posts-grid {
-
-        grid-template-columns:
-            1fr;
-
-    }
-
-
-    .post-image {
-
-        height: auto;
-
-        max-height: 700px;
-
-    }
-
-
-    .label-header h1 {
-
-        font-size: 27px;
-
-    }
-
-}
-
-</style>
-
-</head>
-
-
-<body>
-
-
-<header class="header">
-
-<div class="header-inner">
-
-<div class="logo">
-
-<a href="/">
-Film Stars
-</a>
-
-</div>
-
-
-<nav class="nav">
-
-<a href="/">
-Home
-</a>
-
-</nav>
-
-</div>
-
-</header>
-
-
-<main class="container">
-
-
-<!-- =====================================================
-     NORMAL BLOG TITLE
-====================================================== -->
-
-<div id="normalHeader">
-
-<h1 class="page-title">
-Filmstars Blog
-</h1>
-
-
-<p class="page-description">
-Latest posts from Tollywood Boost
-</p>
-
-</div>
-
-
-<!-- =====================================================
-     LABEL HEADER
-====================================================== -->
-
-<div
-    id="labelHeader"
-    class="label-header"
->
-
-<h1 id="labelTitle">
-</h1>
-
-
-<p id="labelDescription">
-</p>
-
-
-<a
-    class="view-all"
-    href="/blog"
->
-← View All Posts
-</a>
-
-</div>
-
-
-<!-- =====================================================
-     POSTS
-====================================================== -->
-
-<div
-    id="posts"
-    class="posts-grid"
->
-
-<div class="loading">
-
-Loading posts...
-
-</div>
-
-</div>
-
-
-<!-- =====================================================
-     PAGINATION
-====================================================== -->
-
-<div
-    id="pagination"
-    class="pagination"
->
-</div>
-
-
-</main>
-
-
-<footer class="footer">
-
-© <span id="year"></span> Filmstars
-
-</footer>
-
-
-<script>
-
-
-// ======================================================
-// SETTINGS
-// ======================================================
-
-const API =
-    "/api/blogger";
-
-
-const PER_PAGE =
-    20;
-
-
-// ======================================================
-// ELEMENTS
-// ======================================================
-
-const postsContainer =
-    document.getElementById(
-        "posts"
-    );
-
-
-const paginationContainer =
-    document.getElementById(
-        "pagination"
-    );
-
-
-const normalHeader =
-    document.getElementById(
-        "normalHeader"
-    );
-
-
-const labelHeader =
-    document.getElementById(
-        "labelHeader"
-    );
-
-
-const labelTitle =
-    document.getElementById(
-        "labelTitle"
-    );
-
-
-const labelDescription =
-    document.getElementById(
-        "labelDescription"
-    );
-
-
-document.getElementById(
-    "year"
-).textContent =
-    new Date().getFullYear();
-
-
-// ======================================================
-// READ URL
-// ======================================================
-
-const urlParams =
-    new URLSearchParams(
-        window.location.search
-    );
-
-
-/*
- * Example:
- *
- * /blog?label=Ankita%20Lokhande
- *
- * gives:
- *
- * Ankita Lokhande
- */
-
-const selectedLabel =
-    (
-        urlParams.get(
-            "label"
-        ) || ""
-    ).trim();
-
-
-// ======================================================
-// GET PAGE
-// ======================================================
-
-function getPage() {
-
-    const page =
-        parseInt(
-            urlParams.get(
-                "page"
-            ) || "1",
-            10
-        );
-
-
-    return (
-
-        Number.isFinite(page) &&
-        page > 0
-
-    )
-        ? page
-        : 1;
-
-}
-
-
-// ======================================================
-// ESCAPE
-// ======================================================
-
-function escapeHtml(value) {
-
-    return String(value || "")
-
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-
-        .replace(
-            /</g,
-            "&lt;"
-        )
-
-        .replace(
-            />/g,
-            "&gt;"
-        )
-
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
-
-
-// ======================================================
-// DATE
-// ======================================================
-
-function formatDate(value) {
-
-    if (!value) {
-
-        return "";
-
-    }
-
-
-    const date =
-        new Date(value);
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "";
-
-    }
-
-
-    return date.toLocaleDateString(
-        "en-IN",
-        {
-            day: "numeric",
-            month: "long",
-            year: "numeric"
-        }
-    );
-
-}
-
-
-// ======================================================
-// EXCERPT
-// ======================================================
-
-function getExcerpt(
-    html,
-    max = 150
-) {
-
-    if (!html) {
-
-        return "";
-
-    }
-
-
-    const div =
-        document.createElement(
-            "div"
-        );
-
-
-    div.innerHTML =
-        html;
-
-
-    const text =
-        div.textContent ||
-        div.innerText ||
-        "";
-
-
-    const clean =
-        text
-            .replace(
-                /\s+/g,
-                " "
-            )
-            .trim();
-
-
-    if (
-        clean.length <= max
-    ) {
-
-        return clean;
-
-    }
-
-
-    return (
-        clean
-            .substring(
-                0,
-                max
-            )
-            .trim() +
-        "..."
-    );
-
-}
-
-
-// ======================================================
-// IMAGE
-// ======================================================
-
-function improveImage(
-    url
-) {
-
-    if (!url) {
-
-        return "";
-
-    }
-
-
-    return url
-
-        .replace(
-            /\/s72-c\//g,
-            "/s800/"
-        )
-
-        .replace(
-            /\/s72\//g,
-            "/s800/"
-        )
-
-        .replace(
-            /\/w72-h72-p-k-no-nu\//g,
-            "/s800/"
-        )
-
-        .replace(
-            /\/w\d+-h\d+-p-k-no-nu\//g,
-            "/s800/"
-        )
-
-        .replace(
-            /\/s\d+\//g,
-            "/s800/"
-        );
-
-}
-
-
-// ======================================================
-// LABEL MATCH
-// ======================================================
-
-function hasLabel(
-    post
-) {
-
-    /*
-     * No label selected:
-     * show everything.
-     */
-
-    if (
-        !selectedLabel
-    ) {
-
-        return true;
-
-    }
-
-
-    /*
-     * Make sure labels exist.
-     */
-
-    if (
-        !Array.isArray(
-            post.labels
-        )
-    ) {
-
-        return false;
-
-    }
-
-
-    /*
-     * EXACT LABEL MATCH
-     *
-     * Ankita Lokhande
-     *
-     * will match:
-     *
-     * Ankita Lokhande
-     *
-     * but NOT:
-     *
-     * Ankita
-     * Ankita Lokhande Photos
-     */
-
-    const wanted =
-        selectedLabel
-            .trim()
-            .toLowerCase();
-
-
-    return post.labels.some(
-        label =>
-
-            String(label)
-                .trim()
-                .toLowerCase() ===
-            wanted
-
-    );
-
-}
-
-
-// ======================================================
-// LABEL LINKS
-// ======================================================
-
-function createLabels(
-    labels
-) {
-
-    if (
-        !Array.isArray(
-            labels
-        ) ||
-        labels.length === 0
-    ) {
-
-        return "";
-
-    }
-
-
-    return `
-
-        <div class="post-labels">
-
-            ${labels
-                .map(
-                    label => `
-
-                        <a
-                            class="post-label"
-                            href="/blog?label=${encodeURIComponent(label)}"
-                        >
-
-                            ${escapeHtml(
-                                label
-                            )}
-
-                        </a>
-
-                    `
-                )
-                .join("")}
-
-        </div>
-
-    `;
-
-}
-
-
-// ======================================================
-// CARD
-// ======================================================
-
-function createCard(
-    post
-) {
-
-    const title =
-        escapeHtml(
-            post.title
-        );
-
-
-    const url =
-        escapeHtml(
-            post.url
-        );
-
-
-    const image =
-        post.image
-            ? escapeHtml(
-                improveImage(
-                    post.image
-                )
-            )
-            : "";
-
-
-    const date =
-        escapeHtml(
-            formatDate(
-                post.published
-            )
-        );
-
-
-    const excerpt =
-        escapeHtml(
-            getExcerpt(
-                post.content
-            )
-        );
-
-
-    return `
-
-        <article class="post-card">
-
-
-            <a
-                class="post-image-link"
-                href="${url}"
-            >
-
-                ${
-                    image
-                        ? `
-
-                            <img
-                                class="post-image"
-                                src="${image}"
-                                alt="${title}"
-                                loading="lazy"
-                            >
-
-                          `
-                        : ""
-                }
-
-            </a>
-
-
-            <div class="post-content">
-
-
-                <h2 class="post-title">
-
-                    <a
-                        href="${url}"
-                    >
-
-                        ${title}
-
-                    </a>
-
-                </h2>
-
-
-                <div class="post-date">
-
-                    ${date}
-
-                </div>
-
-
-                <div class="post-excerpt">
-
-                    ${excerpt}
-
-                </div>
-
-
-                <a
-                    class="read-more"
-                    href="${url}"
-                >
-
-                    Read More
-
-                </a>
-
-
-                ${createLabels(
-                    post.labels
-                )}
-
-
-            </div>
-
-        </article>
-
-    `;
-
-}
-
-
-// ======================================================
-// PAGINATION URL
-// ======================================================
-
-function goToPage(
-    page
-) {
-
-    const url =
-        new URL(
-            window.location.href
-        );
-
-
-    /*
-     * Keep label.
-     */
-
-    if (
-        selectedLabel
-    ) {
-
-        url.searchParams.set(
-            "label",
-            selectedLabel
-        );
-
-    }
-
-
-    /*
-     * Remove page=1
-     */
-
-    if (
-        page <= 1
-    ) {
-
-        url.searchParams.delete(
-            "page"
-        );
-
-    } else {
-
-        url.searchParams.set(
-            "page",
-            page
-        );
-
-    }
-
-
-    window.location.href =
-        url.toString();
-
-}
-
-
-// ======================================================
-// PAGINATION
-// ======================================================
-
-function createPagination(
-    currentPage,
-    total
-) {
-
-    paginationContainer.innerHTML =
-        "";
-
-
-    const totalPages =
-        Math.ceil(
-            total /
-            PER_PAGE
-        );
-
-
-    if (
-        totalPages <= 1
-    ) {
-
-        return;
-
-    }
-
-
-    /*
-     * Previous
-     */
-
-    const previous =
-        document.createElement(
-            "button"
-        );
-
-
-    previous.className =
-        "page-button";
-
-
-    previous.textContent =
-        "← Previous";
-
-
-    previous.disabled =
-        currentPage <= 1;
-
-
-    previous.onclick =
-        function() {
-
-            if (
-                currentPage > 1
-            ) {
-
-                goToPage(
-                    currentPage - 1
-                );
-
-            }
-
-        };
-
-
-    paginationContainer.appendChild(
-        previous
-    );
-
-
-    /*
-     * Page numbers
-     */
-
-    let start =
-        Math.max(
-            1,
-            currentPage - 2
-        );
-
-
-    let end =
-        Math.min(
-            totalPages,
-            currentPage + 2
-        );
-
-
-    if (
-        currentPage <= 3
-    ) {
-
-        end =
-            Math.min(
-                totalPages,
-                5
-            );
-
-    }
-
-
-    if (
-        currentPage >=
-        totalPages - 2
-    ) {
-
-        start =
-            Math.max(
-                1,
-                totalPages - 4
-            );
-
-    }
-
-
-    for (
-        let page = start;
-        page <= end;
-        page++
-    ) {
-
-        const button =
-            document.createElement(
-                "button"
-            );
-
-
-        button.className =
-            "page-button";
-
-
-        button.textContent =
-            page;
-
-
-        if (
-            page === currentPage
-        ) {
-
-            button.classList.add(
-                "active"
-            );
-
-        }
-
-
-        button.onclick =
-            function() {
-
-                goToPage(
-                    page
-                );
-
-            };
-
-
-        paginationContainer.appendChild(
-            button
-        );
-
-    }
-
-
-    /*
-     * Next
-     */
-
-    const next =
-        document.createElement(
-            "button"
-        );
-
-
-    next.className =
-        "page-button";
-
-
-    next.textContent =
-        "Next →";
-
-
-    next.disabled =
-        currentPage >= totalPages;
-
-
-    next.onclick =
-        function() {
-
-            if (
-                currentPage <
-                totalPages
-            ) {
-
-                goToPage(
-                    currentPage + 1
-                );
-
-            }
-
-        };
-
-
-    paginationContainer.appendChild(
-        next
-    );
-
-
-    /*
-     * Page information
-     */
-
-    const info =
-        document.createElement(
-            "span"
-        );
-
-
-    info.className =
-        "page-info";
-
-
-    info.textContent =
-        `Page ${currentPage} of ${totalPages}`;
-
-
-    paginationContainer.appendChild(
-        info
-    );
-
-}
-
-
-// ======================================================
-// LOAD POSTS
-// ======================================================
-
 async function loadPosts() {
 
     const page =
         getPage();
+
+
+    /*
+     * Read label from URL.
+     *
+     * Example:
+     *
+     * /blog?label=Tollywood%20Actress
+     */
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const selectedLabel =
+        (
+            params.get("label") ||
+            ""
+        ).trim();
+
+
+    /*
+     * Calculate Blogger start index.
+     */
+
+    const startIndex =
+        (
+            (page - 1) *
+            PER_PAGE
+        ) + 1;
 
 
     postsContainer.innerHTML = `
@@ -1649,25 +51,64 @@ async function loadPosts() {
 
 
         /*
+         * ==================================================
+         * BUILD API URL
+         * ==================================================
+         */
+
+        const apiUrl =
+            new URL(
+                API,
+                window.location.origin
+            );
+
+
+        apiUrl.searchParams.set(
+            "start-index",
+            startIndex
+        );
+
+
+        apiUrl.searchParams.set(
+            "max-results",
+            PER_PAGE
+        );
+
+
+        /*
          * IMPORTANT:
          *
-         * We request a larger batch because
-         * label filtering must happen against
-         * the actual Blogger labels.
+         * Send the label to the server.
+         *
+         * Do NOT download 150 posts and filter
+         * them in JavaScript.
+         */
+
+        if (
+            selectedLabel
+        ) {
+
+            apiUrl.searchParams.set(
+                "label",
+                selectedLabel
+            );
+
+        }
+
+
+        /*
+         * ==================================================
+         * FETCH
+         * ==================================================
          */
 
         const response =
             await fetch(
-
-                `${API}` +
-                `?start-index=1` +
-                `&max-results=150`,
-
+                apiUrl.toString(),
                 {
                     cache:
                         "no-store"
                 }
-
             );
 
 
@@ -1698,7 +139,7 @@ async function loadPosts() {
         }
 
 
-        const allPosts =
+        const posts =
             Array.isArray(
                 data.posts
             )
@@ -1707,79 +148,102 @@ async function loadPosts() {
 
 
         /*
-         * =================================================
-         * LABEL FILTER
-         * =================================================
-         *
-         * If URL is:
-         *
-         * /blog
-         *
-         * all posts are shown.
-         *
-         * If URL is:
-         *
-         * /blog?label=Ankita%20Lokhande
-         *
-         * only posts with EXACTLY that label
-         * are shown.
+         * ==================================================
+         * LABEL HEADER
+         * ==================================================
          */
 
-        const filteredPosts =
-            allPosts.filter(
-                hasLabel
+        const normalHeader =
+            document.getElementById(
+                "normalHeader"
             );
 
 
-        /*
-         * =================================================
-         * LABEL HEADER
-         * =================================================
-         */
+        const labelHeader =
+            document.getElementById(
+                "labelHeader"
+            );
+
+
+        const labelTitle =
+            document.getElementById(
+                "labelTitle"
+            );
+
+
+        const labelDescription =
+            document.getElementById(
+                "labelDescription"
+            );
+
 
         if (
             selectedLabel
         ) {
 
-            normalHeader.style.display =
-                "none";
+            if (normalHeader) {
+
+                normalHeader.style.display =
+                    "none";
+
+            }
 
 
-            labelHeader.style.display =
-                "block";
+            if (labelHeader) {
+
+                labelHeader.style.display =
+                    "block";
+
+            }
 
 
-            labelTitle.textContent =
-                `Label: ${selectedLabel}`;
+            if (labelTitle) {
+
+                labelTitle.textContent =
+                    `Label: ${selectedLabel}`;
+
+            }
 
 
-            labelDescription.textContent =
-                `${filteredPosts.length} post${
-                    filteredPosts.length === 1
-                        ? ""
-                        : "s"
-                } found with this label.`;
+            if (labelDescription) {
+
+                labelDescription.textContent =
+                    `${data.total} post${
+                        Number(data.total) === 1
+                            ? ""
+                            : "s"
+                    } found with this label.`;
+
+            }
 
         } else {
 
-            normalHeader.style.display =
-                "block";
+            if (normalHeader) {
+
+                normalHeader.style.display =
+                    "block";
+
+            }
 
 
-            labelHeader.style.display =
-                "none";
+            if (labelHeader) {
+
+                labelHeader.style.display =
+                    "none";
+
+            }
 
         }
 
 
         /*
-         * =================================================
+         * ==================================================
          * NO POSTS
-         * =================================================
+         * ==================================================
          */
 
         if (
-            filteredPosts.length === 0
+            posts.length === 0
         ) {
 
             postsContainer.innerHTML = `
@@ -1791,18 +255,29 @@ async function loadPosts() {
                     </h2>
 
 
-                    <p>
+                    ${
+                        selectedLabel
+                            ? `
 
-                        No posts found with the label:
+                                <p>
+                                    No posts found with the label:
+                                </p>
 
-                    </p>
+                                <strong>
+                                    ${escapeHtml(
+                                        selectedLabel
+                                    )}
+                                </strong>
 
+                              `
+                            : `
 
-                    <strong>
-                        ${escapeHtml(
-                            selectedLabel
-                        )}
-                    </strong>
+                                <p>
+                                    No posts found.
+                                </p>
+
+                              `
+                    }
 
 
                     <br><br>
@@ -1832,72 +307,31 @@ async function loadPosts() {
 
 
         /*
-         * =================================================
-         * PAGINATION
-         * =================================================
-         */
-
-        const totalPages =
-            Math.ceil(
-                filteredPosts.length /
-                PER_PAGE
-            );
-
-
-        /*
-         * If page number is too high,
-         * go back to page 1.
-         */
-
-        if (
-            page > totalPages
-        ) {
-
-            goToPage(
-                1
-            );
-
-            return;
-
-        }
-
-
-        const start =
-            (
-                page - 1
-            ) *
-            PER_PAGE;
-
-
-        const end =
-            start +
-            PER_PAGE;
-
-
-        const pagePosts =
-            filteredPosts.slice(
-                start,
-                end
-            );
-
-
-        /*
-         * =================================================
-         * DISPLAY
-         * =================================================
+         * ==================================================
+         * DISPLAY POSTS
+         * ==================================================
          */
 
         postsContainer.innerHTML =
-            pagePosts
+            posts
                 .map(
                     createCard
                 )
                 .join("");
 
 
+        /*
+         * ==================================================
+         * PAGINATION
+         * ==================================================
+         *
+         * data.total is the TOTAL number of Blogger
+         * posts, not just the 20 currently displayed.
+         */
+
         createPagination(
             page,
-            filteredPosts.length
+            Number(data.total) || posts.length
         );
 
 
@@ -1947,17 +381,3 @@ async function loadPosts() {
     }
 
 }
-
-
-// ======================================================
-// START
-// ======================================================
-
-loadPosts();
-
-</script>
-
-
-</body>
-
-</html>
