@@ -5,13 +5,18 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-<title>Film Stars</title>
+<title>
+Filmstars
+</title>
 
 <meta
     name="description"
-    content="Latest film stars and celebrity posts from Tollywood Boost."
+    content="Latest film stars and celebrity posts from Filmstars."
 >
 
 <style>
@@ -37,7 +42,6 @@ body {
     max-width: 1200px;
     min-height: 68px;
     margin: auto;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -57,7 +61,6 @@ body {
     color: white;
     text-decoration: none;
     margin-left: 22px;
-    font-weight: bold;
 }
 
 .hero {
@@ -80,7 +83,7 @@ body {
 .container {
     width: 92%;
     max-width: 1200px;
-    margin: 0 auto 70px;
+    margin: 35px auto 70px;
 }
 
 .title-wrap {
@@ -111,12 +114,8 @@ body {
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-
     box-shadow: 0 4px 15px rgba(0,0,0,.05);
-
-    transition:
-        transform .15s ease,
-        box-shadow .15s ease;
+    transition: transform .15s ease, box-shadow .15s ease;
 }
 
 .post-card:hover {
@@ -127,25 +126,13 @@ body {
 .post-image-link {
     display: block;
     background: #f1f1f1;
-    overflow: hidden;
 }
-
-/*
-    IMPORTANT:
-    Do not use object-fit: fill.
-    It distorts faces and bodies.
-
-    contain keeps the complete image visible.
-*/
 
 .post-image {
     width: 100%;
     height: 360px;
-
     display: block;
-
     object-fit: contain;
-
     background: #f1f1f1;
 }
 
@@ -180,34 +167,28 @@ body {
 .read-more {
     display: inline-block;
     padding: 8px 13px;
-
     border-radius: 5px;
-
     background: #47164F;
     color: white;
-
     text-decoration: none;
-
     font-size: 13px;
     font-weight: bold;
 }
 
 .loading {
+    grid-column: 1 / -1;
     text-align: center;
     padding: 50px 10px;
     color: #666;
 }
 
 .error {
+    grid-column: 1 / -1;
     background: white;
     padding: 25px;
     border-radius: 10px;
-
     border: 1px solid #fecaca;
-
     color: #b91c1c;
-
-    grid-column: 1 / -1;
 }
 
 .view-blog {
@@ -217,29 +198,22 @@ body {
 
 .view-blog a {
     display: inline-block;
-
     background: #47164F;
     color: white;
-
     text-decoration: none;
-
     padding: 11px 20px;
-
     border-radius: 6px;
-
     font-weight: bold;
 }
 
 .footer {
     background: #111827;
     color: #aaa;
-
     text-align: center;
-
     padding: 30px 15px;
 }
 
-@media (max-width: 900px) {
+@media(max-width:900px) {
 
     .posts-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -247,11 +221,11 @@ body {
 
 }
 
-@media (max-width: 600px) {
+@media(max-width:600px) {
 
     .header-inner {
-        width: 94%;
-        min-height: 65px;
+        padding: 17px 0;
+        gap: 14px;
     }
 
     .logo {
@@ -259,8 +233,7 @@ body {
     }
 
     .nav a {
-        margin-left: 10px;
-        font-size: 14px;
+        margin: 0 8px;
     }
 
     .hero h1 {
@@ -274,7 +247,6 @@ body {
     .post-image {
         height: auto;
         max-height: 700px;
-        object-fit: contain;
     }
 
 }
@@ -285,135 +257,176 @@ body {
 
 <body>
 
+
 <header class="header">
 
-    <div class="header-inner">
+<div class="header-inner">
 
-        <div class="logo">
+<div class="logo">
 
-            <a href="/">
-                Film Stars
-            </a>
+<a href="/">
+Film Stars
+</a>
 
-        </div>
+</div>
 
-        <nav class="nav">
+<nav class="nav">
 
-            <a href="/">
-                Home
-            </a>
+<a href="/">
+Home
+</a>
 
-            <a href="/blog">
-                Blog
-            </a>
+<a href="/blog">
+Blog
+</a>
 
-        </nav>
+<a href="/blog?label=Hollywood%20Actress">
+Hollywood Actress
+</a>
 
-    </div>
+</nav>
+
+</div>
 
 </header>
 
 
-<section class="hero">
-
-    <h1>
-        Film Stars
-    </h1>
-
-    <p>
-        Latest celebrity and filmstar posts
-    </p>
-
-</section>
-
-
 <main class="container">
 
-    <div class="title-wrap">
 
-        <h2 class="section-title">
-            Latest Posts
-        </h2>
+<div class="title-wrap">
 
-    </div>
+<h1 class="section-title">
+Latest Posts
+</h1>
 
-
-    <div
-        id="posts"
-        class="posts-grid"
-    >
-
-        <div class="loading">
-            Loading posts...
-        </div>
-
-    </div>
+</div>
 
 
-    <div class="view-blog">
+<div
+    id="posts"
+    class="posts-grid"
+>
 
-        <a href="/blog">
-            View All Posts →
-        </a>
+<div class="loading">
+Loading posts...
+</div>
 
-    </div>
+</div>
+
+
+<div class="view-blog">
+
+<a href="/blog">
+View All Posts →
+</a>
+
+</div>
+
 
 </main>
 
 
 <footer class="footer">
 
-    © <span id="year"></span> Filmstars
+© <span id="year"></span> Filmstars
 
 </footer>
 
 
 <script>
 
-const API = "/api/blogger";
 
-const POSTS_TO_SHOW = 16;
+// ============================================================
+// API
+// ============================================================
+//
+// IMPORTANT:
+// functions/blogger-posts.js
+// maps to:
+// /blogger-posts
+//
+// ============================================================
+
+const API =
+    "/blogger-posts";
+
+
+const POSTS_TO_SHOW =
+    16;
+
 
 const postsContainer =
-    document.getElementById("posts");
+    document.getElementById(
+        "posts"
+    );
 
-document.getElementById("year").textContent =
+
+document.getElementById(
+    "year"
+).textContent =
     new Date().getFullYear();
 
 
-// ======================================================
-// ESCAPE HTML
-// ======================================================
+// ============================================================
+// ESCAPE
+// ============================================================
 
-function escapeHtml(value) {
+function escapeHtml(
+    value
+) {
 
-    return String(value || "")
+    return String(
+        value || ""
+    )
 
-        .replace(/&/g, "&amp;")
+        .replace(
+            /&/g,
+            "&amp;"
+        )
 
-        .replace(/</g, "&lt;")
+        .replace(
+            /</g,
+            "&lt;"
+        )
 
-        .replace(/>/g, "&gt;")
+        .replace(
+            />/g,
+            "&gt;"
+        )
 
-        .replace(/"/g, "&quot;")
+        .replace(
+            /"/g,
+            "&quot;"
+        )
 
-        .replace(/'/g, "&#039;");
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 }
 
 
-// ======================================================
+// ============================================================
 // DATE
-// ======================================================
+// ============================================================
 
-function formatDate(value) {
+function formatDate(
+    value
+) {
 
     if (!value) {
         return "";
     }
 
-    const date = new Date(value);
+    const date =
+        new Date(value);
 
-    if (Number.isNaN(date.getTime())) {
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
         return "";
     }
 
@@ -428,20 +441,26 @@ function formatDate(value) {
 }
 
 
-// ======================================================
+// ============================================================
 // EXCERPT
-// ======================================================
+// ============================================================
 
-function getExcerpt(html, max = 130) {
+function getExcerpt(
+    html,
+    max = 130
+) {
 
     if (!html) {
         return "";
     }
 
     const div =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
-    div.innerHTML = html;
+    div.innerHTML =
+        html;
 
     const text =
         div.textContent ||
@@ -450,168 +469,196 @@ function getExcerpt(html, max = 130) {
 
     const clean =
         text
-            .replace(/\s+/g, " ")
+            .replace(
+                /\s+/g,
+                " "
+            )
             .trim();
 
-    if (clean.length <= max) {
+    if (
+        clean.length <= max
+    ) {
         return clean;
     }
 
-    return clean
-        .substring(0, max)
-        .trim() + "...";
+    return (
+        clean
+            .substring(
+                0,
+                max
+            )
+            .trim() +
+        "..."
+    );
 }
 
 
-// ======================================================
+// ============================================================
 // CARD
-// ======================================================
+// ============================================================
 
-function createCard(post) {
-
-    /*
-        IMPORTANT:
-
-        post.url must already be:
-
-        /2026/06/example.html
-
-        NOT:
-
-        https://tollywoodboost.blogspot.com/...
-    */
+function createCard(
+    post
+) {
 
     const title =
-        escapeHtml(post.title);
+        escapeHtml(
+            post.title
+        );
 
     const url =
-        escapeHtml(post.url);
+        escapeHtml(
+            post.url
+        );
 
     const image =
         post.image
-            ? escapeHtml(post.image)
+            ? escapeHtml(
+                post.image
+            )
             : "";
 
     const date =
         escapeHtml(
-            formatDate(post.published)
+            formatDate(
+                post.published
+            )
         );
 
     const excerpt =
         escapeHtml(
-            getExcerpt(post.content)
+            getExcerpt(
+                post.content
+            )
         );
 
 
     return `
 
-        <article class="post-card">
+<article class="post-card">
 
-            ${
-                image
-                    ? `
+<a
+    class="post-image-link"
+    href="${url}"
+>
 
-                    <a
-                        class="post-image-link"
-                        href="${url}"
-                    >
+${
+    image
+        ? `
 
-                        <img
-                            class="post-image"
-                            src="${image}"
-                            alt="${title}"
-                            loading="lazy"
-                            decoding="async"
-                        >
+<img
+    class="post-image"
+    src="${image}"
+    alt="${title}"
+    loading="lazy"
+    decoding="async"
+>
 
-                    </a>
+`
+        : ""
+}
 
-                    `
-                    : ""
-            }
-
-
-            <div class="post-content">
-
-                <h2 class="post-title">
-
-                    <a href="${url}">
-                        ${title}
-                    </a>
-
-                </h2>
+</a>
 
 
-                <div class="post-date">
-                    ${date}
-                </div>
+<div class="post-content">
+
+<h2 class="post-title">
+
+<a
+    href="${url}"
+>
+${title}
+</a>
+
+</h2>
 
 
-                <div class="post-excerpt">
-                    ${excerpt}
-                </div>
+<div class="post-date">
+
+${date}
+
+</div>
 
 
-                <a
-                    class="read-more"
-                    href="${url}"
-                >
-                    Read More
-                </a>
+<div class="post-excerpt">
 
-            </div>
+${excerpt}
 
-        </article>
+</div>
 
-    `;
+
+<a
+    class="read-more"
+    href="${url}"
+>
+Read More
+</a>
+
+</div>
+
+</article>
+
+`;
+
 }
 
 
-// ======================================================
-// LOAD POSTS
-// ======================================================
+// ============================================================
+// LOAD HOMEPAGE
+// ============================================================
 
 async function loadPosts() {
 
     postsContainer.innerHTML = `
 
-        <div class="loading">
-            Loading posts...
-        </div>
+<div class="loading">
+Loading posts...
+</div>
 
-    `;
+`;
 
 
     try {
 
         const url =
-            API +
-            "?start-index=1" +
-            "&max-results=" +
-            POSTS_TO_SHOW;
+            new URL(
+                API,
+                window.location.origin
+            );
+
+
+        url.searchParams.set(
+            "page",
+            "1"
+        );
+
+
+        url.searchParams.set(
+            "max-results",
+            String(
+                POSTS_TO_SHOW
+            )
+        );
 
 
         const response =
             await fetch(
-                url,
+                url.toString(),
                 {
-                    method: "GET",
-                    cache: "no-store",
-                    headers: {
-                        "Accept":
-                            "application/json"
-                    }
+                    cache:
+                        "no-store"
                 }
             );
 
 
-        if (!response.ok) {
+        if (
+            !response.ok
+        ) {
 
             throw new Error(
-                "HTTP " +
-                response.status
+                `HTTP ${response.status}`
             );
-
         }
 
 
@@ -619,39 +666,38 @@ async function loadPosts() {
             await response.json();
 
 
-        console.log(
-            "Blogger API:",
-            data
-        );
-
-
-        if (!data.success) {
+        if (
+            !data.success
+        ) {
 
             throw new Error(
                 data.error ||
-                "API returned success=false"
+                "Unable to load posts"
             );
-
         }
 
 
         const posts =
-            Array.isArray(data.posts)
+            Array.isArray(
+                data.posts
+            )
                 ? data.posts
                 : [];
 
 
-        if (posts.length === 0) {
+        if (
+            posts.length === 0
+        ) {
 
             postsContainer.innerHTML = `
 
-                <div class="loading">
+<div class="loading">
 
-                    No posts found.
+No posts found.
 
-                </div>
+</div>
 
-            `;
+`;
 
             return;
         }
@@ -659,45 +705,45 @@ async function loadPosts() {
 
         postsContainer.innerHTML =
             posts
-                .map(createCard)
+                .map(
+                    createCard
+                )
                 .join("");
 
 
-    }
-
-    catch (error) {
+    } catch (
+        error
+    ) {
 
         console.error(
-            "Filmstars Blogger error:",
+            "Filmstars homepage error:",
             error
         );
 
 
         postsContainer.innerHTML = `
 
-            <div class="error">
+<div class="error">
 
-                <strong>
-                    Unable to load posts right now.
-                </strong>
+<strong>
+Unable to load posts right now.
+</strong>
 
-                <br><br>
+<br><br>
 
-                Please try again later.
+Please try again later.
 
-                <br><br>
+<br><br>
 
-                <button
-                    type="button"
-                    onclick="loadPosts()"
-                >
-                    Try Again
-                </button>
+<button
+    onclick="loadPosts()"
+>
+Try Again
+</button>
 
-            </div>
+</div>
 
-        `;
-
+`;
     }
 
 }
@@ -706,6 +752,7 @@ async function loadPosts() {
 loadPosts();
 
 </script>
+
 
 </body>
 
