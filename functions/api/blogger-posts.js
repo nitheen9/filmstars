@@ -1,55 +1,34 @@
 const BLOGS = {
-    abc: "https://tollywoodboost.blogspot.com",
-    xyz: "https://tollyboost.blogspot.com"
+    tollywoodboost: "https://tollywoodboost.blogspot.com",
+    tollyboost: "https://tollyboost.blogspot.com"
 };
 
-const MAX_RESULTS = 500;
+const FEED_SIZE = 150;
 
 export async function onRequestGet(context) {
 
-    const requestUrl = new URL(
-        context.request.url
-    );
+    const requestUrl = new URL(context.request.url);
 
-    const blog = requestUrl.searchParams.get(
-        "blog"
-    );
+    const blog = requestUrl.searchParams.get("blog");
 
     const start = Number(
-        requestUrl.searchParams.get(
-            "start"
-        ) || "1"
+        requestUrl.searchParams.get("start") || "1"
     );
 
-
     if (!BLOGS[blog]) {
-
-        return json(
-            {
-                success: false,
-                error:
-                    "Invalid blog. Use abc or xyz."
-            },
-            400
-        );
+        return json({
+            success: false,
+            error:
+                "Invalid blog. Use tollywoodboost or tollyboost."
+        }, 400);
     }
 
-
-    if (
-        !Number.isInteger(start) ||
-        start < 1
-    ) {
-
-        return json(
-            {
-                success: false,
-                error:
-                    "Invalid start value."
-            },
-            400
-        );
+    if (!Number.isInteger(start) || start < 1) {
+        return json({
+            success: false,
+            error: "Invalid start value."
+        }, 400);
     }
-
 
     const feedUrl =
         BLOGS[blog] +
@@ -58,79 +37,72 @@ export async function onRequestGet(context) {
         "&start-index=" +
         start +
         "&max-results=" +
-        MAX_RESULTS;
-
+        FEED_SIZE;
 
     try {
 
-        const response =
-            await fetch(
-                feedUrl,
-                {
-                    headers: {
-                        "User-Agent":
-                            "Mozilla/5.0 Filmstars Blogger Duplicate Finder"
-                    }
-                }
-            );
-
+        const response = await fetch(feedUrl, {
+            headers: {
+                "User-Agent":
+                    "Mozilla/5.0 Filmstars Duplicate Finder"
+            }
+        });
 
         if (!response.ok) {
-
-            return json(
-                {
-                    success: false,
-                    error:
-                        "Blogger returned HTTP " +
-                        response.status
-                },
-                502
-            );
+            return json({
+                success: false,
+                error:
+                    "Blogger returned HTTP " +
+                    response.status
+            }, 502);
         }
 
+        const contentType =
+            response.headers.get("content-type") || "";
 
-        const data =
-            await response.json();
+        if (!contentType.includes("json")) {
 
+            const text = await response.text();
+
+            return json({
+                success: false,
+                error:
+                    "Blogger did not return JSON.",
+                response:
+                    text.substring(0, 300)
+            }, 502);
+        }
+
+        const data = await response.json();
 
         const entries =
             data?.feed?.entry || [];
 
-
         const posts =
-            entries.map(
-                parsePost
-            );
-
+            entries.map(parsePost);
 
         return json({
             success: true,
-            blog: blog,
-            start: start,
+            blog,
+            start,
             count: posts.length,
-            hasMore:
-                posts.length === MAX_RESULTS,
-            posts: posts
+            posts
         });
 
-    }
-    catch (error) {
+    } catch (error) {
 
-        return json(
-            {
-                success: false,
-                error:
-                    error?.message ||
-                    "Unable to read Blogger."
-            },
-            500
-        );
+        return json({
+            success: false,
+            error:
+                error?.message ||
+                "Unable to retrieve Blogger feed."
+        }, 500);
     }
 }
 
 
 /* =========================================
-   PARSE BLOGGER POST
+   PARSE POST
 ========================================= */
 
 function parsePost(entry) {
@@ -140,61 +112,53 @@ function parsePost(entry) {
             ? entry.link
             : [];
 
-
     const alternate =
         links.find(
-            link =>
-                link.rel === "alternate"
+            x => x.rel === "alternate"
         );
-
 
     const title =
         entry.title?.$t || "";
-
 
     const content =
         entry.content?.$t ||
         entry.summary?.$t ||
         "";
 
-
     const published =
         entry.published?.$t || "";
-
 
     const updated =
         entry.updated?.$t || "";
 
-
     const id =
         entry.id?.$t || "";
 
+    const images =
+        extractImages(content);
 
     return {
-
-        id: id,
-
-        title: title,
-
-        published: published,
-
-        updated: updated,
-
-        url:
-            alternate?.href || "",
-
-        content: content,
-
-        images:
-            extractImages(
-                content
+        id,
+        title,
+        published,
+        updated,
+        url: alternate?.href || "",
+        content,
+        images,
+        titleKey:
+            normalizeTitle(title),
+        textKey:
+            normalizeText(content),
+        imageKeys:
+            images.map(
+                normalizeImageFilename
             )
     };
 }
 
 
 /* =========================================
-   EXTRACT BLOGGER IMAGES
+   IMAGE EXTRACTION
 ========================================= */
 
 function extractImages(html) {
@@ -203,137 +167,189 @@ function extractImages(html) {
         return [];
     }
 
+    const results = [];
 
-    const images = [];
-
-
-    /*
-     * src
-     */
-
-    const srcRegex =
-        /<img[^>]+src\s*=\s*["']([^"']+)["']/gi;
-
+    const regex =
+        /<(?:img)[^>]+(?:src|data-src)\s*=\s*["']([^"']+)["']/gi;
 
     let match;
 
-
     while (
-        (match =
-            srcRegex.exec(html)) !== null
+        (match = regex.exec(html)) !== null
     ) {
 
-        const image =
-            normalizeImage(
-                match[1]
-            );
+        const original = match[1];
 
+        const filename =
+            getImageFilename(original);
 
         if (
-            image &&
-            !images.includes(image)
+            filename &&
+            !results.includes(filename)
         ) {
-
-            images.push(image);
+            results.push(filename);
         }
     }
 
-
-    /*
-     * data-src
-     */
-
-    const dataRegex =
-        /<img[^>]+data-src\s*=\s*["']([^"']+)["']/gi;
-
-
-    while (
-        (match =
-            dataRegex.exec(html)) !== null
-    ) {
-
-        const image =
-            normalizeImage(
-                match[1]
-            );
-
-
-        if (
-            image &&
-            !images.includes(image)
-        ) {
-
-            images.push(image);
-        }
-    }
-
-
-    return images;
+    return results;
 }
 
 
 /* =========================================
-   NORMALIZE BLOGGER IMAGE URL
+   IMAGE FILENAME
 ========================================= */
 
-function normalizeImage(url) {
+function getImageFilename(url) {
 
-    if (!url) {
-        return "";
+    try {
+
+        let clean =
+            String(url)
+                .split("?")[0];
+
+        const parts =
+            clean.split("/");
+
+        let filename =
+            parts[parts.length - 1] || "";
+
+        filename =
+            decodeURIComponent(filename);
+
+        return filename;
+
+    } catch {
+
+        return String(url);
     }
-
-
-    let result = url;
-
-
-    /*
-     * Examples:
-     *
-     * /s400/
-     * /s800/
-     * /s1600/
-     * /s1600-rw/
-     */
-
-    result =
-        result.replace(
-            /\/s\d+(?:-rw)?\//i,
-            "/s1600/"
-        );
-
-
-    /*
-     * Remove Google image
-     * transformation suffix.
-     *
-     * =w0-h0-p-k-no-nu
-     */
-
-    result =
-        result.replace(
-            /=w\d+.*$/i,
-            ""
-        );
-
-
-    return result;
 }
 
 
 /* =========================================
-   JSON RESPONSE
+   IMAGE NORMALIZATION
 ========================================= */
 
-function json(
-    data,
-    status = 200
-) {
+function normalizeImageFilename(value) {
+
+    return String(value || "")
+        .toLowerCase()
+        .replace(/\+/g, " ")
+        .replace(/%20/g, " ")
+        .replace(/%2520/g, " ")
+        .replace(/%28/g, "(")
+        .replace(/%29/g, ")")
+        .replace(/%2528/g, "(")
+        .replace(/%2529/g, ")")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+
+/* =========================================
+   TITLE NORMALIZATION
+========================================= */
+
+function normalizeTitle(value) {
+
+    return String(value || "")
+        .normalize("NFKC")
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}\s]/gu, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+
+/* =========================================
+   TEXT NORMALIZATION
+========================================= */
+
+function normalizeText(html) {
+
+    let value =
+        String(html || "");
+
+    value =
+        value.replace(
+            /<script[\s\S]*?<\/script>/gi,
+            " "
+        );
+
+    value =
+        value.replace(
+            /<style[\s\S]*?<\/style>/gi,
+            " "
+        );
+
+    /*
+     * Replace image tags with their
+     * normalized filenames.
+     */
+
+    value =
+        value.replace(
+            /<img[^>]*>/gi,
+            function(tag) {
+
+                const match =
+                    tag.match(
+                        /(?:src|data-src)\s*=\s*["']([^"']+)["']/i
+                    );
+
+                if (!match) {
+                    return " ";
+                }
+
+                return (
+                    " IMAGE " +
+                    normalizeImageFilename(
+                        getImageFilename(
+                            match[1]
+                        )
+                    ) +
+                    " "
+                );
+            }
+        );
+
+    /*
+     * Remove HTML.
+     */
+
+    value =
+        value.replace(
+            /<[^>]+>/g,
+            " "
+        );
+
+    /*
+     * Decode common entities.
+     */
+
+    value =
+        value
+            .replace(/&nbsp;/gi, " ")
+            .replace(/&amp;/gi, "&")
+            .replace(/&quot;/gi, '"')
+            .replace(/&#39;/gi, "'");
+
+    return value
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+
+/* =========================================
+   JSON
+========================================= */
+
+function json(data, status = 200) {
 
     return new Response(
         JSON.stringify(data),
         {
-            status: status,
-
+            status,
             headers: {
                 "Content-Type":
                     "application/json; charset=UTF-8",
