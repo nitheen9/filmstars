@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
@@ -12,7 +11,7 @@
 >
 
 <title>
-Blogger Duplicate Post Finder
+Blogger Duplicate Finder
 </title>
 
 <style>
@@ -23,7 +22,10 @@ Blogger Duplicate Post Finder
 
 body {
     margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
     background: #f5f6f8;
     color: #222;
 }
@@ -49,76 +51,119 @@ header p {
     padding: 20px;
 }
 
-.controls {
+.panel {
     background: white;
-    padding: 20px;
     border-radius: 10px;
+    padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    box-shadow:
+        0 2px 10px rgba(0,0,0,.08);
 }
 
-button {
-    border: 0;
-    border-radius: 6px;
-    padding: 13px 20px;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-right: 8px;
+.panel h2 {
+    margin-top: 0;
+}
+
+.batch-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(4, 1fr);
+    gap: 10px;
+}
+
+.batch-button {
     background: #fe5301;
     color: white;
+    border: 0;
+    border-radius: 7px;
+    padding: 14px 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
 }
 
-button:disabled {
+.batch-button:hover {
+    opacity: .9;
+}
+
+.batch-button:disabled {
     background: #999;
     cursor: not-allowed;
 }
 
-.download {
+.batch-button.done {
     background: #198754;
+}
+
+.batch-button.running {
+    background: #555;
+}
+
+.actions {
+    margin-top: 20px;
+}
+
+.action-button {
+    border: 0;
+    border-radius: 7px;
+    padding: 12px 18px;
+    cursor: pointer;
+    background: #222;
+    color: white;
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+.action-button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
 }
 
 #status {
     margin-top: 15px;
     font-weight: bold;
+    line-height: 1.6;
 }
 
 .progress {
-    margin-top: 15px;
+    width: 100%;
     height: 20px;
     background: #ddd;
     border-radius: 20px;
     overflow: hidden;
+    margin-top: 15px;
 }
 
 #progressBar {
-    height: 100%;
     width: 0%;
+    height: 100%;
     background: #fe5301;
-    transition: width .2s;
+    transition: width .3s;
 }
 
-.summary {
+.stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns:
+        repeat(5, 1fr);
     gap: 12px;
     margin-bottom: 20px;
 }
 
-.card {
+.stat {
     background: white;
     padding: 18px;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    box-shadow:
+        0 2px 8px rgba(0,0,0,.06);
 }
 
-.card strong {
+.stat strong {
     display: block;
-    font-size: 26px;
+    font-size: 25px;
     margin-bottom: 5px;
 }
 
-.card span {
+.stat span {
     color: #666;
     font-size: 13px;
 }
@@ -126,97 +171,104 @@ button:disabled {
 .match {
     background: white;
     border-radius: 10px;
-    margin-bottom: 25px;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    margin-bottom: 20px;
+    box-shadow:
+        0 2px 10px rgba(0,0,0,.08);
 }
 
 .match-header {
     background: #222;
     color: white;
-    padding: 14px 18px;
+    padding: 13px 18px;
     font-weight: bold;
 }
 
 .columns {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns:
+        1fr 1fr;
 }
 
 .column {
     padding: 20px;
-    min-width: 0;
 }
 
 .column:first-child {
-    border-right: 1px solid #ddd;
+    border-right:
+        1px solid #ddd;
 }
 
 .column h2 {
     margin-top: 0;
 }
 
-.title {
+.post-title {
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 10px;
 }
 
-.date {
+.post-date {
     color: #666;
     font-size: 13px;
-    margin-bottom: 12px;
-}
-
-.url {
-    background: #f1f1f1;
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 13px;
-    word-break: break-all;
-}
-
-.url a {
-    color: #06c;
-}
-
-.images {
-    margin-top: 20px;
-}
-
-.image {
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 8px;
     margin-bottom: 15px;
 }
 
-.image img {
-    width: 100%;
-    max-height: 300px;
-    object-fit: contain;
-    display: block;
-    background: #eee;
+.url-box {
+    background: #f1f1f1;
+    padding: 12px;
+    border-radius: 5px;
+    word-break: break-all;
 }
 
-.image-url {
-    margin-top: 8px;
-    font-size: 10px;
-    color: #555;
+.url-box a {
+    color: #06c;
+}
+
+.image-list {
+    margin-top: 20px;
+}
+
+.image-name {
+    padding: 8px;
+    background: #f7f7f7;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    font-size: 12px;
     word-break: break-all;
 }
 
 .empty {
     background: white;
     padding: 40px;
-    text-align: center;
     border-radius: 10px;
+    text-align: center;
 }
 
-@media(max-width:900px) {
+@media(max-width:1000px) {
 
-    .summary {
-        grid-template-columns: repeat(2,1fr);
+    .batch-grid {
+        grid-template-columns:
+            repeat(3, 1fr);
+    }
+
+    .stats {
+        grid-template-columns:
+            repeat(3, 1fr);
+    }
+}
+
+@media(max-width:700px) {
+
+    .batch-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .stats {
+        grid-template-columns:
+            repeat(2, 1fr);
     }
 
     .columns {
@@ -225,20 +277,15 @@ button:disabled {
 
     .column:first-child {
         border-right: 0;
-        border-bottom: 1px solid #ddd;
-    }
-}
-
-@media(max-width:550px) {
-
-    .summary {
-        grid-template-columns: 1fr;
+        border-bottom:
+            1px solid #ddd;
     }
 }
 
 </style>
 
 </head>
+
 
 <body>
 
@@ -254,29 +301,46 @@ TollywoodBoost ↔ TollyBoost
 
 </header>
 
+
 <div class="container">
 
-<div class="controls">
+
+<div class="panel">
+
+<h2>
+Scan 1,000 Posts at a Time
+</h2>
+
+<p>
+Select a batch. Only that 1,000-post range
+will be downloaded and compared.
+</p>
+
+
+<div
+    class="batch-grid"
+    id="batchGrid"
+></div>
+
+
+<div class="actions">
 
 <button
-    id="startButton"
-    onclick="startComparison()"
->
-Check All Posts
-</button>
-
-<button
-    id="downloadButton"
-    class="download"
+    class="action-button"
     onclick="downloadCSV()"
+    id="csvButton"
     disabled
 >
-Download CSV
+Download Current Batch CSV
 </button>
 
-<div id="status">
-Ready.
 </div>
+
+
+<div id="status">
+Ready. Select a batch.
+</div>
+
 
 <div class="progress">
 
@@ -288,29 +352,72 @@ Ready.
 
 
 <div
-    id="summary"
-    class="summary"
-    style="display:none;"
+    class="stats"
+    id="stats"
 >
 
-<div class="card">
-<strong id="abcCount">0</strong>
-<span>TollywoodBoost Posts</span>
+<div class="stat">
+
+<strong id="abcCount">
+0
+</strong>
+
+<span>
+TollywoodBoost Posts
+</span>
+
 </div>
 
-<div class="card">
-<strong id="xyzCount">0</strong>
-<span>TollyBoost Posts</span>
+
+<div class="stat">
+
+<strong id="xyzCount">
+0
+</strong>
+
+<span>
+TollyBoost Posts
+</span>
+
 </div>
 
-<div class="card">
-<strong id="duplicateCount">0</strong>
-<span>Duplicates</span>
+
+<div class="stat">
+
+<strong id="duplicateCount">
+0
+</strong>
+
+<span>
+Duplicates
+</span>
+
 </div>
 
-<div class="card">
-<strong id="notFound">0</strong>
-<span>Not Found</span>
+
+<div class="stat">
+
+<strong id="notFoundCount">
+0
+</strong>
+
+<span>
+Not Found
+</span>
+
+</div>
+
+
+<div class="stat">
+
+<strong id="matchRate">
+0%
+</strong>
+
+<span>
+Match Rate
+</span>
+
 </div>
 
 </div>
@@ -320,115 +427,273 @@ Ready.
 
 <div class="empty">
 
-Click
-<strong>Check All Posts</strong>
-to compare the two Blogger blogs.
+Select a 1,000-post batch above.
 
 </div>
 
 </div>
+
 
 </div>
 
 
 <script>
 
-const BATCH_SIZE = 150;
 
-let abcPosts = [];
-let xyzPosts = [];
-let duplicateResults = [];
+/* =========================================
+   SETTINGS
+========================================= */
+
+const BATCH_SIZE = 1000;
+
+const FEED_PAGE_SIZE = 100;
+
+const MAX_RETRIES = 5;
+
+const REQUEST_DELAY = 1500;
 
 
 /* =========================================
-   START
+   CURRENT DATA
 ========================================= */
 
-async function startComparison() {
+let currentABC = [];
 
-    const startButton =
-        document.getElementById("startButton");
+let currentXYZ = [];
 
-    const downloadButton =
-        document.getElementById("downloadButton");
+let currentMatches = [];
 
-    startButton.disabled = true;
-    downloadButton.disabled = true;
-
-    abcPosts = [];
-    xyzPosts = [];
-    duplicateResults = [];
-
-    document.getElementById("results").innerHTML = "";
-
-    try {
-
-        abcPosts =
-            await loadAllPosts(
-                "tollywoodboost"
-            );
-
-        document.getElementById("abcCount").textContent =
-            abcPosts.length.toLocaleString();
-
-        document.getElementById("summary").style.display =
-            "grid";
+let currentBatch = 0;
 
 
-        xyzPosts =
-            await loadAllPosts(
-                "tollyboost"
-            );
+/* =========================================
+   CREATE BUTTONS
+========================================= */
 
-        document.getElementById("xyzCount").textContent =
-            xyzPosts.length.toLocaleString();
+createBatchButtons();
 
 
-        setStatus(
-            "Creating duplicate indexes..."
+function createBatchButtons() {
+
+    const grid =
+        document.getElementById(
+            "batchGrid"
         );
 
 
-        const indexes =
-            createIndexes(abcPosts);
+    /*
+     * 16 buttons.
+     *
+     * If your blogs contain
+     * more than 16, increase this.
+     */
+
+    const totalBatches = 16;
 
 
-        duplicateResults =
+    for(
+        let i = 0;
+        i < totalBatches;
+        i++
+    ) {
+
+        const start =
+            i *
+            BATCH_SIZE +
+            1;
+
+        const end =
+            start +
+            BATCH_SIZE -
+            1;
+
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+
+        button.className =
+            "batch-button";
+
+
+        button.id =
+            "batch-" +
+            (i + 1);
+
+
+        button.textContent =
+            `Batch ${i + 1}: ` +
+            `${start.toLocaleString()} – ` +
+            `${end.toLocaleString()}`;
+
+
+        button.onclick =
+            () =>
+                scanBatch(
+                    i + 1,
+                    start,
+                    BATCH_SIZE
+                );
+
+
+        grid.appendChild(
+            button
+        );
+    }
+}
+
+
+/* =========================================
+   SCAN ONE BATCH
+========================================= */
+
+async function scanBatch(
+    batchNumber,
+    start,
+    total
+) {
+
+    currentBatch =
+        batchNumber;
+
+    currentABC = [];
+
+    currentXYZ = [];
+
+    currentMatches = [];
+
+
+    disableButtons(true);
+
+    markRunning(
+        batchNumber
+    );
+
+
+    setProgress(0);
+
+
+    try {
+
+        /*
+         * Each blog:
+         *
+         * 1000 posts
+         *
+         * requested in pages of 100.
+         */
+
+        setStatus(
+            `Batch ${batchNumber}: ` +
+            `Downloading TollywoodBoost ` +
+            `posts ${start.toLocaleString()}–` +
+            `${(start + total - 1).toLocaleString()}...`
+        );
+
+
+        currentABC =
+            await loadRange(
+                "tollywoodboost",
+                start,
+                total
+            );
+
+
+        document.getElementById(
+            "abcCount"
+        ).textContent =
+            currentABC.length.toLocaleString();
+
+
+        setStatus(
+            `Batch ${batchNumber}: ` +
+            `Downloading TollyBoost...`
+        );
+
+
+        currentXYZ =
+            await loadRange(
+                "tollyboost",
+                start,
+                total
+            );
+
+
+        document.getElementById(
+            "xyzCount"
+        ).textContent =
+            currentXYZ.length.toLocaleString();
+
+
+        setStatus(
+            `Batch ${batchNumber}: ` +
+            `Comparing posts...`
+        );
+
+
+        currentMatches =
             comparePosts(
-                xyzPosts,
-                indexes
+                currentABC,
+                currentXYZ
             );
 
 
         document.getElementById(
             "duplicateCount"
         ).textContent =
-            duplicateResults.length.toLocaleString();
+            currentMatches.length
+                .toLocaleString();
 
 
         document.getElementById(
-            "notFound"
+            "notFoundCount"
         ).textContent =
             (
-                xyzPosts.length -
-                duplicateResults.length
+                currentXYZ.length -
+                currentMatches.length
             ).toLocaleString();
 
 
-        displayResults();
+        const rate =
+            currentXYZ.length
+                ? (
+                    currentMatches.length /
+                    currentXYZ.length *
+                    100
+                )
+                : 0;
 
 
-        downloadButton.disabled =
-            duplicateResults.length === 0;
+        document.getElementById(
+            "matchRate"
+        ).textContent =
+            rate.toFixed(1) +
+            "%";
+
+
+        renderResults();
+
+
+        document.getElementById(
+            "csvButton"
+        ).disabled =
+            currentMatches.length === 0;
 
 
         setProgress(100);
 
 
+        markDone(
+            batchNumber
+        );
+
+
         setStatus(
-            "Finished. " +
-            duplicateResults.length.toLocaleString() +
-            " duplicate posts found."
+            `Batch ${batchNumber} finished. ` +
+            `${currentMatches.length} ` +
+            `duplicates found.`
         );
 
     }
@@ -437,375 +702,480 @@ async function startComparison() {
         console.error(error);
 
         setStatus(
-            "ERROR: " +
+            `Batch ${batchNumber} ERROR: ` +
             error.message
         );
 
     }
     finally {
 
-        startButton.disabled = false;
+        disableButtons(false);
     }
 }
 
 
 /* =========================================
-   LOAD ALL POSTS
+   LOAD 1000 POSTS
 ========================================= */
 
-async function loadAllPosts(blog) {
+async function loadRange(
+    blog,
+    start,
+    total
+) {
 
-    const allPosts = [];
+    const posts = [];
 
-    let start = 1;
-
-    while(true) {
-
-        setStatus(
-            "Downloading " +
-            blog +
-            " posts: " +
-            allPosts.length.toLocaleString()
-        );
+    let position =
+        start;
 
 
-        const apiUrl =
-            "/api/blogger-posts" +
-            "?blog=" +
-            encodeURIComponent(blog) +
-            "&start=" +
-            start;
+    const end =
+        start +
+        total -
+        1;
 
 
-        const response =
-            await fetch(
-                apiUrl,
-                {
-                    cache: "no-store"
-                }
+    while(
+        position <= end
+    ) {
+
+        const remaining =
+            end -
+            position +
+            1;
+
+
+        const requestCount =
+            Math.min(
+                FEED_PAGE_SIZE,
+                remaining
             );
 
 
-        const contentType =
-            response.headers.get(
-                "content-type"
-            ) || "";
+        let data =
+            null;
 
 
-        if (
-            !contentType
-                .toLowerCase()
-                .includes("application/json")
+        /*
+         * Retry failed requests.
+         */
+
+        for(
+            let attempt = 1;
+            attempt <= MAX_RETRIES;
+            attempt++
         ) {
 
-            const text =
-                await response.text();
+            try {
 
-            throw new Error(
-                "API returned HTML instead of JSON. " +
-                "HTTP " +
-                response.status +
-                ". Response begins: " +
-                text.substring(0,150)
-            );
+                setStatus(
+                    `${blog}: posts ` +
+                    `${position.toLocaleString()}–` +
+                    `${Math.min(
+                        position +
+                        requestCount -
+                        1,
+                        end
+                    ).toLocaleString()} ` +
+                    `(attempt ${attempt}/${MAX_RETRIES})`
+                );
+
+
+                data =
+                    await fetchJSONWithRetry(
+                        blog,
+                        position,
+                        requestCount
+                    );
+
+
+                break;
+
+            }
+            catch(error) {
+
+                if(
+                    attempt ===
+                    MAX_RETRIES
+                ) {
+                    throw error;
+                }
+
+
+                const wait =
+                    attempt *
+                    5000;
+
+
+                setStatus(
+                    `${blog}: temporary error. ` +
+                    `Waiting ${wait / 1000}s...`
+                );
+
+
+                await sleep(
+                    wait
+                );
+            }
         }
 
 
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                data.error ||
-                "API request failed."
-            );
-        }
-
-
-        if (data.success !== true) {
-
-            throw new Error(
-                data.error ||
-                "Blogger API failed."
-            );
-        }
-
-
-        const posts =
+        const batch =
             data.posts || [];
 
 
         /*
-         * THIS is the important change.
-         *
-         * Do NOT stop because the batch
-         * contains fewer than 150.
-         *
-         * Only stop when Blogger returns
-         * ZERO posts.
+         * If Blogger gives no posts,
+         * stop this range.
          */
 
-        if (posts.length === 0) {
+        if(
+            batch.length === 0
+        ) {
             break;
         }
 
 
-        allPosts.push(...posts);
+        posts.push(
+            ...batch
+        );
+
+
+        position +=
+            batch.length;
 
 
         /*
-         * Continue using the actual
-         * number returned.
+         * Progress.
          */
 
-        start += posts.length;
+        const completed =
+            posts.length /
+            total *
+            50;
 
 
         /*
-         * Safety protection.
+         * First blog = 0–50%
+         * Second blog = 50–100%
          */
 
-        if (start > 100000) {
-
-            throw new Error(
-                "Safety limit reached at 100,000 posts."
-            );
-        }
-
-
-        await sleep(250);
-    }
+        const offset =
+            blog ===
+            "tollywoodboost"
+                ? 0
+                : 50;
 
 
-    return allPosts;
-}
-
-
-/* =========================================
-   CREATE INDEXES
-========================================= */
-
-function createIndexes(posts) {
-
-    const byTitle =
-        new Map();
-
-    const byImages =
-        new Map();
-
-    const byText =
-        new Map();
-
-
-    for(const post of posts) {
-
-        const title =
-            post.titleKey || "";
-
-
-        const text =
-            post.textKey || "";
-
-
-        addMap(
-            byTitle,
-            title,
-            post
+        setProgress(
+            Math.min(
+                100,
+                offset +
+                completed
+            )
         );
 
 
         /*
-         * Use image filenames as
-         * another identity.
+         * Wait before next request.
          */
 
-        const images =
-            [...(post.imageKeys || [])]
-                .sort()
-                .join("|");
+        await sleep(
+            REQUEST_DELAY
+        );
+    }
 
 
-        if(images) {
+    return posts;
+}
 
-            addMap(
-                byImages,
-                images,
+
+/* =========================================
+   FETCH API
+========================================= */
+
+async function fetchJSONWithRetry(
+    blog,
+    start,
+    count
+) {
+
+    const url =
+        "/api/blogger-posts" +
+        "?blog=" +
+        encodeURIComponent(blog) +
+        "&start=" +
+        start +
+        "&limit=" +
+        count;
+
+
+    const response =
+        await fetch(
+            url,
+            {
+                cache:
+                    "no-store"
+            }
+        );
+
+
+    const contentType =
+        response.headers.get(
+            "content-type"
+        ) || "";
+
+
+    if(
+        !contentType
+            .toLowerCase()
+            .includes(
+                "application/json"
+            )
+    ) {
+
+        const text =
+            await response.text();
+
+
+        throw new Error(
+            "API returned HTML " +
+            "instead of JSON. HTTP " +
+            response.status +
+            ". Response begins: " +
+            text.substring(
+                0,
+                150
+            )
+        );
+    }
+
+
+    const data =
+        await response.json();
+
+
+    if(
+        !response.ok ||
+        data.success !== true
+    ) {
+
+        throw new Error(
+            data.error ||
+            `HTTP ${response.status}`
+        );
+    }
+
+
+    return data;
+}
+
+
+/* =========================================
+   COMPARE POSTS
+========================================= */
+
+function comparePosts(
+    abc,
+    xyz
+) {
+
+    const results = [];
+
+    const usedABC =
+        new Set();
+
+
+    /*
+     * Build indexes.
+     */
+
+    const titleMap =
+        new Map();
+
+    const imageMap =
+        new Map();
+
+    const textMap =
+        new Map();
+
+
+    for(
+        const post of abc
+    ) {
+
+        addToMap(
+            titleMap,
+            post.titleKey,
+            post
+        );
+
+
+        const imageKey =
+            makeImageKey(
+                post.imageKeys
+            );
+
+
+        if(imageKey) {
+
+            addToMap(
+                imageMap,
+                imageKey,
                 post
             );
         }
 
 
-        /*
-         * Full normalized text.
-         */
+        if(post.textKey) {
 
-        if(text) {
-
-            addMap(
-                byText,
-                text,
+            addToMap(
+                textMap,
+                post.textKey,
                 post
             );
         }
     }
 
 
-    return {
-        byTitle,
-        byImages,
-        byText
-    };
-}
-
-
-/* =========================================
-   COMPARE
-========================================= */
-
-function comparePosts(
-    posts,
-    indexes
-) {
-
-    const results = [];
-
-    const alreadyMatched =
-        new Set();
-
+    /*
+     * Compare XYZ.
+     */
 
     for(
-        let i = 0;
-        i < posts.length;
-        i++
+        const xyzPost of xyz
     ) {
 
-        const xyz =
-            posts[i];
+        let match =
+            null;
+
+        let method =
+            "";
 
 
         /*
-         * 1. Exact normalized text.
+         * 1. Same normalized text.
          */
-
-        const textMatches =
-            indexes.byText.get(
-                xyz.textKey
-            );
-
 
         if(
-            textMatches &&
-            textMatches.length
+            xyzPost.textKey
         ) {
 
-            const abc =
-                chooseBestMatch(
-                    textMatches,
-                    xyz
-                );
-
-
-            if(abc) {
-
-                addResult(
-                    results,
-                    alreadyMatched,
-                    xyz,
-                    abc,
-                    "EXACT NORMALIZED TEXT",
-                    "100%"
-                );
-
-                continue;
-            }
-        }
-
-
-        /*
-         * 2. Same title + same
-         * image filenames.
-         */
-
-        const imageKey =
-            [...(xyz.imageKeys || [])]
-                .sort()
-                .join("|");
-
-
-        if(imageKey) {
-
-            const imageMatches =
-                indexes.byImages.get(
-                    imageKey
+            const candidates =
+                textMap.get(
+                    xyzPost.textKey
                 );
 
 
             if(
-                imageMatches &&
-                imageMatches.length
+                candidates
             ) {
 
-                const abc =
-                    chooseBestMatch(
-                        imageMatches,
-                        xyz
+                match =
+                    findUnused(
+                        candidates,
+                        usedABC
                     );
 
 
-                if(abc) {
+                if(match) {
 
-                    addResult(
-                        results,
-                        alreadyMatched,
-                        xyz,
-                        abc,
-                        "SAME IMAGE FILENAMES",
-                        "99%"
-                    );
-
-                    continue;
+                    method =
+                        "Exact normalized content";
                 }
             }
         }
 
 
         /*
-         * 3. Exact normalized title.
+         * 2. Same image filenames.
          */
 
-        const titleMatches =
-            indexes.byTitle.get(
-                xyz.titleKey
+        if(!match) {
+
+            const imageKey =
+                makeImageKey(
+                    xyzPost.imageKeys
+                );
+
+
+            if(imageKey) {
+
+                const candidates =
+                    imageMap.get(
+                        imageKey
+                    );
+
+
+                if(
+                    candidates
+                ) {
+
+                    match =
+                        findUnused(
+                            candidates,
+                            usedABC
+                        );
+
+
+                    if(match) {
+
+                        method =
+                            "Same image filenames";
+                    }
+                }
+            }
+        }
+
+
+        /*
+         * 3. Same title.
+         */
+
+        if(!match) {
+
+            const candidates =
+                titleMap.get(
+                    xyzPost.titleKey
+                );
+
+
+            if(
+                candidates
+            ) {
+
+                match =
+                    findUnused(
+                        candidates,
+                        usedABC
+                    );
+
+
+                if(match) {
+
+                    method =
+                        "Same normalized title";
+                }
+            }
+        }
+
+
+        if(match) {
+
+            usedABC.add(
+                match.id
             );
 
 
-        if(
-            titleMatches &&
-            titleMatches.length
-        ) {
+            results.push({
 
-            const abc =
-                chooseBestMatch(
-                    titleMatches,
-                    xyz
-                );
+                abc: match,
 
+                xyz: xyzPost,
 
-            if(abc) {
-
-                addResult(
-                    results,
-                    alreadyMatched,
-                    xyz,
-                    abc,
-                    "EXACT TITLE",
-                    "95%"
-                );
-
-                continue;
-            }
+                method
+            });
         }
     }
 
@@ -815,92 +1185,84 @@ function comparePosts(
 
 
 /* =========================================
-   BEST MATCH
+   FIND UNUSED
 ========================================= */
 
-function chooseBestMatch(
+function findUnused(
     candidates,
-    xyz
+    used
 ) {
 
-    if(
-        !candidates ||
-        candidates.length === 0
-    ) {
-        return null;
-    }
-
-
-    /*
-     * Prefer same publication date.
-     */
-
-    const xyzDate =
-        getDate(xyz.published);
-
-
-    const sameDate =
-        candidates.find(
-            x =>
-                getDate(
-                    x.published
-                ) === xyzDate
-        );
-
-
-    if(sameDate) {
-        return sameDate;
-    }
-
-
-    return candidates[0];
+    return candidates.find(
+        post =>
+            !used.has(
+                post.id
+            )
+    ) || null;
 }
 
 
 /* =========================================
-   ADD RESULT
+   MAP
 ========================================= */
 
-function addResult(
-    results,
-    alreadyMatched,
-    xyz,
-    abc,
-    method,
-    confidence
+function addToMap(
+    map,
+    key,
+    post
 ) {
 
-    const key =
-        abc.id +
-        "|" +
-        xyz.id;
-
-
-    if(
-        alreadyMatched.has(key)
-    ) {
+    if(!key) {
         return;
     }
 
 
-    alreadyMatched.add(key);
+    if(
+        !map.has(key)
+    ) {
+
+        map.set(
+            key,
+            []
+        );
+    }
 
 
-    results.push({
-
-        abc,
-        xyz,
-        method,
-        confidence
-    });
+    map.get(key).push(
+        post
+    );
 }
 
 
 /* =========================================
-   DISPLAY
+   IMAGE KEY
 ========================================= */
 
-function displayResults() {
+function makeImageKey(
+    images
+) {
+
+    if(
+        !images ||
+        images.length === 0
+    ) {
+        return "";
+    }
+
+
+    return [
+        ...images
+    ]
+        .sort()
+        .join("|");
+}
+
+
+/* =========================================
+   RENDER
+========================================= */
+
+function renderResults() {
 
     const container =
         document.getElementById(
@@ -909,14 +1271,14 @@ function displayResults() {
 
 
     if(
-        duplicateResults.length === 0
+        currentMatches.length === 0
     ) {
 
         container.innerHTML = `
 
 <div class="empty">
 
-No duplicate posts found.
+No duplicates found in this batch.
 
 </div>
 
@@ -926,56 +1288,58 @@ No duplicate posts found.
     }
 
 
+    let html = "";
+
+
     /*
-     * Display first 200.
+     * Display up to 300
+     * in browser.
+     *
      * CSV contains all.
      */
 
-    const limit =
+    const displayLimit =
         Math.min(
-            duplicateResults.length,
-            200
+            currentMatches.length,
+            300
         );
-
-
-    let html = "";
 
 
     for(
         let i = 0;
-        i < limit;
+        i < displayLimit;
         i++
     ) {
 
-        html +=
-            renderMatch(
-                duplicateResults[i],
-                i + 1
-            );
+        const match =
+            currentMatches[i];
+
+
+        html += renderMatch(
+            match,
+            i + 1
+        );
     }
 
 
     if(
-        duplicateResults.length > 200
+        currentMatches.length >
+        displayLimit
     ) {
 
         html += `
 
 <div class="empty">
 
-Showing first 200 matches.
+Showing first
+${displayLimit}
+results.
 
 <br><br>
 
-Total:
-
-<strong>
-${duplicateResults.length.toLocaleString()}
-</strong>
-
-<br><br>
-
-Use Download CSV for every match.
+Download CSV to get all
+${currentMatches.length}
+matches.
 
 </div>
 
@@ -1007,11 +1371,9 @@ Duplicate #${number}
 
 &nbsp; | &nbsp;
 
-${escapeHtml(match.method)}
-
-&nbsp; | &nbsp;
-
-${escapeHtml(match.confidence)}
+${escapeHTML(
+    match.method
+)}
 
 </div>
 
@@ -1022,51 +1384,46 @@ ${escapeHtml(match.confidence)}
 <div class="column">
 
 <h2>
-XYZ — TollyBoost
+TollywoodBoost
 </h2>
 
-<div class="title">
+<div class="post-title">
 
-${escapeHtml(
-    match.xyz.title
+${escapeHTML(
+    match.abc.title
 )}
 
 </div>
 
-<div class="date">
+<div class="post-date">
 
-Published:
-${escapeHtml(
-    match.xyz.published
+${escapeHTML(
+    match.abc.published
 )}
 
 </div>
 
-<div class="url">
-
-<strong>
-XYZ URL
-</strong>
-
-<br><br>
+<div class="url-box">
 
 <a
-href="${escapeAttr(
-    match.xyz.url
+href="${escapeAttribute(
+    match.abc.url
 )}"
 target="_blank"
-rel="noopener">
+rel="noopener"
+>
 
-${escapeHtml(
-    match.xyz.url
+${escapeHTML(
+    match.abc.url
 )}
 
 </a>
 
 </div>
 
+
 ${renderImages(
-    match.xyz.images
+    match.abc.imageKeys
 )}
 
 </div>
@@ -1075,51 +1432,46 @@ ${renderImages(
 <div class="column">
 
 <h2>
-ABC — TollywoodBoost
+TollyBoost
 </h2>
 
-<div class="title">
+<div class="post-title">
 
-${escapeHtml(
-    match.abc.title
+${escapeHTML(
+    match.xyz.title
 )}
 
 </div>
 
-<div class="date">
+<div class="post-date">
 
-Published:
-${escapeHtml(
-    match.abc.published
+${escapeHTML(
+    match.xyz.published
 )}
 
 </div>
 
-<div class="url">
-
-<strong>
-ABC URL
-</strong>
-
-<br><br>
+<div class="url-box">
 
 <a
-href="${escapeAttr(
-    match.abc.url
+href="${escapeAttribute(
+    match.xyz.url
 )}"
 target="_blank"
-rel="noopener">
+rel="noopener"
+>
 
-${escapeHtml(
-    match.abc.url
+${escapeHTML(
+    match.xyz.url
 )}
 
 </a>
 
 </div>
 
+
 ${renderImages(
-    match.abc.images
+    match.xyz.imageKeys
 )}
 
 </div>
@@ -1134,53 +1486,37 @@ ${renderImages(
 
 
 /* =========================================
-   RENDER IMAGES
+   IMAGES
 ========================================= */
 
-function renderImages(images) {
+function renderImages(
+    images
+) {
 
     if(
         !images ||
         images.length === 0
     ) {
-
         return "";
     }
 
 
     return `
 
-<div class="images">
+<div class="image-list">
 
-<h3>
-Images (${images.length})
-</h3>
+<strong>
+Image filenames
+</strong>
+
+<br><br>
 
 ${
     images.map(
-        image => `
-
-<div class="image">
-
-<img
-src="${escapeAttr(
-    image
-)}"
-loading="lazy"
-onerror="
-this.style.display='none';
-"
->
-
-<div class="image-url">
-
-${escapeHtml(image)}
-
-</div>
-
-</div>
-
-`
+        image =>
+            `<div class="image-name">
+            ${escapeHTML(image)}
+            </div>`
     ).join("")
 }
 
@@ -1197,7 +1533,7 @@ ${escapeHtml(image)}
 function downloadCSV() {
 
     if(
-        duplicateResults.length === 0
+        currentMatches.length === 0
     ) {
         return;
     }
@@ -1206,40 +1542,38 @@ function downloadCSV() {
     const rows = [
 
         [
-            "XYZ URL",
-            "ABC URL",
-            "XYZ Title",
-            "ABC Title",
-            "XYZ Published",
-            "ABC Published",
-            "Match Method",
-            "Confidence"
+            "TollywoodBoost URL",
+            "TollyBoost URL",
+            "TollywoodBoost Title",
+            "TollyBoost Title",
+            "TollywoodBoost Published",
+            "TollyBoost Published",
+            "Match Method"
         ]
+
     ];
 
 
     for(
-        const match
-        of duplicateResults
+        const match of currentMatches
     ) {
 
         rows.push([
 
-            match.xyz.url,
-
             match.abc.url,
 
-            match.xyz.title,
+            match.xyz.url,
 
             match.abc.title,
 
-            match.xyz.published,
+            match.xyz.title,
 
             match.abc.published,
 
-            match.method,
+            match.xyz.published,
 
-            match.confidence
+            match.method
+
         ]);
     }
 
@@ -1249,7 +1583,9 @@ function downloadCSV() {
             .map(
                 row =>
                     row
-                        .map(csvEscape)
+                        .map(
+                            csvEscape
+                        )
                         .join(",")
             )
             .join("\r\n");
@@ -1271,69 +1607,108 @@ function downloadCSV() {
         );
 
 
-    const a =
+    const link =
         document.createElement(
             "a"
         );
 
 
-    a.href = url;
+    link.href = url;
 
-    a.download =
-        "blogger-duplicate-posts.csv";
+    link.download =
+        `blogger-duplicates-batch-${currentBatch}.csv`;
 
 
-    document.body.appendChild(a);
+    document.body.appendChild(
+        link
+    );
 
-    a.click();
 
-    a.remove();
+    link.click();
 
-    URL.revokeObjectURL(url);
+
+    link.remove();
+
+
+    URL.revokeObjectURL(
+        url
+    );
 }
 
 
 /* =========================================
-   MAP
+   BUTTON STATE
 ========================================= */
 
-function addMap(
-    map,
-    key,
-    post
+function disableButtons(
+    disabled
 ) {
 
-    if(!key) {
-        return;
-    }
-
-
-    if(!map.has(key)) {
-
-        map.set(
-            key,
-            []
+    document
+        .querySelectorAll(
+            ".batch-button"
+        )
+        .forEach(
+            button =>
+                button.disabled =
+                    disabled
         );
-    }
-
-
-    map.get(key).push(post);
 }
 
 
-/* =========================================
-   DATE
-========================================= */
+function markRunning(
+    number
+) {
 
-function getDate(value) {
+    document
+        .querySelectorAll(
+            ".batch-button"
+        )
+        .forEach(
+            button =>
+                button.classList.remove(
+                    "running"
+                )
+        );
 
-    if(!value) {
-        return "";
+
+    const button =
+        document.getElementById(
+            "batch-" +
+            number
+        );
+
+
+    if(button) {
+
+        button.classList.add(
+            "running"
+        );
     }
+}
 
 
-    return String(value)
-        .substring(0,10);
+function markDone(
+    number
+) {
+
+    const button =
+        document.getElementById(
+            "batch-" +
+            number
+        );
+
+
+    if(button) {
+
+        button.classList.remove(
+            "running"
+        );
+
+        button.classList.add(
+            "done"
+        );
+    }
 }
 
 
@@ -1341,7 +1716,9 @@ function getDate(value) {
    STATUS
 ========================================= */
 
-function setStatus(text) {
+function setStatus(
+    text
+) {
 
     document.getElementById(
         "status"
@@ -1354,7 +1731,9 @@ function setStatus(text) {
    PROGRESS
 ========================================= */
 
-function setProgress(value) {
+function setProgress(
+    value
+) {
 
     document.getElementById(
         "progressBar"
@@ -1364,23 +1743,64 @@ function setProgress(value) {
 
 
 /* =========================================
-   ESCAPE
+   SLEEP
 ========================================= */
 
-function escapeHtml(value) {
+function sleep(
+    ms
+) {
 
-    return String(value || "")
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
+    return new Promise(
+        resolve =>
+            setTimeout(
+                resolve,
+                ms
+            )
+    );
 }
 
 
-function escapeAttr(value) {
+/* =========================================
+   ESCAPE HTML
+========================================= */
 
-    return escapeHtml(value);
+function escapeHTML(
+    value
+) {
+
+    return String(
+        value || ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
+
+function escapeAttribute(
+    value
+) {
+
+    return escapeHTML(
+        value
+    );
 }
 
 
@@ -1388,17 +1808,20 @@ function escapeAttr(value) {
    CSV ESCAPE
 ========================================= */
 
-function csvEscape(value) {
+function csvEscape(
+    value
+) {
 
     const text =
-        String(value || "");
+        String(
+            value || ""
+        );
 
 
     if(
-        text.includes(",") ||
-        text.includes('"') ||
-        text.includes("\n") ||
-        text.includes("\r")
+        /[",\r\n]/.test(
+            text
+        )
     ) {
 
         return '"' +
@@ -1411,22 +1834,6 @@ function csvEscape(value) {
 
 
     return text;
-}
-
-
-/* =========================================
-   SLEEP
-========================================= */
-
-function sleep(ms) {
-
-    return new Promise(
-        resolve =>
-            setTimeout(
-                resolve,
-                ms
-            )
-    );
 }
 
 </script>
