@@ -15,506 +15,224 @@
 Blogger Duplicate Post Finder
 </title>
 
-
 <style>
 
 * {
     box-sizing: border-box;
 }
 
-
 body {
-
     margin: 0;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-    background:
-        #f5f6f8;
-
-    color:
-        #222;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f5f6f8;
+    color: #222;
 }
-
 
 header {
-
-    background:
-        #fe5301;
-
-    color:
-        white;
-
-    padding:
-        25px 20px;
+    background: #fe5301;
+    color: white;
+    padding: 25px 20px;
 }
-
 
 header h1 {
-
-    margin:
-        0 0 8px;
-
-    font-size:
-        28px;
+    margin: 0 0 8px;
+    font-size: 28px;
 }
-
 
 header p {
-
-    margin:
-        0;
-
-    font-size:
-        15px;
+    margin: 0;
 }
-
 
 .container {
-
-    max-width:
-        1500px;
-
-    margin:
-        auto;
-
-    padding:
-        20px;
+    max-width: 1500px;
+    margin: auto;
+    padding: 20px;
 }
-
 
 .controls {
-
-    background:
-        white;
-
-    padding:
-        20px;
-
-    border-radius:
-        10px;
-
-    margin-bottom:
-        20px;
-
-    box-shadow:
-        0 2px 10px
-        rgba(0,0,0,.08);
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
 }
-
 
 button {
-
-    border:
-        0;
-
-    border-radius:
-        6px;
-
-    padding:
-        13px 20px;
-
-    font-size:
-        15px;
-
-    font-weight:
-        bold;
-
-    cursor:
-        pointer;
-
-    margin-right:
-        8px;
-
-    background:
-        #fe5301;
-
-    color:
-        white;
+    border: 0;
+    border-radius: 6px;
+    padding: 13px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 8px;
+    background: #fe5301;
+    color: white;
 }
-
 
 button:disabled {
-
-    background:
-        #999;
-
-    cursor:
-        not-allowed;
+    background: #999;
+    cursor: not-allowed;
 }
 
-
-button.download {
-
-    background:
-        #198754;
+.download {
+    background: #198754;
 }
-
 
 #status {
-
-    margin-top:
-        15px;
-
-    font-weight:
-        bold;
+    margin-top: 15px;
+    font-weight: bold;
 }
-
 
 .progress {
-
-    margin-top:
-        15px;
-
-    height:
-        20px;
-
-    background:
-        #ddd;
-
-    border-radius:
-        20px;
-
-    overflow:
-        hidden;
+    margin-top: 15px;
+    height: 20px;
+    background: #ddd;
+    border-radius: 20px;
+    overflow: hidden;
 }
-
 
 #progressBar {
-
-    height:
-        100%;
-
-    width:
-        0%;
-
-    background:
-        #fe5301;
-
-    transition:
-        width .2s;
+    height: 100%;
+    width: 0%;
+    background: #fe5301;
+    transition: width .2s;
 }
-
 
 .summary {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(4, 1fr);
-
-    gap:
-        12px;
-
-    margin-bottom:
-        20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
 }
-
 
 .card {
-
-    background:
-        white;
-
-    padding:
-        18px;
-
-    border-radius:
-        8px;
-
-    box-shadow:
-        0 2px 8px
-        rgba(0,0,0,.06);
+    background: white;
+    padding: 18px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
 }
-
 
 .card strong {
-
-    display:
-        block;
-
-    font-size:
-        26px;
-
-    margin-bottom:
-        5px;
+    display: block;
+    font-size: 26px;
+    margin-bottom: 5px;
 }
-
 
 .card span {
-
-    color:
-        #666;
-
-    font-size:
-        13px;
+    color: #666;
+    font-size: 13px;
 }
-
 
 .match {
-
-    background:
-        white;
-
-    border-radius:
-        10px;
-
-    margin-bottom:
-        25px;
-
-    overflow:
-        hidden;
-
-    box-shadow:
-        0 2px 10px
-        rgba(0,0,0,.08);
+    background: white;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
 }
-
 
 .match-header {
-
-    background:
-        #222;
-
-    color:
-        white;
-
-    padding:
-        14px 18px;
-
-    font-weight:
-        bold;
+    background: #222;
+    color: white;
+    padding: 14px 18px;
+    font-weight: bold;
 }
-
 
 .columns {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        1fr 1fr;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 }
-
 
 .column {
-
-    padding:
-        20px;
-
-    min-width:
-        0;
+    padding: 20px;
+    min-width: 0;
 }
-
 
 .column:first-child {
-
-    border-right:
-        1px solid #ddd;
+    border-right: 1px solid #ddd;
 }
-
 
 .column h2 {
-
-    margin-top:
-        0;
+    margin-top: 0;
 }
-
 
 .title {
-
-    font-size:
-        20px;
-
-    font-weight:
-        bold;
-
-    margin-bottom:
-        10px;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
 }
-
 
 .date {
-
-    color:
-        #666;
-
-    font-size:
-        13px;
-
-    margin-bottom:
-        12px;
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 12px;
 }
-
 
 .url {
-
-    background:
-        #f1f1f1;
-
-    padding:
-        10px;
-
-    border-radius:
-        5px;
-
-    font-size:
-        13px;
-
-    word-break:
-        break-all;
+    background: #f1f1f1;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 13px;
+    word-break: break-all;
 }
-
 
 .url a {
-
-    color:
-        #06c;
+    color: #06c;
 }
-
 
 .images {
-
-    margin-top:
-        20px;
+    margin-top: 20px;
 }
-
 
 .image {
-
-    border:
-        1px solid #ddd;
-
-    border-radius:
-        6px;
-
-    padding:
-        8px;
-
-    margin-bottom:
-        15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 15px;
 }
-
 
 .image img {
-
-    width:
-        100%;
-
-    max-height:
-        350px;
-
-    object-fit:
-        contain;
-
-    display:
-        block;
-
-    background:
-        #eee;
+    width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    display: block;
+    background: #eee;
 }
-
 
 .image-url {
-
-    margin-top:
-        8px;
-
-    font-size:
-        10px;
-
-    color:
-        #555;
-
-    word-break:
-        break-all;
+    margin-top: 8px;
+    font-size: 10px;
+    color: #555;
+    word-break: break-all;
 }
-
-
-pre {
-
-    background:
-        #111;
-
-    color:
-        #eee;
-
-    padding:
-        15px;
-
-    border-radius:
-        6px;
-
-    overflow:
-        auto;
-
-    max-height:
-        400px;
-
-    white-space:
-        pre-wrap;
-
-    word-break:
-        break-word;
-
-    font-size:
-        12px;
-}
-
 
 .empty {
-
-    background:
-        white;
-
-    padding:
-        40px;
-
-    text-align:
-        center;
-
-    border-radius:
-        10px;
+    background: white;
+    padding: 40px;
+    text-align: center;
+    border-radius: 10px;
 }
-
 
 @media(max-width:900px) {
 
     .summary {
-
-        grid-template-columns:
-            repeat(2,1fr);
+        grid-template-columns: repeat(2,1fr);
     }
-
 
     .columns {
-
-        grid-template-columns:
-            1fr;
+        grid-template-columns: 1fr;
     }
-
 
     .column:first-child {
-
-        border-right:
-            0;
-
-        border-bottom:
-            1px solid #ddd;
+        border-right: 0;
+        border-bottom: 1px solid #ddd;
     }
 }
-
 
 @media(max-width:550px) {
 
     .summary {
-
-        grid-template-columns:
-            1fr;
+        grid-template-columns: 1fr;
     }
 }
 
@@ -522,9 +240,7 @@ pre {
 
 </head>
 
-
 <body>
-
 
 <header>
 
@@ -538,22 +254,16 @@ TollywoodBoost ↔ TollyBoost
 
 </header>
 
-
 <div class="container">
 
-
 <div class="controls">
-
 
 <button
     id="startButton"
     onclick="startComparison()"
 >
-
 Check All Posts
-
 </button>
-
 
 <button
     id="downloadButton"
@@ -561,25 +271,18 @@ Check All Posts
     onclick="downloadCSV()"
     disabled
 >
-
 Download CSV
-
 </button>
 
-
 <div id="status">
-
 Ready.
-
 </div>
-
 
 <div class="progress">
 
 <div id="progressBar"></div>
 
 </div>
-
 
 </div>
 
@@ -590,58 +293,25 @@ Ready.
     style="display:none;"
 >
 
-
 <div class="card">
-
-<strong id="abcCount">
-0
-</strong>
-
-<span>
-TollywoodBoost Posts
-</span>
-
+<strong id="abcCount">0</strong>
+<span>TollywoodBoost Posts</span>
 </div>
 
-
 <div class="card">
-
-<strong id="xyzCount">
-0
-</strong>
-
-<span>
-TollyBoost Posts
-</span>
-
+<strong id="xyzCount">0</strong>
+<span>TollyBoost Posts</span>
 </div>
 
-
 <div class="card">
-
-<strong id="duplicateCount">
-0
-</strong>
-
-<span>
-Duplicates
-</span>
-
+<strong id="duplicateCount">0</strong>
+<span>Duplicates</span>
 </div>
 
-
 <div class="card">
-
-<strong id="notFound">
-0
-</strong>
-
-<span>
-Not Found
-</span>
-
+<strong id="notFound">0</strong>
+<span>Not Found</span>
 </div>
-
 
 </div>
 
@@ -651,133 +321,77 @@ Not Found
 <div class="empty">
 
 Click
-<strong>
-Check All Posts
-</strong>
-
+<strong>Check All Posts</strong>
 to compare the two Blogger blogs.
 
 </div>
 
 </div>
 
-
 </div>
 
 
 <script>
 
-
-const BATCH_SIZE = 500;
-
+const BATCH_SIZE = 150;
 
 let abcPosts = [];
-
 let xyzPosts = [];
-
 let duplicateResults = [];
 
 
 /* =========================================
-START
+   START
 ========================================= */
 
 async function startComparison() {
 
-
     const startButton =
-        document.getElementById(
-            "startButton"
-        );
-
+        document.getElementById("startButton");
 
     const downloadButton =
-        document.getElementById(
-            "downloadButton"
-        );
+        document.getElementById("downloadButton");
 
-
-    startButton.disabled =
-        true;
-
-
-    downloadButton.disabled =
-        true;
-
+    startButton.disabled = true;
+    downloadButton.disabled = true;
 
     abcPosts = [];
-
     xyzPosts = [];
-
     duplicateResults = [];
 
-
-    document.getElementById(
-        "results"
-    ).innerHTML = "";
-
+    document.getElementById("results").innerHTML = "";
 
     try {
 
-
-        /*
-         * ABC
-         */
-
         abcPosts =
             await loadAllPosts(
-                "abc"
+                "tollywoodboost"
             );
 
+        document.getElementById("abcCount").textContent =
+            abcPosts.length.toLocaleString();
 
-        /*
-         * XYZ
-         */
-
-        xyzPosts =
-            await loadAllPosts(
-                "xyz"
-            );
-
-
-        document.getElementById(
-            "abcCount"
-        ).textContent =
-            abcPosts.length
-                .toLocaleString();
-
-
-        document.getElementById(
-            "xyzCount"
-        ).textContent =
-            xyzPosts.length
-                .toLocaleString();
-
-
-        document.getElementById(
-            "summary"
-        ).style.display =
+        document.getElementById("summary").style.display =
             "grid";
 
 
-        /*
-         * Create ABC indexes.
-         */
+        xyzPosts =
+            await loadAllPosts(
+                "tollyboost"
+            );
+
+        document.getElementById("xyzCount").textContent =
+            xyzPosts.length.toLocaleString();
+
 
         setStatus(
-            "Creating search indexes..."
+            "Creating duplicate indexes..."
         );
 
 
         const indexes =
-            createIndexes(
-                abcPosts
-            );
+            createIndexes(abcPosts);
 
-
-        /*
-         * Compare.
-         */
 
         duplicateResults =
             comparePosts(
@@ -789,8 +403,7 @@ async function startComparison() {
         document.getElementById(
             "duplicateCount"
         ).textContent =
-            duplicateResults.length
-                .toLocaleString();
+            duplicateResults.length.toLocaleString();
 
 
         document.getElementById(
@@ -814,56 +427,45 @@ async function startComparison() {
 
         setStatus(
             "Finished. " +
-            duplicateResults.length
-                .toLocaleString() +
+            duplicateResults.length.toLocaleString() +
             " duplicate posts found."
         );
-
 
     }
     catch(error) {
 
-
         console.error(error);
-
 
         setStatus(
             "ERROR: " +
             error.message
         );
 
-
     }
     finally {
 
-        startButton.disabled =
-            false;
+        startButton.disabled = false;
     }
 }
 
 
 /* =========================================
-LOAD BLOGGER POSTS
+   LOAD ALL POSTS
 ========================================= */
 
 async function loadAllPosts(blog) {
 
-
     const allPosts = [];
-
 
     let start = 1;
 
-
     while(true) {
-
 
         setStatus(
             "Downloading " +
-            blog.toUpperCase() +
+            blog +
             " posts: " +
-            allPosts.length
-                .toLocaleString()
+            allPosts.length.toLocaleString()
         );
 
 
@@ -879,16 +481,10 @@ async function loadAllPosts(blog) {
             await fetch(
                 apiUrl,
                 {
-                    cache:
-                        "no-store"
+                    cache: "no-store"
                 }
             );
 
-
-        /*
-         * Important:
-         * Detect HTML response.
-         */
 
         const contentType =
             response.headers.get(
@@ -899,25 +495,18 @@ async function loadAllPosts(blog) {
         if (
             !contentType
                 .toLowerCase()
-                .includes(
-                    "application/json"
-                )
+                .includes("application/json")
         ) {
-
 
             const text =
                 await response.text();
 
-
             throw new Error(
-                "The API returned HTML instead of JSON. " +
+                "API returned HTML instead of JSON. " +
                 "HTTP " +
                 response.status +
-                ". " +
-                text.substring(
-                    0,
-                    120
-                )
+                ". Response begins: " +
+                text.substring(0,150)
             );
         }
 
@@ -935,9 +524,7 @@ async function loadAllPosts(blog) {
         }
 
 
-        if (
-            data.success !== true
-        ) {
+        if (data.success !== true) {
 
             throw new Error(
                 data.error ||
@@ -950,38 +537,45 @@ async function loadAllPosts(blog) {
             data.posts || [];
 
 
-        if (
-            posts.length === 0
-        ) {
+        /*
+         * THIS is the important change.
+         *
+         * Do NOT stop because the batch
+         * contains fewer than 150.
+         *
+         * Only stop when Blogger returns
+         * ZERO posts.
+         */
 
+        if (posts.length === 0) {
             break;
         }
 
 
-        allPosts.push(
-            ...posts
-        );
+        allPosts.push(...posts);
 
 
         /*
-         * If less than 500,
-         * Blogger has reached the end.
+         * Continue using the actual
+         * number returned.
          */
 
-        if (
-            posts.length <
-            BATCH_SIZE
-        ) {
+        start += posts.length;
 
-            break;
+
+        /*
+         * Safety protection.
+         */
+
+        if (start > 100000) {
+
+            throw new Error(
+                "Safety limit reached at 100,000 posts."
+            );
         }
 
 
-        start +=
-            BATCH_SIZE;
-
-
-        await sleep(300);
+        await sleep(250);
     }
 
 
@@ -990,109 +584,84 @@ async function loadAllPosts(blog) {
 
 
 /* =========================================
-CREATE INDEXES
+   CREATE INDEXES
 ========================================= */
 
 function createIndexes(posts) {
 
+    const byTitle =
+        new Map();
 
-    const contentIndex =
+    const byImages =
+        new Map();
+
+    const byText =
         new Map();
 
 
-    const titleDateIndex =
-        new Map();
+    for(const post of posts) {
+
+        const title =
+            post.titleKey || "";
 
 
-    const titleIndex =
-        new Map();
+        const text =
+            post.textKey || "";
 
 
-    for (
-        const post
-        of posts
-    ) {
-
-
-        const contentKey =
-            normalizeContent(
-                post.content
-            );
-
-
-        const titleKey =
-            normalizeTitle(
-                post.title
-            );
-
-
-        const dateKey =
-            getDate(
-                post.published
-            );
-
-
-        post.contentKey =
-            hash(
-                contentKey
-            );
-
-
-        post.titleKey =
-            titleKey;
-
-
-        /*
-         * Content
-         */
-
-        addToMap(
-            contentIndex,
-            post.contentKey,
+        addMap(
+            byTitle,
+            title,
             post
         );
 
 
         /*
-         * Title
+         * Use image filenames as
+         * another identity.
          */
 
-        addToMap(
-            titleIndex,
-            titleKey,
-            post
-        );
+        const images =
+            [...(post.imageKeys || [])]
+                .sort()
+                .join("|");
+
+
+        if(images) {
+
+            addMap(
+                byImages,
+                images,
+                post
+            );
+        }
 
 
         /*
-         * Title + date
+         * Full normalized text.
          */
 
-        addToMap(
-            titleDateIndex,
+        if(text) {
 
-            titleKey +
-            "|" +
-            dateKey,
-
-            post
-        );
+            addMap(
+                byText,
+                text,
+                post
+            );
+        }
     }
 
 
     return {
-
-        contentIndex,
-
-        titleDateIndex,
-
-        titleIndex
+        byTitle,
+        byImages,
+        byText
     };
 }
 
 
 /* =========================================
-COMPARE
+   COMPARE
 ========================================= */
 
 function comparePosts(
@@ -1100,170 +669,144 @@ function comparePosts(
     indexes
 ) {
 
-
     const results = [];
 
+    const alreadyMatched =
+        new Set();
 
-    for (
+
+    for(
         let i = 0;
         i < posts.length;
         i++
     ) {
-
 
         const xyz =
             posts[i];
 
 
         /*
-         * 1. Exact normalized content.
+         * 1. Exact normalized text.
          */
 
-        const contentKey =
-            hash(
-                normalizeContent(
-                    xyz.content
-                )
+        const textMatches =
+            indexes.byText.get(
+                xyz.textKey
             );
 
 
-        const exactContent =
-            indexes.contentIndex.get(
-                contentKey
-            );
-
-
-        if (
-            exactContent &&
-            exactContent.length
+        if(
+            textMatches &&
+            textMatches.length
         ) {
 
+            const abc =
+                chooseBestMatch(
+                    textMatches,
+                    xyz
+                );
 
-            results.push({
 
-                xyz: xyz,
+            if(abc) {
 
-                abc:
-                    exactContent[0],
-
-                method:
-                    "EXACT CONTENT",
-
-                confidence:
+                addResult(
+                    results,
+                    alreadyMatched,
+                    xyz,
+                    abc,
+                    "EXACT NORMALIZED TEXT",
                     "100%"
-            });
+                );
 
-
-            updateProgress(
-                i,
-                posts.length
-            );
-
-
-            continue;
+                continue;
+            }
         }
 
 
         /*
-         * 2. Title + date.
+         * 2. Same title + same
+         * image filenames.
          */
 
-        const titleKey =
-            normalizeTitle(
-                xyz.title
-            );
+        const imageKey =
+            [...(xyz.imageKeys || [])]
+                .sort()
+                .join("|");
 
 
-        const date =
-            getDate(
-                xyz.published
-            );
+        if(imageKey) {
+
+            const imageMatches =
+                indexes.byImages.get(
+                    imageKey
+                );
 
 
-        const titleDate =
-            indexes.titleDateIndex.get(
-                titleKey +
-                "|" +
-                date
-            );
+            if(
+                imageMatches &&
+                imageMatches.length
+            ) {
+
+                const abc =
+                    chooseBestMatch(
+                        imageMatches,
+                        xyz
+                    );
 
 
-        if (
-            titleDate &&
-            titleDate.length === 1
-        ) {
+                if(abc) {
 
+                    addResult(
+                        results,
+                        alreadyMatched,
+                        xyz,
+                        abc,
+                        "SAME IMAGE FILENAMES",
+                        "99%"
+                    );
 
-            results.push({
-
-                xyz: xyz,
-
-                abc:
-                    titleDate[0],
-
-                method:
-                    "TITLE + DATE",
-
-                confidence:
-                    "98%"
-            });
-
-
-            updateProgress(
-                i,
-                posts.length
-            );
-
-
-            continue;
+                    continue;
+                }
+            }
         }
 
 
         /*
-         * 3. Exact title.
+         * 3. Exact normalized title.
          */
 
-        const exactTitle =
-            indexes.titleIndex.get(
-                titleKey
+        const titleMatches =
+            indexes.byTitle.get(
+                xyz.titleKey
             );
 
 
-        if (
-            exactTitle &&
-            exactTitle.length === 1
+        if(
+            titleMatches &&
+            titleMatches.length
         ) {
 
+            const abc =
+                chooseBestMatch(
+                    titleMatches,
+                    xyz
+                );
 
-            results.push({
 
-                xyz: xyz,
+            if(abc) {
 
-                abc:
-                    exactTitle[0],
-
-                method:
+                addResult(
+                    results,
+                    alreadyMatched,
+                    xyz,
+                    abc,
                     "EXACT TITLE",
-
-                confidence:
                     "95%"
-            });
+                );
 
-
-            updateProgress(
-                i,
-                posts.length
-            );
-
-
-            continue;
+                continue;
+            }
         }
-
-
-        updateProgress(
-            i,
-            posts.length
-        );
     }
 
 
@@ -1272,11 +815,92 @@ function comparePosts(
 
 
 /* =========================================
-DISPLAY
+   BEST MATCH
+========================================= */
+
+function chooseBestMatch(
+    candidates,
+    xyz
+) {
+
+    if(
+        !candidates ||
+        candidates.length === 0
+    ) {
+        return null;
+    }
+
+
+    /*
+     * Prefer same publication date.
+     */
+
+    const xyzDate =
+        getDate(xyz.published);
+
+
+    const sameDate =
+        candidates.find(
+            x =>
+                getDate(
+                    x.published
+                ) === xyzDate
+        );
+
+
+    if(sameDate) {
+        return sameDate;
+    }
+
+
+    return candidates[0];
+}
+
+
+/* =========================================
+   ADD RESULT
+========================================= */
+
+function addResult(
+    results,
+    alreadyMatched,
+    xyz,
+    abc,
+    method,
+    confidence
+) {
+
+    const key =
+        abc.id +
+        "|" +
+        xyz.id;
+
+
+    if(
+        alreadyMatched.has(key)
+    ) {
+        return;
+    }
+
+
+    alreadyMatched.add(key);
+
+
+    results.push({
+
+        abc,
+        xyz,
+        method,
+        confidence
+    });
+}
+
+
+/* =========================================
+   DISPLAY
 ========================================= */
 
 function displayResults() {
-
 
     const container =
         document.getElementById(
@@ -1284,10 +908,9 @@ function displayResults() {
         );
 
 
-    if (
+    if(
         duplicateResults.length === 0
     ) {
-
 
         container.innerHTML = `
 
@@ -1305,7 +928,6 @@ No duplicate posts found.
 
     /*
      * Display first 200.
-     *
      * CSV contains all.
      */
 
@@ -1319,7 +941,7 @@ No duplicate posts found.
     let html = "";
 
 
-    for (
+    for(
         let i = 0;
         i < limit;
         i++
@@ -1333,9 +955,8 @@ No duplicate posts found.
     }
 
 
-    if (
-        duplicateResults.length >
-        200
+    if(
+        duplicateResults.length > 200
     ) {
 
         html += `
@@ -1346,16 +967,15 @@ Showing first 200 matches.
 
 <br><br>
 
-Total duplicates:
+Total:
 
 <strong>
-${duplicateResults.length
-    .toLocaleString()}
+${duplicateResults.length.toLocaleString()}
 </strong>
 
 <br><br>
 
-Download CSV to get every match.
+Use Download CSV for every match.
 
 </div>
 
@@ -1369,7 +989,7 @@ Download CSV to get every match.
 
 
 /* =========================================
-RENDER MATCH
+   RENDER MATCH
 ========================================= */
 
 function renderMatch(
@@ -1377,11 +997,9 @@ function renderMatch(
     number
 ) {
 
-
     return `
 
 <div class="match">
-
 
 <div class="match-header">
 
@@ -1389,15 +1007,11 @@ Duplicate #${number}
 
 &nbsp; | &nbsp;
 
-${escapeHtml(
-    match.method
-)}
+${escapeHtml(match.method)}
 
 &nbsp; | &nbsp;
 
-${escapeHtml(
-    match.confidence
-)}
+${escapeHtml(match.confidence)}
 
 </div>
 
@@ -1405,15 +1019,11 @@ ${escapeHtml(
 <div class="columns">
 
 
-<!-- XYZ -->
-
 <div class="column">
-
 
 <h2>
 XYZ — TollyBoost
 </h2>
-
 
 <div class="title">
 
@@ -1423,17 +1033,14 @@ ${escapeHtml(
 
 </div>
 
-
 <div class="date">
 
 Published:
-
 ${escapeHtml(
     match.xyz.published
 )}
 
 </div>
-
 
 <div class="url">
 
@@ -1458,34 +1065,18 @@ ${escapeHtml(
 
 </div>
 
-
 ${renderImages(
     match.xyz.images
 )}
 
-
-<h3>
-XYZ Post HTML
-</h3>
-
-
-<pre>${escapeHtml(
-    match.xyz.content
-)}</pre>
-
-
 </div>
 
 
-<!-- ABC -->
-
 <div class="column">
-
 
 <h2>
 ABC — TollywoodBoost
 </h2>
-
 
 <div class="title">
 
@@ -1495,17 +1086,14 @@ ${escapeHtml(
 
 </div>
 
-
 <div class="date">
 
 Published:
-
 ${escapeHtml(
     match.abc.published
 )}
 
 </div>
-
 
 <div class="url">
 
@@ -1530,21 +1118,9 @@ ${escapeHtml(
 
 </div>
 
-
 ${renderImages(
     match.abc.images
 )}
-
-
-<h3>
-ABC Post HTML
-</h3>
-
-
-<pre>${escapeHtml(
-    match.abc.content
-)}</pre>
-
 
 </div>
 
@@ -1558,24 +1134,17 @@ ABC Post HTML
 
 
 /* =========================================
-IMAGES
+   RENDER IMAGES
 ========================================= */
 
-function renderImages(
-    images
-) {
+function renderImages(images) {
 
-
-    if (
+    if(
         !images ||
         images.length === 0
     ) {
 
-        return `
-<div class="images">
-No images detected.
-</div>
-`;
+        return "";
     }
 
 
@@ -1587,7 +1156,6 @@ No images detected.
 Images (${images.length})
 </h3>
 
-
 ${
     images.map(
         image => `
@@ -1595,7 +1163,9 @@ ${
 <div class="image">
 
 <img
-src="${escapeAttr(image)}"
+src="${escapeAttr(
+    image
+)}"
 loading="lazy"
 onerror="
 this.style.display='none';
@@ -1621,16 +1191,14 @@ ${escapeHtml(image)}
 
 
 /* =========================================
-CSV
+   CSV
 ========================================= */
 
 function downloadCSV() {
 
-
-    if (
+    if(
         duplicateResults.length === 0
     ) {
-
         return;
     }
 
@@ -1650,11 +1218,10 @@ function downloadCSV() {
     ];
 
 
-    for (
+    for(
         const match
         of duplicateResults
     ) {
-
 
         rows.push([
 
@@ -1679,15 +1246,13 @@ function downloadCSV() {
 
     const csv =
         rows
-        .map(
-            row =>
-                row
-                .map(
-                    csvEscape
-                )
-                .join(",")
-        )
-        .join("\r\n");
+            .map(
+                row =>
+                    row
+                        .map(csvEscape)
+                        .join(",")
+            )
+            .join("\r\n");
 
 
     const blob =
@@ -1706,313 +1271,44 @@ function downloadCSV() {
         );
 
 
-    const link =
+    const a =
         document.createElement(
             "a"
         );
 
 
-    link.href =
-        url;
+    a.href = url;
+
+    a.download =
+        "blogger-duplicate-posts.csv";
 
 
-    link.download =
-        "blogger-duplicates.csv";
+    document.body.appendChild(a);
 
+    a.click();
 
-    document.body.appendChild(
-        link
-    );
+    a.remove();
 
-
-    link.click();
-
-
-    link.remove();
-
-
-    URL.revokeObjectURL(
-        url
-    );
+    URL.revokeObjectURL(url);
 }
 
 
 /* =========================================
-CONTENT NORMALIZATION
+   MAP
 ========================================= */
 
-function normalizeContent(
-    html
-) {
-
-
-    let value =
-        String(
-            html || ""
-        );
-
-
-    /*
-     * Remove scripts.
-     */
-
-    value =
-        value.replace(
-            /<script[\s\S]*?<\/script>/gi,
-            ""
-        );
-
-
-    /*
-     * Remove styles.
-     */
-
-    value =
-        value.replace(
-            /<style[\s\S]*?<\/style>/gi,
-            ""
-        );
-
-
-    /*
-     * Replace image tags
-     * with normalized image filename.
-     *
-     * This is important because
-     * Blogger may create different
-     * image URLs in two blogs.
-     */
-
-    value =
-        value.replace(
-            /<img[^>]*>/gi,
-            function(imageTag) {
-
-
-                const match =
-                    imageTag.match(
-                        /(?:src|data-src)\s*=\s*["']([^"']+)["']/i
-                    );
-
-
-                if (!match) {
-
-                    return "<image>";
-                }
-
-
-                const filename =
-                    getImageFilename(
-                        match[1]
-                    );
-
-
-                return (
-                    "<image:" +
-                    normalizeImageFilename(
-                        filename
-                    ) +
-                    ">"
-                );
-            }
-        );
-
-
-    /*
-     * Remove remaining HTML.
-     */
-
-    value =
-        value.replace(
-            /<[^>]+>/g,
-            " "
-        );
-
-
-    /*
-     * Decode common entities.
-     */
-
-    value =
-        value
-        .replace(
-            /&nbsp;/gi,
-            " "
-        )
-        .replace(
-            /&amp;/gi,
-            "&"
-        )
-        .replace(
-            /&quot;/gi,
-            '"'
-        );
-
-
-    /*
-     * Normalize spaces.
-     */
-
-    value =
-        value
-        .toLowerCase()
-        .replace(
-            /\s+/g,
-            " "
-        )
-        .trim();
-
-
-    return value;
-}
-
-
-/* =========================================
-IMAGE FILENAME
-========================================= */
-
-function getImageFilename(
-    url
-) {
-
-
-    try {
-
-
-        const clean =
-            url.split("?")[0];
-
-
-        const parts =
-            clean.split("/");
-
-
-        return decodeURIComponent(
-            parts[
-                parts.length - 1
-            ]
-        );
-
-
-    }
-    catch {
-
-        return url;
-    }
-}
-
-
-function normalizeImageFilename(
-    name
-) {
-
-
-    return String(
-        name || ""
-    )
-    .toLowerCase()
-    .replace(
-        /\+/g,
-        " "
-    )
-    .replace(
-        /%20/g,
-        " "
-    )
-    .replace(
-        /%2520/g,
-        " "
-    )
-    .replace(
-        /%28/g,
-        "("
-    )
-    .replace(
-        /%29/g,
-        ")"
-    )
-    .replace(
-        /\s+/g,
-        " "
-    )
-    .trim();
-}
-
-
-/* =========================================
-TITLE
-========================================= */
-
-function normalizeTitle(
-    title
-) {
-
-
-    return String(
-        title || ""
-    )
-    .normalize("NFKC")
-    .toLowerCase()
-    .replace(
-        /[^\p{L}\p{N}\s]/gu,
-        " "
-    )
-    .replace(
-        /\s+/g,
-        " "
-    )
-    .trim();
-}
-
-
-/* =========================================
-HASH
-========================================= */
-
-function hash(
-    value
-) {
-
-
-    let h = 0;
-
-
-    for (
-        let i = 0;
-        i < value.length;
-        i++
-    ) {
-
-        h =
-            (
-                (h << 5) -
-                h
-            ) +
-            value.charCodeAt(i);
-
-
-        h |= 0;
-    }
-
-
-    return String(h);
-}
-
-
-/* =========================================
-MAP
-========================================= */
-
-function addToMap(
+function addMap(
     map,
     key,
-    value
+    post
 ) {
 
+    if(!key) {
+        return;
+    }
 
-    if (
-        !map.has(key)
-    ) {
+
+    if(!map.has(key)) {
 
         map.set(
             key,
@@ -2021,87 +1317,31 @@ function addToMap(
     }
 
 
-    map
-        .get(key)
-        .push(value);
+    map.get(key).push(post);
 }
 
 
 /* =========================================
-DATE
+   DATE
 ========================================= */
 
-function getDate(
-    value
-) {
+function getDate(value) {
 
-
-    if (!value) {
+    if(!value) {
         return "";
     }
 
 
-    return String(
-        value
-    ).substring(
-        0,
-        10
-    );
+    return String(value)
+        .substring(0,10);
 }
 
 
 /* =========================================
-PROGRESS
+   STATUS
 ========================================= */
 
-function updateProgress(
-    current,
-    total
-) {
-
-
-    const percent =
-        Math.round(
-            (
-                (current + 1) /
-                total
-            ) *
-            100
-        );
-
-
-    setProgress(
-        percent
-    );
-
-
-    setStatus(
-        "Comparing XYZ posts: " +
-        (current + 1)
-            .toLocaleString() +
-        " / " +
-        total
-            .toLocaleString()
-    );
-}
-
-
-function setProgress(
-    percent
-) {
-
-
-    document.getElementById(
-        "progressBar"
-    ).style.width =
-        percent + "%";
-}
-
-
-function setStatus(
-    text
-) {
-
+function setStatus(text) {
 
     document.getElementById(
         "status"
@@ -2111,62 +1351,50 @@ function setStatus(
 
 
 /* =========================================
-ESCAPE
+   PROGRESS
 ========================================= */
 
-function escapeHtml(
-    value
-) {
+function setProgress(value) {
 
-
-    return String(
-        value || ""
-    )
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-    .replace(
-        /</g,
-        "&lt;"
-    )
-    .replace(
-        />/g,
-        "&gt;"
-    )
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-    .replace(
-        /'/g,
-        "&#039;"
-    );
+    document.getElementById(
+        "progressBar"
+    ).style.width =
+        value + "%";
 }
 
 
-function escapeAttr(
-    value
-) {
+/* =========================================
+   ESCAPE
+========================================= */
 
-    return escapeHtml(
-        value
-    );
+function escapeHtml(value) {
+
+    return String(value || "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
 }
 
 
-function csvEscape(
-    value
-) {
+function escapeAttr(value) {
 
+    return escapeHtml(value);
+}
+
+
+/* =========================================
+   CSV ESCAPE
+========================================= */
+
+function csvEscape(value) {
 
     const text =
-        String(
-            value || ""
-        );
+        String(value || "");
 
 
-    if (
+    if(
         text.includes(",") ||
         text.includes('"') ||
         text.includes("\n") ||
@@ -2187,19 +1415,16 @@ function csvEscape(
 
 
 /* =========================================
-SLEEP
+   SLEEP
 ========================================= */
 
-function sleep(
-    milliseconds
-) {
-
+function sleep(ms) {
 
     return new Promise(
         resolve =>
             setTimeout(
                 resolve,
-                milliseconds
+                ms
             )
     );
 }
