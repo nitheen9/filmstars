@@ -3,15 +3,15 @@ const BLOGS = {
     tollyboost: "https://tollyboost.blogspot.com"
 };
 
-const MAX_RESULTS = 100;
+const MAX_RESULTS = 150;
 
 export async function onRequestGet(context) {
     const url = new URL(context.request.url);
 
     const blog = url.searchParams.get("blog");
-    const start = parseInt(url.searchParams.get("start") || "1", 10);
+    const start = Number(url.searchParams.get("start") || "1");
     const limit = Math.min(
-        parseInt(url.searchParams.get("limit") || "100", 10),
+        Number(url.searchParams.get("limit") || MAX_RESULTS),
         MAX_RESULTS
     );
 
@@ -31,38 +31,37 @@ export async function onRequestGet(context) {
 
     try {
         const feedUrl =
-            `${BLOGS[blog]}/feeds/posts/default` +
-            `?alt=json` +
-            `&start-index=${start}` +
-            `&max-results=${limit}`;
+            BLOGS[blog] +
+            "/feeds/posts/default" +
+            "?alt=json" +
+            "&start-index=" + start +
+            "&max-results=" + limit;
 
         const response = await fetch(feedUrl, {
             headers: {
                 "User-Agent":
-                    "Mozilla/5.0 (compatible; FilmstarsDuplicateFinder/1.0)"
+                    "Mozilla/5.0 Filmstars Blogger Duplicate Finder"
             }
         });
 
         if (!response.ok) {
             return json({
                 success: false,
-                retryable: response.status === 429 ||
-                           response.status === 500 ||
-                           response.status === 502 ||
-                           response.status === 503 ||
-                           response.status === 504,
-                status: response.status,
+                retryable: [429, 500, 502, 503, 504]
+                    .includes(response.status),
                 error:
-                    `Blogger returned HTTP ${response.status}`
+                    "Blogger returned HTTP " +
+                    response.status
             }, 502);
         }
 
-        const contentType =
+        const type =
             response.headers.get("content-type") || "";
 
-        if (!contentType.includes("json")) {
+        if (!type.toLowerCase().includes("json")) {
             return json({
                 success: false,
+                retryable: true,
                 error: "Blogger returned non-JSON."
             }, 502);
         }
@@ -79,7 +78,6 @@ export async function onRequestGet(context) {
             success: true,
             blog,
             start,
-            requested: limit,
             count: posts.length,
             posts
         });
@@ -88,7 +86,9 @@ export async function onRequestGet(context) {
         return json({
             success: false,
             retryable: true,
-            error: error.message || "Request failed."
+            error:
+                error?.message ||
+                "Blogger request failed."
         }, 503);
     }
 }
@@ -128,7 +128,7 @@ function parsePost(entry) {
         entry.id?.$t || "";
 
     const images =
-        extractImages(content);
+        extractImageNames(content);
 
     return {
         id,
@@ -136,28 +136,32 @@ function parsePost(entry) {
         published,
         updated,
         url: alternate?.href || "",
-        images,
-        titleKey: normalizeTitle(title),
-        textKey: normalizeText(content),
+
+        titleKey:
+            normalizeTitle(title),
+
+        textHash:
+            simpleHash(
+                normalizeText(content)
+            ),
+
         imageKeys:
-            images.map(
-                normalizeImageFilename
-            )
+            images
     };
 }
 
 
 /* =========================================
-   EXTRACT IMAGES
+   IMAGE FILENAMES
 ========================================= */
 
-function extractImages(html) {
+function extractImageNames(html) {
 
     if (!html) {
         return [];
     }
 
-    const results = [];
+    const result = [];
 
     const regex =
         /<img[^>]+(?:src|data-src)\s*=\s*["']([^"']+)["']/gi;
@@ -167,75 +171,65 @@ function extractImages(html) {
     while (
         (match = regex.exec(html)) !== null
     ) {
+        const filename =
+            normalizeImageFilename(
+                match[1]
+            );
 
-        const url = match[1];
-
-        if (!results.includes(url)) {
-            results.push(url);
+        if (
+            filename &&
+            !result.includes(filename)
+        ) {
+            result.push(filename);
         }
     }
 
-    return results;
+    return result;
 }
 
 
-/* =========================================
-   IMAGE FILENAME
-========================================= */
-
-function getFilename(url) {
-
+function normalizeImageFilename(url) {
     try {
-
         const clean =
             String(url)
                 .split("?")[0];
 
-        const parts =
+        const pieces =
             clean.split("/");
 
-        return decodeURIComponent(
-            parts[parts.length - 1] || ""
-        );
+        let name =
+            pieces[pieces.length - 1] || "";
+
+        name =
+            decodeURIComponent(name);
+
+        /*
+         * A second decode handles filenames
+         * that Blogger encoded twice.
+         */
+
+        try {
+            name =
+                decodeURIComponent(name);
+        } catch {}
+
+        return name
+            .toLowerCase()
+            .replace(/\+/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
 
     } catch {
-
-        return String(url);
+        return "";
     }
 }
 
 
 /* =========================================
-   IMAGE KEY
-========================================= */
-
-function normalizeImageFilename(url) {
-
-    let filename =
-        getFilename(url);
-
-    try {
-        filename =
-            decodeURIComponent(filename);
-    } catch {}
-
-    return filename
-        .toLowerCase()
-        .replace(/\+/g, " ")
-        .replace(/%20/g, " ")
-        .replace(/%28/g, "(")
-        .replace(/%29/g, ")")
-        .replace(/\s+/g, " ")
-        .trim();
-}
-
-
-/* =========================================
-   TITLE KEY
+   TITLE NORMALIZATION
 ========================================= */
 
 function normalizeTitle(value) {
-
     return String(value || "")
         .normalize("NFKC")
         .toLowerCase()
@@ -246,7 +240,7 @@ function normalizeTitle(value) {
 
 
 /* =========================================
-   TEXT KEY
+   TEXT NORMALIZATION
 ========================================= */
 
 function normalizeText(html) {
@@ -266,20 +260,85 @@ function normalizeText(html) {
             " "
         );
 
+    /*
+     * Replace images with their filenames
+     * so different Blogger AVvXs IDs do not
+     * make otherwise identical posts different.
+     */
+
+    value =
+        value.replace(
+            /<img[^>]*>/gi,
+            function(tag) {
+
+                const match =
+                    tag.match(
+                        /(?:src|data-src)\s*=\s*["']([^"']+)["']/i
+                    );
+
+                if (!match) {
+                    return " ";
+                }
+
+                return (
+                    " " +
+                    normalizeImageFilename(
+                        match[1]
+                    ) +
+                    " "
+                );
+            }
+        );
+
+    /*
+     * Remove HTML.
+     */
+
     value =
         value.replace(
             /<[^>]+>/g,
             " "
         );
 
+    /*
+     * Decode common entities.
+     */
+
+    value =
+        value
+            .replace(/&nbsp;/gi, " ")
+            .replace(/&amp;/gi, "&")
+            .replace(/&quot;/gi, '"')
+            .replace(/&#39;/gi, "'");
+
     return value
-        .replace(/&nbsp;/gi, " ")
-        .replace(/&amp;/gi, "&")
-        .replace(/&quot;/gi, '"')
-        .replace(/&#39;/gi, "'")
         .toLowerCase()
         .replace(/\s+/g, " ")
         .trim();
+}
+
+
+/* =========================================
+   SIMPLE HASH
+========================================= */
+
+function simpleHash(value) {
+
+    let hash = 0;
+
+    for (
+        let i = 0;
+        i < value.length;
+        i++
+    ) {
+        hash =
+            ((hash << 5) - hash) +
+            value.charCodeAt(i);
+
+        hash |= 0;
+    }
+
+    return String(hash);
 }
 
 
