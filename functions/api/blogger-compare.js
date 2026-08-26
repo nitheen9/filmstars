@@ -4,11 +4,11 @@ export async function onRequestGet() {
         JSON.stringify({
             success: true,
             message:
-                "Blogger comparison API is running.",
+                "Blogger duplicate comparison API is working.",
             blogs: {
-                tollywoodboost:
+                original:
                     "https://tollywoodboost.blogspot.com",
-                tollyboost:
+                imported:
                     "https://tollyboost.blogspot.com"
             }
         }),
@@ -18,11 +18,11 @@ export async function onRequestGet() {
                 "Content-Type":
                     "application/json; charset=UTF-8",
 
-                "Access-Control-Allow-Origin":
-                    "*",
-
                 "Cache-Control":
-                    "no-store"
+                    "no-store",
+
+                "Access-Control-Allow-Origin":
+                    "*"
             }
         }
     );
