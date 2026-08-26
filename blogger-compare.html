@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Blogger Post Compare - Filmstars</title>
+<title>Blogger Duplicate Post Finder - Filmstars</title>
 
 <style>
 * {
@@ -13,131 +13,186 @@
 
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     background: #f5f6f8;
     color: #222;
 }
 
 header {
     background: #fe5301;
-    color: white;
-    padding: 22px 20px;
+    color: #fff;
+    padding: 24px 20px;
 }
 
 header h1 {
-    margin: 0 0 6px;
+    margin: 0 0 8px;
     font-size: 28px;
 }
 
 header p {
     margin: 0;
-    opacity: .95;
+    font-size: 15px;
 }
 
 .container {
     max-width: 1500px;
-    margin: 25px auto;
-    padding: 0 15px;
+    margin: auto;
+    padding: 20px;
 }
 
-.search-box {
-    background: white;
-    padding: 20px;
+.control-box {
+    background: #fff;
     border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
     margin-bottom: 20px;
 }
 
-.search-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.search-row input {
-    flex: 1;
-    min-width: 250px;
-    padding: 13px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 16px;
-}
-
 button {
-    padding: 13px 22px;
+    background: #fe5301;
+    color: #fff;
     border: 0;
     border-radius: 6px;
-    background: #fe5301;
-    color: white;
-    cursor: pointer;
+    padding: 13px 22px;
     font-size: 15px;
     font-weight: bold;
+    cursor: pointer;
+    margin-right: 8px;
 }
 
 button:hover {
     opacity: .9;
 }
 
-button.secondary {
-    background: #333;
+button:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+button.download {
+    background: #198754;
+}
+
+.progress {
+    margin-top: 18px;
+}
+
+.progress-bar {
+    height: 22px;
+    background: #ddd;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #fe5301;
+    transition: width .2s;
 }
 
 .status {
-    margin-top: 15px;
+    margin-top: 12px;
+    font-size: 14px;
     font-weight: bold;
+}
+
+.summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.summary-card {
+    background: #fff;
+    padding: 18px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.summary-card strong {
+    display: block;
+    font-size: 26px;
+    margin-bottom: 5px;
+}
+
+.summary-card span {
+    color: #666;
+    font-size: 13px;
+}
+
+.result {
+    background: #fff;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.result-header {
+    background: #222;
+    color: #fff;
+    padding: 15px;
+}
+
+.result-header strong {
+    color: #fff;
 }
 
 .columns {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
 }
 
 .column {
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    padding: 20px;
+    min-width: 0;
 }
 
-.column-header {
-    padding: 15px;
-    background: #222;
-    color: white;
+.column:first-child {
+    border-right: 1px solid #ddd;
 }
 
-.column-header h2 {
-    margin: 0;
+.column h2 {
+    margin-top: 0;
     font-size: 20px;
 }
 
-.post {
-    padding: 18px;
-}
-
 .post-title {
-    font-size: 22px;
+    font-size: 21px;
     font-weight: bold;
     margin-bottom: 10px;
 }
 
 .meta {
-    font-size: 13px;
     color: #666;
+    font-size: 13px;
     margin-bottom: 12px;
 }
 
-.url {
-    word-break: break-all;
+.url-box {
     background: #f1f1f1;
+    border-radius: 6px;
     padding: 10px;
-    border-radius: 5px;
-    font-size: 13px;
     margin-bottom: 15px;
+    word-break: break-all;
+    font-size: 13px;
 }
 
-.url a {
+.url-box a {
     color: #0066cc;
+}
+
+.match {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #198754;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 12px;
 }
 
 .images {
@@ -148,31 +203,39 @@ button.secondary {
     font-size: 17px;
 }
 
-.image-item {
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    padding: 10px;
-    border-radius: 6px;
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
 }
 
-.image-item img {
-    max-width: 100%;
-    max-height: 400px;
+.image-card {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px;
+    overflow: hidden;
+}
+
+.image-card img {
+    width: 100%;
+    max-height: 350px;
+    object-fit: contain;
     display: block;
-    margin-bottom: 8px;
+    background: #eee;
 }
 
 .image-url {
-    font-size: 11px;
-    word-break: break-all;
+    font-size: 10px;
     color: #555;
+    word-break: break-all;
+    margin-top: 7px;
 }
 
-.html-box {
+.html-section {
     margin-top: 20px;
 }
 
-.html-box h3 {
+.html-section h3 {
     font-size: 17px;
 }
 
@@ -180,32 +243,45 @@ pre {
     background: #111;
     color: #eee;
     padding: 15px;
+    border-radius: 6px;
     overflow: auto;
     max-height: 500px;
-    border-radius: 6px;
-    font-size: 12px;
     white-space: pre-wrap;
     word-break: break-word;
+    font-size: 12px;
 }
 
-.no-match {
-    padding: 30px;
+.empty {
+    background: white;
+    padding: 40px;
     text-align: center;
-    color: #777;
-}
-
-.match-badge {
-    display: inline-block;
-    background: #168a3a;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 13px;
-    margin-bottom: 15px;
+    border-radius: 10px;
+    color: #666;
 }
 
 @media(max-width: 900px) {
+
+    .summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
     .columns {
+        grid-template-columns: 1fr;
+    }
+
+    .column:first-child {
+        border-right: 0;
+        border-bottom: 1px solid #ddd;
+    }
+}
+
+@media(max-width: 550px) {
+
+    .summary {
+        grid-template-columns: 1fr;
+    }
+
+    .image-grid {
         grid-template-columns: 1fr;
     }
 }
@@ -215,218 +291,784 @@ pre {
 <body>
 
 <header>
-    <h1>Blogger Post Compare</h1>
-    <p>Compare Tollywood Boost posts between ABC and XYZ</p>
+    <h1>Blogger Duplicate Post Finder</h1>
+    <p>
+        Automatically compare Tollywood Boost and TollyBoost
+    </p>
 </header>
 
 <div class="container">
 
-    <div class="search-box">
+    <div class="control-box">
 
-        <div class="search-row">
+        <button
+            id="startButton"
+            onclick="startComparison()">
+            Check All 15,000+ Posts
+        </button>
 
-            <input
-                id="searchInput"
-                type="text"
-                placeholder="Enter XYZ post title or keyword"
-            >
+        <button
+            id="downloadButton"
+            class="download"
+            onclick="downloadCSV()"
+            disabled>
+            Download Duplicate CSV
+        </button>
 
-            <button onclick="searchPosts()">
-                Search
-            </button>
+        <div class="progress">
 
-            <button
-                class="secondary"
-                onclick="clearResults()">
-                Clear
-            </button>
+            <div class="progress-bar">
+                <div
+                    id="progressFill"
+                    class="progress-fill">
+                </div>
+            </div>
+
+            <div
+                id="status"
+                class="status">
+                Ready.
+            </div>
 
         </div>
 
-        <div id="status" class="status"></div>
+    </div>
+
+
+    <div
+        id="summary"
+        class="summary"
+        style="display:none;">
+
+        <div class="summary-card">
+            <strong id="abcCount">0</strong>
+            <span>ABC Posts</span>
+        </div>
+
+        <div class="summary-card">
+            <strong id="xyzCount">0</strong>
+            <span>XYZ Posts</span>
+        </div>
+
+        <div class="summary-card">
+            <strong id="duplicateCount">0</strong>
+            <span>Duplicates Found</span>
+        </div>
+
+        <div class="summary-card">
+            <strong id="uniqueCount">0</strong>
+            <span>XYZ Not Found</span>
+        </div>
 
     </div>
 
-    <div id="results"></div>
+
+    <div id="results">
+
+        <div class="empty">
+            Click <strong>Check All 15,000+ Posts</strong>.
+            The system will automatically read both Blogger blogs
+            and find duplicate posts.
+        </div>
+
+    </div>
 
 </div>
 
+
 <script>
 
-async function searchPosts() {
+const BATCH_SIZE = 500;
 
-    const input =
-        document.getElementById("searchInput");
+let duplicateResults = [];
 
-    const query =
-        input.value.trim();
+let abcPosts = [];
+let xyzPosts = [];
 
-    const status =
-        document.getElementById("status");
 
-    const results =
-        document.getElementById("results");
+/* =========================================================
+   START
+========================================================= */
 
-    if (!query) {
+async function startComparison() {
 
-        status.textContent =
-            "Enter a post title or keyword.";
+    const button =
+        document.getElementById("startButton");
 
-        return;
-    }
+    const download =
+        document.getElementById("downloadButton");
 
-    status.textContent =
-        "Searching ABC and XYZ...";
+    button.disabled = true;
+    download.disabled = true;
 
-    results.innerHTML = "";
+    duplicateResults = [];
+
+    abcPosts = [];
+    xyzPosts = [];
+
+    document.getElementById("results").innerHTML = "";
+
+    setStatus("Starting...");
 
     try {
 
-        const response =
-            await fetch(
-                "/api/blogger-compare?q=" +
-                encodeURIComponent(query)
+        /*
+         * Get ABC
+         */
+
+        setStatus(
+            "Downloading ABC posts..."
+        );
+
+        abcPosts =
+            await loadAllPosts(
+                "abc"
             );
+
+
+        /*
+         * Get XYZ
+         */
+
+        setStatus(
+            "Downloading XYZ posts..."
+        );
+
+        xyzPosts =
+            await loadAllPosts(
+                "xyz"
+            );
+
+
+        document.getElementById(
+            "abcCount"
+        ).textContent =
+            abcPosts.length.toLocaleString();
+
+        document.getElementById(
+            "xyzCount"
+        ).textContent =
+            xyzPosts.length.toLocaleString();
+
+        document.getElementById(
+            "summary"
+        ).style.display = "grid";
+
+
+        /*
+         * Build indexes
+         */
+
+        setStatus(
+            "Building ABC indexes..."
+        );
+
+        const indexes =
+            await buildIndexes(
+                abcPosts
+            );
+
+
+        /*
+         * Compare
+         */
+
+        setStatus(
+            "Comparing XYZ against ABC..."
+        );
+
+        duplicateResults =
+            await comparePosts(
+                xyzPosts,
+                indexes
+            );
+
+
+        /*
+         * Display
+         */
+
+        document.getElementById(
+            "duplicateCount"
+        ).textContent =
+            duplicateResults.length.toLocaleString();
+
+        document.getElementById(
+            "uniqueCount"
+        ).textContent =
+            (
+                xyzPosts.length -
+                duplicateResults.length
+            ).toLocaleString();
+
+
+        displayResults(
+            duplicateResults
+        );
+
+
+        download.disabled =
+            duplicateResults.length === 0;
+
+        setProgress(100);
+
+        setStatus(
+            `Finished. ${duplicateResults.length.toLocaleString()} duplicate posts found.`
+        );
+
+    }
+    catch(error) {
+
+        console.error(error);
+
+        setStatus(
+            "ERROR: " + error.message
+        );
+
+    }
+    finally {
+
+        button.disabled = false;
+
+    }
+}
+
+
+/* =========================================================
+   LOAD ALL POSTS
+========================================================= */
+
+async function loadAllPosts(blog) {
+
+    const posts = [];
+
+    let start = 1;
+
+    while(true) {
+
+        const url =
+            `/api/blogger-posts?blog=${blog}&start=${start}`;
+
+        setStatus(
+            `Downloading ${blog.toUpperCase()} posts: ${posts.length.toLocaleString()}...`
+        );
+
+        const response =
+            await fetch(url);
+
+        if(!response.ok) {
+
+            throw new Error(
+                `Failed loading ${blog}: HTTP ${response.status}`
+            );
+
+        }
 
         const data =
             await response.json();
 
-        if (!response.ok) {
+        if(data.error) {
 
             throw new Error(
-                data.error ||
-                "Search failed."
+                data.error
             );
+
         }
 
-        if (!data.matches || !data.matches.length) {
+        const batch =
+            data.posts || [];
 
-            status.textContent =
-                "No matching post found.";
-
-            results.innerHTML = `
-                <div class="column">
-                    <div class="no-match">
-                        No matching ABC post was found for this XYZ search.
-                    </div>
-                </div>
-            `;
-
-            return;
+        if(batch.length === 0) {
+            break;
         }
 
-        status.textContent =
-            `${data.matches.length} matching post(s) found.`;
+        posts.push(...batch);
 
-        results.innerHTML =
-            data.matches
-                .map(renderMatch)
-                .join("");
+        /*
+         * Blogger batch finished.
+         */
 
-    } catch (error) {
+        if(batch.length < BATCH_SIZE) {
+            break;
+        }
 
-        console.error(error);
+        start += BATCH_SIZE;
 
-        status.textContent =
-            "Error: " + error.message;
+        /*
+         * Small pause so we don't hammer Blogger.
+         */
 
-        results.innerHTML = "";
+        await delay(250);
+    }
+
+    return posts;
+}
+
+
+/* =========================================================
+   BUILD INDEXES
+========================================================= */
+
+async function buildIndexes(posts) {
+
+    const contentIndex =
+        new Map();
+
+    const titleDateIndex =
+        new Map();
+
+    const titleIndex =
+        new Map();
+
+
+    for(const post of posts) {
+
+        /*
+         * Content hash
+         */
+
+        const contentHash =
+            await sha256(
+                normalizeContent(
+                    post.content
+                )
+            );
+
+        post.contentHash =
+            contentHash;
+
+
+        if(!contentIndex.has(contentHash)) {
+
+            contentIndex.set(
+                contentHash,
+                []
+            );
+
+        }
+
+        contentIndex
+            .get(contentHash)
+            .push(post);
+
+
+        /*
+         * Title
+         */
+
+        const title =
+            normalizeTitle(
+                post.title
+            );
+
+        post.normalizedTitle =
+            title;
+
+
+        if(!titleIndex.has(title)) {
+
+            titleIndex.set(
+                title,
+                []
+            );
+
+        }
+
+        titleIndex
+            .get(title)
+            .push(post);
+
+
+        /*
+         * Title + date
+         */
+
+        const key =
+            title +
+            "|" +
+            getDate(post.published);
+
+
+        if(!titleDateIndex.has(key)) {
+
+            titleDateIndex.set(
+                key,
+                []
+            );
+
+        }
+
+        titleDateIndex
+            .get(key)
+            .push(post);
+    }
+
+
+    return {
+        contentIndex,
+        titleIndex,
+        titleDateIndex
+    };
+}
+
+
+/* =========================================================
+   COMPARE
+========================================================= */
+
+async function comparePosts(
+    xyzPosts,
+    indexes
+) {
+
+    const matches = [];
+
+    for(
+        let i = 0;
+        i < xyzPosts.length;
+        i++
+    ) {
+
+        const xyz =
+            xyzPosts[i];
+
+        /*
+         * Exact normalized content.
+         */
+
+        const xyzHash =
+            await sha256(
+                normalizeContent(
+                    xyz.content
+                )
+            );
+
+        const exact =
+            indexes.contentIndex
+                .get(xyzHash);
+
+
+        if(
+            exact &&
+            exact.length
+        ) {
+
+            matches.push({
+                xyz,
+                abc: exact[0],
+                method: "EXACT CONTENT",
+                confidence: "100%"
+            });
+
+            updateCompareProgress(
+                i + 1,
+                xyzPosts.length
+            );
+
+            continue;
+        }
+
+
+        /*
+         * Title + date.
+         */
+
+        const title =
+            normalizeTitle(
+                xyz.title
+            );
+
+        const date =
+            getDate(
+                xyz.published
+            );
+
+        const titleDate =
+            title +
+            "|" +
+            date;
+
+        const candidates =
+            indexes.titleDateIndex
+                .get(titleDate);
+
+
+        if(
+            candidates &&
+            candidates.length === 1
+        ) {
+
+            matches.push({
+                xyz,
+                abc: candidates[0],
+                method: "TITLE + DATE",
+                confidence: "98%"
+            });
+
+            updateCompareProgress(
+                i + 1,
+                xyzPosts.length
+            );
+
+            continue;
+        }
+
+
+        /*
+         * Exact title.
+         */
+
+        const titleCandidates =
+            indexes.titleIndex
+                .get(title);
+
+
+        if(
+            titleCandidates &&
+            titleCandidates.length === 1
+        ) {
+
+            matches.push({
+                xyz,
+                abc: titleCandidates[0],
+                method: "TITLE",
+                confidence: "95%"
+            });
+
+            updateCompareProgress(
+                i + 1,
+                xyzPosts.length
+            );
+
+            continue;
+        }
+
+
+        updateCompareProgress(
+            i + 1,
+            xyzPosts.length
+        );
+    }
+
+
+    return matches;
+}
+
+
+/* =========================================================
+   DISPLAY
+========================================================= */
+
+function displayResults(matches) {
+
+    const container =
+        document.getElementById(
+            "results"
+        );
+
+    if(!matches.length) {
+
+        container.innerHTML = `
+            <div class="empty">
+                No duplicate posts found.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /*
+     * Show first 200 initially.
+     * This prevents the browser from freezing
+     * if there are thousands of matches.
+     */
+
+    const visible =
+        matches.slice(
+            0,
+            200
+        );
+
+
+    container.innerHTML =
+        visible
+            .map(
+                renderMatch
+            )
+            .join("");
+
+
+    if(matches.length > 200) {
+
+        container.insertAdjacentHTML(
+            "beforeend",
+            `
+            <div class="empty">
+                Showing first 200 matches.
+                Total matches:
+                <strong>
+                    ${matches.length.toLocaleString()}
+                </strong>
+                <br><br>
+                Use the CSV button to download every match.
+            </div>
+            `
+        );
     }
 }
 
+
+/* =========================================================
+   RENDER MATCH
+========================================================= */
 
 function renderMatch(match) {
 
     return `
 
-    <div class="columns">
+    <div class="result">
 
-        <div class="column">
+        <div class="result-header">
 
-            <div class="column-header">
-                <h2>XYZ — Imported Blog</h2>
-            </div>
+            <strong>
+                MATCH:
+            </strong>
 
-            <div class="post">
+            ${escapeHtml(match.method)}
 
-                <div class="match-badge">
-                    MATCH FOUND
-                </div>
+            &nbsp; | &nbsp;
 
-                <div class="post-title">
-                    ${escapeHtml(match.xyz.title)}
-                </div>
-
-                <div class="meta">
-                    Published:
-                    ${escapeHtml(match.xyz.published || "")}
-                </div>
-
-                <div class="url">
-                    <strong>XYZ URL:</strong><br>
-                    <a
-                        href="${escapeAttribute(match.xyz.url)}"
-                        target="_blank"
-                        rel="noopener">
-                        ${escapeHtml(match.xyz.url)}
-                    </a>
-                </div>
-
-                ${renderImages(match.xyz.images)}
-
-                <div class="html-box">
-                    <h3>XYZ Post HTML</h3>
-
-                    <pre>${escapeHtml(
-                        match.xyz.content
-                    )}</pre>
-                </div>
-
-            </div>
+            Confidence:
+            ${escapeHtml(match.confidence)}
 
         </div>
 
 
-        <div class="column">
+        <div class="columns">
 
-            <div class="column-header">
-                <h2>ABC — Original Blog</h2>
-            </div>
 
-            <div class="post">
+            <!-- XYZ -->
 
-                <div class="match-badge">
-                    ${escapeHtml(match.method)}
-                    — ${escapeHtml(match.confidence)}
-                </div>
+            <div class="column">
+
+                <h2>XYZ — Imported</h2>
 
                 <div class="post-title">
-                    ${escapeHtml(match.abc.title)}
+                    ${escapeHtml(
+                        match.xyz.title
+                    )}
                 </div>
 
                 <div class="meta">
                     Published:
-                    ${escapeHtml(match.abc.published || "")}
+                    ${escapeHtml(
+                        match.xyz.published || ""
+                    )}
                 </div>
 
-                <div class="url">
-                    <strong>ABC URL:</strong><br>
+                <div class="url-box">
+
+                    <strong>
+                        XYZ URL
+                    </strong>
+
+                    <br>
+
                     <a
-                        href="${escapeAttribute(match.abc.url)}"
+                        href="${escapeAttribute(
+                            match.xyz.url
+                        )}"
                         target="_blank"
                         rel="noopener">
-                        ${escapeHtml(match.abc.url)}
+
+                        ${escapeHtml(
+                            match.xyz.url
+                        )}
+
                     </a>
+
                 </div>
 
-                ${renderImages(match.abc.images)}
 
-                <div class="html-box">
-                    <h3>ABC Post HTML</h3>
+                ${renderImages(
+                    match.xyz.images
+                )}
+
+
+                <div class="html-section">
+
+                    <h3>
+                        XYZ Post HTML
+                    </h3>
+
+                    <pre>${escapeHtml(
+                        match.xyz.content
+                    )}</pre>
+
+                </div>
+
+            </div>
+
+
+            <!-- ABC -->
+
+            <div class="column">
+
+                <h2>ABC — Original</h2>
+
+                <div class="post-title">
+                    ${escapeHtml(
+                        match.abc.title
+                    )}
+                </div>
+
+                <div class="meta">
+                    Published:
+                    ${escapeHtml(
+                        match.abc.published || ""
+                    )}
+                </div>
+
+                <div class="url-box">
+
+                    <strong>
+                        ABC URL
+                    </strong>
+
+                    <br>
+
+                    <a
+                        href="${escapeAttribute(
+                            match.abc.url
+                        )}"
+                        target="_blank"
+                        rel="noopener">
+
+                        ${escapeHtml(
+                            match.abc.url
+                        )}
+
+                    </a>
+
+                </div>
+
+
+                ${renderImages(
+                    match.abc.images
+                )}
+
+
+                <div class="html-section">
+
+                    <h3>
+                        ABC Post HTML
+                    </h3>
 
                     <pre>${escapeHtml(
                         match.abc.content
                     )}</pre>
+
                 </div>
 
             </div>
@@ -439,9 +1081,16 @@ function renderMatch(match) {
 }
 
 
+/* =========================================================
+   IMAGES
+========================================================= */
+
 function renderImages(images) {
 
-    if (!images || !images.length) {
+    if(
+        !images ||
+        !images.length
+    ) {
 
         return `
             <div class="images">
@@ -451,81 +1100,414 @@ function renderImages(images) {
         `;
     }
 
+
     return `
+
         <div class="images">
 
             <h3>
                 Images (${images.length})
             </h3>
 
-            ${images.map(url => `
+            <div class="image-grid">
 
-                <div class="image-item">
+                ${
+                    images
+                    .map(
+                        image => `
+                            <div class="image-card">
 
-                    <img
-                        src="${escapeAttribute(url)}"
-                        loading="lazy"
-                        onerror="this.style.display='none'"
-                    >
+                                <img
+                                    src="${escapeAttribute(
+                                        image
+                                    )}"
+                                    loading="lazy"
+                                    onerror="
+                                        this.style.display='none'
+                                    "
+                                >
 
-                    <div class="image-url">
-                        ${escapeHtml(url)}
-                    </div>
+                                <div class="image-url">
+                                    ${escapeHtml(
+                                        image
+                                    )}
+                                </div>
 
-                </div>
+                            </div>
+                        `
+                    )
+                    .join("")
+                }
 
-            `).join("")}
+            </div>
 
         </div>
+
     `;
 }
 
 
-function clearResults() {
+/* =========================================================
+   CSV
+========================================================= */
 
-    document.getElementById(
-        "searchInput"
-    ).value = "";
+function downloadCSV() {
+
+    if(
+        !duplicateResults.length
+    ) {
+        return;
+    }
+
+
+    const rows = [
+
+        [
+            "XYZ URL",
+            "ABC URL",
+            "XYZ Title",
+            "ABC Title",
+            "XYZ Published",
+            "ABC Published",
+            "Match Method",
+            "Confidence"
+        ]
+
+    ];
+
+
+    for(
+        const match
+        of duplicateResults
+    ) {
+
+        rows.push([
+
+            match.xyz.url,
+
+            match.abc.url,
+
+            match.xyz.title,
+
+            match.abc.title,
+
+            match.xyz.published,
+
+            match.abc.published,
+
+            match.method,
+
+            match.confidence
+
+        ]);
+
+    }
+
+
+    const csv =
+        rows
+            .map(
+                row =>
+                    row
+                        .map(
+                            value =>
+                                csvEscape(
+                                    value
+                                )
+                        )
+                        .join(",")
+            )
+            .join("\r\n");
+
+
+    const blob =
+        new Blob(
+            [csv],
+            {
+                type:
+                    "text/csv;charset=utf-8;"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const a =
+        document.createElement(
+            "a"
+        );
+
+    a.href = url;
+
+    a.download =
+        "blogger-duplicate-posts.csv";
+
+    a.click();
+
+    URL.revokeObjectURL(
+        url
+    );
+}
+
+
+function csvEscape(value) {
+
+    const text =
+        String(
+            value || ""
+        );
+
+    if(
+        text.includes(",") ||
+        text.includes('"') ||
+        text.includes("\n")
+    ) {
+
+        return '"' +
+            text.replace(
+                /"/g,
+                '""'
+            ) +
+            '"';
+    }
+
+    return text;
+}
+
+
+/* =========================================================
+   NORMALIZATION
+========================================================= */
+
+function normalizeTitle(value) {
+
+    return String(
+        value || ""
+    )
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(
+        /[^\p{L}\p{N}\s]/gu,
+        " "
+    )
+    .replace(
+        /\s+/g,
+        " "
+    )
+    .trim();
+}
+
+
+function normalizeContent(html) {
+
+    let value =
+        String(
+            html || ""
+        );
+
+
+    /*
+     * Remove scripts.
+     */
+
+    value =
+        value.replace(
+            /<script[\s\S]*?<\/script>/gi,
+            ""
+        );
+
+
+    /*
+     * Remove styles.
+     */
+
+    value =
+        value.replace(
+            /<style[\s\S]*?<\/style>/gi,
+            ""
+        );
+
+
+    /*
+     * Remove Blogger generated
+     * image transformation.
+     */
+
+    value =
+        value.replace(
+            /=w\d+-h\d+[^"' ]*/gi,
+            ""
+        );
+
+
+    /*
+     * Normalize Blogger image size.
+     */
+
+    value =
+        value.replace(
+            /\/s\d+(-rw)?\//gi,
+            "/s1600-rw/"
+        );
+
+
+    /*
+     * Remove whitespace.
+     */
+
+    value =
+        value
+            .replace(
+                /\s+/g,
+                " "
+            )
+            .trim()
+            .toLowerCase();
+
+
+    return value;
+}
+
+
+/* =========================================================
+   SHA-256
+========================================================= */
+
+async function sha256(text) {
+
+    const data =
+        new TextEncoder()
+            .encode(text);
+
+    const hashBuffer =
+        await crypto.subtle.digest(
+            "SHA-256",
+            data
+        );
+
+    return Array
+        .from(
+            new Uint8Array(
+                hashBuffer
+            )
+        )
+        .map(
+            byte =>
+                byte
+                    .toString(16)
+                    .padStart(2, "0")
+        )
+        .join("");
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function getDate(value) {
+
+    if(!value) {
+        return "";
+    }
+
+    return value.substring(
+        0,
+        10
+    );
+}
+
+
+function delay(ms) {
+
+    return new Promise(
+        resolve =>
+            setTimeout(
+                resolve,
+                ms
+            )
+    );
+}
+
+
+function setStatus(text) {
 
     document.getElementById(
         "status"
-    ).textContent = "";
+    ).textContent = text;
+}
+
+
+function setProgress(percent) {
 
     document.getElementById(
-        "results"
-    ).innerHTML = "";
+        "progressFill"
+    ).style.width =
+        percent + "%";
+}
+
+
+function updateCompareProgress(
+    current,
+    total
+) {
+
+    const percent =
+        Math.round(
+            (
+                current /
+                total
+            ) * 100
+        );
+
+    setProgress(
+        percent
+    );
+
+    setStatus(
+        `Comparing XYZ posts: ${current.toLocaleString()} / ${total.toLocaleString()}`
+    );
 }
 
 
 function escapeHtml(value) {
 
-    return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    return String(
+        value || ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
 }
 
 
 function escapeAttribute(value) {
 
-    return escapeHtml(value);
-}
-
-
-document
-    .getElementById("searchInput")
-    .addEventListener(
-        "keydown",
-        function(event) {
-
-            if (event.key === "Enter") {
-                searchPosts();
-            }
-
-        }
+    return escapeHtml(
+        value
     );
+}
 
 </script>
 
