@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Blogger Post Compare - Filmstars</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f6f8;
+    color: #222;
+}
+
+header {
+    background: #fe5301;
+    color: white;
+    padding: 22px 20px;
+}
+
+header h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+}
+
+header p {
+    margin: 0;
+    opacity: .95;
+}
+
+.container {
+    max-width: 1500px;
+    margin: 25px auto;
+    padding: 0 15px;
+}
+
+.search-box {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    margin-bottom: 20px;
+}
+
+.search-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.search-row input {
+    flex: 1;
+    min-width: 250px;
+    padding: 13px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+button {
+    padding: 13px 22px;
+    border: 0;
+    border-radius: 6px;
+    background: #fe5301;
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+button:hover {
+    opacity: .9;
+}
+
+button.secondary {
+    background: #333;
+}
+
+.status {
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.column {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.column-header {
+    padding: 15px;
+    background: #222;
+    color: white;
+}
+
+.column-header h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.post {
+    padding: 18px;
+}
+
+.post-title {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.meta {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+.url {
+    word-break: break-all;
+    background: #f1f1f1;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 13px;
+    margin-bottom: 15px;
+}
+
+.url a {
+    color: #0066cc;
+}
+
+.images {
+    margin-top: 20px;
+}
+
+.images h3 {
+    font-size: 17px;
+}
+
+.image-item {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.image-item img {
+    max-width: 100%;
+    max-height: 400px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.image-url {
+    font-size: 11px;
+    word-break: break-all;
+    color: #555;
+}
+
+.html-box {
+    margin-top: 20px;
+}
+
+.html-box h3 {
+    font-size: 17px;
+}
+
+pre {
+    background: #111;
+    color: #eee;
+    padding: 15px;
+    overflow: auto;
+    max-height: 500px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.no-match {
+    padding: 30px;
+    text-align: center;
+    color: #777;
+}
+
+.match-badge {
+    display: inline-block;
+    background: #168a3a;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    margin-bottom: 15px;
+}
+
+@media(max-width: 900px) {
+    .columns {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Blogger Post Compare</h1>
+    <p>Compare Tollywood Boost posts between ABC and XYZ</p>
+</header>
+
+<div class="container">
+
+    <div class="search-box">
+
+        <div class="search-row">
+
+            <input
+                id="searchInput"
+                type="text"
+                placeholder="Enter XYZ post title or keyword"
+            >
+
+            <button onclick="searchPosts()">
+                Search
+            </button>
+
+            <button
+                class="secondary"
+                onclick="clearResults()">
+                Clear
+            </button>
+
+        </div>
+
+        <div id="status" class="status"></div>
+
+    </div>
+
+    <div id="results"></div>
+
+</div>
+
+<script>
+
+async function searchPosts() {
+
+    const input =
+        document.getElementById("searchInput");
+
+    const query =
+        input.value.trim();
+
+    const status =
+        document.getElementById("status");
+
+    const results =
+        document.getElementById("results");
+
+    if (!query) {
+
+        status.textContent =
+            "Enter a post title or keyword.";
+
+        return;
+    }
+
+    status.textContent =
+        "Searching ABC and XYZ...";
+
+    results.innerHTML = "";
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/blogger-compare?q=" +
+                encodeURIComponent(query)
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Search failed."
+            );
+        }
+
+        if (!data.matches || !data.matches.length) {
+
+            status.textContent =
+                "No matching post found.";
+
+            results.innerHTML = `
+                <div class="column">
+                    <div class="no-match">
+                        No matching ABC post was found for this XYZ search.
+                    </div>
+                </div>
+            `;
+
+            return;
+        }
+
+        status.textContent =
+            `${data.matches.length} matching post(s) found.`;
+
+        results.innerHTML =
+            data.matches
+                .map(renderMatch)
+                .join("");
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "Error: " + error.message;
+
+        results.innerHTML = "";
+    }
+}
+
+
+function renderMatch(match) {
+
+    return `
+
+    <div class="columns">
+
+        <div class="column">
+
+            <div class="column-header">
+                <h2>XYZ — Imported Blog</h2>
+            </div>
+
+            <div class="post">
+
+                <div class="match-badge">
+                    MATCH FOUND
+                </div>
+
+                <div class="post-title">
+                    ${escapeHtml(match.xyz.title)}
+                </div>
+
+                <div class="meta">
+                    Published:
+                    ${escapeHtml(match.xyz.published || "")}
+                </div>
+
+                <div class="url">
+                    <strong>XYZ URL:</strong><br>
+                    <a
+                        href="${escapeAttribute(match.xyz.url)}"
+                        target="_blank"
+                        rel="noopener">
+                        ${escapeHtml(match.xyz.url)}
+                    </a>
+                </div>
+
+                ${renderImages(match.xyz.images)}
+
+                <div class="html-box">
+                    <h3>XYZ Post HTML</h3>
+
+                    <pre>${escapeHtml(
+                        match.xyz.content
+                    )}</pre>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="column">
+
+            <div class="column-header">
+                <h2>ABC — Original Blog</h2>
+            </div>
+
+            <div class="post">
+
+                <div class="match-badge">
+                    ${escapeHtml(match.method)}
+                    — ${escapeHtml(match.confidence)}
+                </div>
+
+                <div class="post-title">
+                    ${escapeHtml(match.abc.title)}
+                </div>
+
+                <div class="meta">
+                    Published:
+                    ${escapeHtml(match.abc.published || "")}
+                </div>
+
+                <div class="url">
+                    <strong>ABC URL:</strong><br>
+                    <a
+                        href="${escapeAttribute(match.abc.url)}"
+                        target="_blank"
+                        rel="noopener">
+                        ${escapeHtml(match.abc.url)}
+                    </a>
+                </div>
+
+                ${renderImages(match.abc.images)}
+
+                <div class="html-box">
+                    <h3>ABC Post HTML</h3>
+
+                    <pre>${escapeHtml(
+                        match.abc.content
+                    )}</pre>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    `;
+}
+
+
+function renderImages(images) {
+
+    if (!images || !images.length) {
+
+        return `
+            <div class="images">
+                <h3>Images</h3>
+                <p>No images detected.</p>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="images">
+
+            <h3>
+                Images (${images.length})
+            </h3>
+
+            ${images.map(url => `
+
+                <div class="image-item">
+
+                    <img
+                        src="${escapeAttribute(url)}"
+                        loading="lazy"
+                        onerror="this.style.display='none'"
+                    >
+
+                    <div class="image-url">
+                        ${escapeHtml(url)}
+                    </div>
+
+                </div>
+
+            `).join("")}
+
+        </div>
+    `;
+}
+
+
+function clearResults() {
+
+    document.getElementById(
+        "searchInput"
+    ).value = "";
+
+    document.getElementById(
+        "status"
+    ).textContent = "";
+
+    document.getElementById(
+        "results"
+    ).innerHTML = "";
+}
+
+
+function escapeHtml(value) {
+
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+function escapeAttribute(value) {
+
+    return escapeHtml(value);
+}
+
+
+document
+    .getElementById("searchInput")
+    .addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Enter") {
+                searchPosts();
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
