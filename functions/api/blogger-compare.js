@@ -3,292 +3,253 @@ const BLOGS = {
     xyz: "https://tollyboost.blogspot.com"
 };
 
-const MAX_RESULTS = 500;
+const BATCH_SIZE = 500;
 
 export async function onRequestGet(context) {
-
-    const url =
-        new URL(
-            context.request.url
-        );
-
-    const blogName =
-        url.searchParams.get("blog");
-
-    const start =
-        parseInt(
-            url.searchParams.get("start") || "1",
-            10
-        );
-
-
-    if(
-        !BLOGS[blogName]
-    ) {
-
-        return json(
-            {
-                error:
-                    "Invalid blog."
-            },
-            400
-        );
-    }
-
-
-    if(
-        !Number.isFinite(start) ||
-        start < 1
-    ) {
-
-        return json(
-            {
-                error:
-                    "Invalid start value."
-            },
-            400
-        );
-    }
-
-
-    const feedUrl =
-        BLOGS[blogName] +
-        "/feeds/posts/default" +
-        "?alt=json" +
-        "&max-results=" +
-        MAX_RESULTS +
-        "&start-index=" +
-        start;
-
-
     try {
+        const requestUrl = new URL(context.request.url);
 
-        const response =
-            await fetch(
-                feedUrl,
-                {
-                    headers: {
-                        "User-Agent":
-                            "Filmstars Blogger Duplicate Checker"
-                    }
-                }
-            );
+        const blog = requestUrl.searchParams.get("blog");
+        const start = Number(
+            requestUrl.searchParams.get("start") || "1"
+        );
 
-
-        if(
-            !response.ok
-        ) {
-
-            return json(
-                {
-                    error:
-                        `Blogger returned HTTP ${response.status}`
-                },
-                502
-            );
-
+        if (!BLOGS[blog]) {
+            return json({
+                error: "Invalid blog. Use abc or xyz."
+            }, 400);
         }
 
+        if (!Number.isInteger(start) || start < 1) {
+            return json({
+                error: "Invalid start value."
+            }, 400);
+        }
 
-        const data =
-            await response.json();
+        const feedUrl =
+            BLOGS[blog] +
+            "/feeds/posts/default" +
+            "?alt=json" +
+            "&start-index=" +
+            start +
+            "&max-results=" +
+            BATCH_SIZE;
 
+        const response = await fetch(feedUrl, {
+            headers: {
+                "User-Agent": "Mozilla/5.0 Filmstars Blogger Checker"
+            }
+        });
+
+        if (!response.ok) {
+            return json({
+                error:
+                    "Blogger returned HTTP " +
+                    response.status
+            }, 502);
+        }
+
+        const data = await response.json();
 
         const entries =
-            data.feed?.entry ||
-            [];
+            data &&
+            data.feed &&
+            data.feed.entry
+                ? data.feed.entry
+                : [];
 
+        const posts = entries.map(parsePost);
 
-        const posts =
-            entries.map(
-                parsePost
-            );
+        return json({
+            success: true,
+            blog: blog,
+            start: start,
+            count: posts.length,
+            posts: posts
+        });
 
+    } catch (error) {
 
-        return json(
-            {
-                blog: blogName,
-                start,
-                count: posts.length,
-                posts
-            }
-        );
-
-    }
-    catch(error) {
-
-        return json(
-            {
-                error:
-                    error.message ||
-                    "Unable to read Blogger."
-            },
-            500
-        );
-
+        return json({
+            error:
+                error && error.message
+                    ? error.message
+                    : "Unknown server error"
+        }, 500);
     }
 }
 
-
-/* =========================================================
-   PARSE BLOGGER POST
-========================================================= */
 
 function parsePost(entry) {
 
     const links =
-        entry.link || [];
-
+        Array.isArray(entry.link)
+            ? entry.link
+            : [];
 
     const alternate =
         links.find(
-            link =>
-                link.rel === "alternate"
+            link => link.rel === "alternate"
         );
 
-
     const title =
-        entry.title?.$t ||
-        "";
-
+        entry.title &&
+        entry.title.$t
+            ? entry.title.$t
+            : "";
 
     const content =
-        entry.content?.$t ||
-        entry.summary?.$t ||
-        "";
-
+        entry.content &&
+        entry.content.$t
+            ? entry.content.$t
+            : (
+                entry.summary &&
+                entry.summary.$t
+                    ? entry.summary.$t
+                    : ""
+            );
 
     const published =
-        entry.published?.$t ||
-        "";
-
+        entry.published &&
+        entry.published.$t
+            ? entry.published.$t
+            : "";
 
     const updated =
-        entry.updated?.$t ||
-        "";
-
+        entry.updated &&
+        entry.updated.$t
+            ? entry.updated.$t
+            : "";
 
     const id =
-        entry.id?.$t ||
-        "";
-
+        entry.id &&
+        entry.id.$t
+            ? entry.id.$t
+            : "";
 
     return {
-
-        id,
-
-        title,
-
-        published,
-
-        updated,
-
-        url:
-            alternate?.href ||
-            "",
-
-        content,
-
-        images:
-            extractImages(
-                content
-            )
-
+        id: id,
+        title: title,
+        published: published,
+        updated: updated,
+        url: alternate ? alternate.href : "",
+        content: content,
+        images: extractImages(content)
     };
 }
 
 
-/* =========================================================
-   EXTRACT IMAGES
-========================================================= */
+function extractImages(html) {
 
-function extractImages(
-    html
-) {
+    if (!html) {
+        return [];
+    }
 
-    const images = [];
+    const result = [];
 
-    const regex =
-        /<img[^>]+src=["']([^"']+)["']/gi;
-
+    /*
+     * Find src="..."
+     */
+    const srcRegex =
+        /<img[^>]+src\s*=\s*["']([^"']+)["']/gi;
 
     let match;
 
-
-    while(
-        (match =
-            regex.exec(
-                html
-            )) !== null
+    while (
+        (match = srcRegex.exec(html)) !== null
     ) {
 
-        let src =
-            match[1];
+        let imageUrl = match[1];
 
+        imageUrl =
+            normalizeBloggerImage(imageUrl);
 
-        /*
-         * Remove Blogger image
-         * transformation parameters.
-         */
-
-        src =
-            src.replace(
-                /=w\d+-h\d+.*$/i,
-                ""
-            );
-
-
-        /*
-         * Convert common Blogger
-         * sizes to s1600-rw.
-         */
-
-        src =
-            src.replace(
-                /\/s\d+(-rw)?\//i,
-                "/s1600-rw/"
-            );
-
-
-        if(
-            !images.includes(src)
+        if (
+            imageUrl &&
+            !result.includes(imageUrl)
         ) {
-
-            images.push(src);
-
+            result.push(imageUrl);
         }
-
     }
 
+    /*
+     * Also check data-src.
+     */
+    const dataSrcRegex =
+        /<img[^>]+data-src\s*=\s*["']([^"']+)["']/gi;
 
-    return images;
+    while (
+        (match = dataSrcRegex.exec(html)) !== null
+    ) {
+
+        let imageUrl = match[1];
+
+        imageUrl =
+            normalizeBloggerImage(imageUrl);
+
+        if (
+            imageUrl &&
+            !result.includes(imageUrl)
+        ) {
+            result.push(imageUrl);
+        }
+    }
+
+    return result;
 }
 
 
-/* =========================================================
-   JSON
-========================================================= */
+function normalizeBloggerImage(url) {
 
-function json(
-    data,
-    status = 200
-) {
+    if (!url) {
+        return "";
+    }
+
+    let result = url;
+
+    /*
+     * Remove Blogger size suffixes such as:
+     *
+     * /s400/
+     * /s800/
+     * /s1600/
+     * /s1600-rw/
+     */
+    result =
+        result.replace(
+            /\/s\d+(?:-rw)?\//i,
+            "/s1600/"
+        );
+
+    /*
+     * Remove Google's image parameters such as:
+     *
+     * =w0-h0-p-k-no-nu
+     */
+    result =
+        result.replace(
+            /=w\d+.*$/i,
+            ""
+        );
+
+    return result;
+}
+
+
+function json(data, status) {
 
     return new Response(
-        JSON.stringify(
-            data
-        ),
+        JSON.stringify(data),
         {
-            status,
+            status: status || 200,
 
             headers: {
                 "Content-Type":
-                    "application/json; charset=utf-8",
+                    "application/json; charset=UTF-8",
 
                 "Cache-Control":
                     "no-store"
             }
         }
     );
-
 }
