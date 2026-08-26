@@ -3,57 +3,57 @@ const BLOGS = {
     tollyboost: "https://tollyboost.blogspot.com"
 };
 
-const FEED_SIZE = 150;
+const MAX_RESULTS = 100;
 
 export async function onRequestGet(context) {
+    const url = new URL(context.request.url);
 
-    const requestUrl = new URL(context.request.url);
-
-    const blog = requestUrl.searchParams.get("blog");
-
-    const start = Number(
-        requestUrl.searchParams.get("start") || "1"
+    const blog = url.searchParams.get("blog");
+    const start = parseInt(url.searchParams.get("start") || "1", 10);
+    const limit = Math.min(
+        parseInt(url.searchParams.get("limit") || "100", 10),
+        MAX_RESULTS
     );
 
     if (!BLOGS[blog]) {
         return json({
             success: false,
-            error:
-                "Invalid blog. Use tollywoodboost or tollyboost."
+            error: "Invalid blog."
         }, 400);
     }
 
     if (!Number.isInteger(start) || start < 1) {
         return json({
             success: false,
-            error: "Invalid start value."
+            error: "Invalid start."
         }, 400);
     }
 
-    const feedUrl =
-        BLOGS[blog] +
-        "/feeds/posts/default" +
-        "?alt=json" +
-        "&start-index=" +
-        start +
-        "&max-results=" +
-        FEED_SIZE;
-
     try {
+        const feedUrl =
+            `${BLOGS[blog]}/feeds/posts/default` +
+            `?alt=json` +
+            `&start-index=${start}` +
+            `&max-results=${limit}`;
 
         const response = await fetch(feedUrl, {
             headers: {
                 "User-Agent":
-                    "Mozilla/5.0 Filmstars Duplicate Finder"
+                    "Mozilla/5.0 (compatible; FilmstarsDuplicateFinder/1.0)"
             }
         });
 
         if (!response.ok) {
             return json({
                 success: false,
+                retryable: response.status === 429 ||
+                           response.status === 500 ||
+                           response.status === 502 ||
+                           response.status === 503 ||
+                           response.status === 504,
+                status: response.status,
                 error:
-                    "Blogger returned HTTP " +
-                    response.status
+                    `Blogger returned HTTP ${response.status}`
             }, 502);
         }
 
@@ -61,15 +61,9 @@ export async function onRequestGet(context) {
             response.headers.get("content-type") || "";
 
         if (!contentType.includes("json")) {
-
-            const text = await response.text();
-
             return json({
                 success: false,
-                error:
-                    "Blogger did not return JSON.",
-                response:
-                    text.substring(0, 300)
+                error: "Blogger returned non-JSON."
             }, 502);
         }
 
@@ -85,18 +79,17 @@ export async function onRequestGet(context) {
             success: true,
             blog,
             start,
+            requested: limit,
             count: posts.length,
             posts
         });
 
     } catch (error) {
-
         return json({
             success: false,
-            error:
-                error?.message ||
-                "Unable to retrieve Blogger feed."
-        }, 500);
+            retryable: true,
+            error: error.message || "Request failed."
+        }, 503);
     }
 }
 
@@ -143,12 +136,9 @@ function parsePost(entry) {
         published,
         updated,
         url: alternate?.href || "",
-        content,
         images,
-        titleKey:
-            normalizeTitle(title),
-        textKey:
-            normalizeText(content),
+        titleKey: normalizeTitle(title),
+        textKey: normalizeText(content),
         imageKeys:
             images.map(
                 normalizeImageFilename
@@ -158,7 +148,7 @@ function parsePost(entry) {
 
 
 /* =========================================
-   IMAGE EXTRACTION
+   EXTRACT IMAGES
 ========================================= */
 
 function extractImages(html) {
@@ -170,7 +160,7 @@ function extractImages(html) {
     const results = [];
 
     const regex =
-        /<(?:img)[^>]+(?:src|data-src)\s*=\s*["']([^"']+)["']/gi;
+        /<img[^>]+(?:src|data-src)\s*=\s*["']([^"']+)["']/gi;
 
     let match;
 
@@ -178,16 +168,10 @@ function extractImages(html) {
         (match = regex.exec(html)) !== null
     ) {
 
-        const original = match[1];
+        const url = match[1];
 
-        const filename =
-            getImageFilename(original);
-
-        if (
-            filename &&
-            !results.includes(filename)
-        ) {
-            results.push(filename);
+        if (!results.includes(url)) {
+            results.push(url);
         }
     }
 
@@ -199,24 +183,20 @@ function extractImages(html) {
    IMAGE FILENAME
 ========================================= */
 
-function getImageFilename(url) {
+function getFilename(url) {
 
     try {
 
-        let clean =
+        const clean =
             String(url)
                 .split("?")[0];
 
         const parts =
             clean.split("/");
 
-        let filename =
-            parts[parts.length - 1] || "";
-
-        filename =
-            decodeURIComponent(filename);
-
-        return filename;
+        return decodeURIComponent(
+            parts[parts.length - 1] || ""
+        );
 
     } catch {
 
@@ -226,27 +206,32 @@ function getImageFilename(url) {
 
 
 /* =========================================
-   IMAGE NORMALIZATION
+   IMAGE KEY
 ========================================= */
 
-function normalizeImageFilename(value) {
+function normalizeImageFilename(url) {
 
-    return String(value || "")
+    let filename =
+        getFilename(url);
+
+    try {
+        filename =
+            decodeURIComponent(filename);
+    } catch {}
+
+    return filename
         .toLowerCase()
         .replace(/\+/g, " ")
         .replace(/%20/g, " ")
-        .replace(/%2520/g, " ")
         .replace(/%28/g, "(")
         .replace(/%29/g, ")")
-        .replace(/%2528/g, "(")
-        .replace(/%2529/g, ")")
         .replace(/\s+/g, " ")
         .trim();
 }
 
 
 /* =========================================
-   TITLE NORMALIZATION
+   TITLE KEY
 ========================================= */
 
 function normalizeTitle(value) {
@@ -261,7 +246,7 @@ function normalizeTitle(value) {
 
 
 /* =========================================
-   TEXT NORMALIZATION
+   TEXT KEY
 ========================================= */
 
 function normalizeText(html) {
@@ -281,59 +266,17 @@ function normalizeText(html) {
             " "
         );
 
-    /*
-     * Replace image tags with their
-     * normalized filenames.
-     */
-
-    value =
-        value.replace(
-            /<img[^>]*>/gi,
-            function(tag) {
-
-                const match =
-                    tag.match(
-                        /(?:src|data-src)\s*=\s*["']([^"']+)["']/i
-                    );
-
-                if (!match) {
-                    return " ";
-                }
-
-                return (
-                    " IMAGE " +
-                    normalizeImageFilename(
-                        getImageFilename(
-                            match[1]
-                        )
-                    ) +
-                    " "
-                );
-            }
-        );
-
-    /*
-     * Remove HTML.
-     */
-
     value =
         value.replace(
             /<[^>]+>/g,
             " "
         );
 
-    /*
-     * Decode common entities.
-     */
-
-    value =
-        value
-            .replace(/&nbsp;/gi, " ")
-            .replace(/&amp;/gi, "&")
-            .replace(/&quot;/gi, '"')
-            .replace(/&#39;/gi, "'");
-
     return value
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, "'")
         .toLowerCase()
         .replace(/\s+/g, " ")
         .trim();
@@ -341,7 +284,7 @@ function normalizeText(html) {
 
 
 /* =========================================
-   JSON
+   JSON RESPONSE
 ========================================= */
 
 function json(data, status = 200) {
