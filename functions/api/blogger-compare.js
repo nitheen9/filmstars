@@ -5,12 +5,10 @@ export async function onRequestGet() {
             success: true,
             message:
                 "Blogger duplicate comparison API is working.",
-            blogs: {
-                original:
-                    "https://tollywoodboost.blogspot.com",
-                imported:
-                    "https://tollyboost.blogspot.com"
-            }
+            original:
+                "https://tollywoodboost.blogspot.com",
+            imported:
+                "https://tollyboost.blogspot.com"
         }),
         {
             status: 200,
