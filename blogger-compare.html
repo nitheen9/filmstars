@@ -1,770 +1,466 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-Blogger Duplicate Finder
-</title>
-
+<title>Blogger Duplicate Finder</title>
 
 <style>
-
 * {
     box-sizing: border-box;
 }
 
-
 body {
     margin: 0;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-    background:
-        #f5f6f8;
-
-    color:
-        #222;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f5f6f8;
+    color: #222;
 }
-
 
 header {
-    background:
-        #fe5301;
-
-    color:
-        white;
-
-    padding:
-        24px 20px;
+    background: #fe5301;
+    color: #fff;
+    padding: 24px 20px;
 }
-
 
 header h1 {
-    margin:
-        0 0 8px;
-
-    font-size:
-        28px;
+    margin: 0 0 8px;
+    font-size: 28px;
 }
-
 
 header p {
     margin: 0;
 }
 
-
 .container {
-    max-width:
-        1500px;
-
-    margin:
-        auto;
-
-    padding:
-        20px;
+    max-width: 1500px;
+    margin: auto;
+    padding: 20px;
 }
-
 
 .panel {
-    background:
-        white;
-
-    border-radius:
-        10px;
-
-    padding:
-        20px;
-
-    margin-bottom:
-        20px;
-
-    box-shadow:
-        0 2px 10px
-        rgba(0,0,0,.08);
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
+.batch-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+}
 
-.panel h2 {
+.batch-button {
+    border: 0;
+    border-radius: 7px;
+    padding: 14px 10px;
+    background: #fe5301;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.batch-button:hover {
+    opacity: 0.9;
+}
+
+.batch-button.running {
+    background: #555;
+}
+
+.batch-button.done {
+    background: #198754;
+}
+
+.batch-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.action-button {
+    border: 0;
+    border-radius: 7px;
+    padding: 12px 18px;
+    background: #222;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 8px;
+}
+
+.action-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#status {
+    margin-top: 15px;
+    font-weight: bold;
+    line-height: 1.5;
+}
+
+.progress {
+    margin-top: 15px;
+    width: 100%;
+    height: 20px;
+    background: #ddd;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+#progressBar {
+    width: 0%;
+    height: 100%;
+    background: #fe5301;
+    transition: width 0.2s;
+}
+
+.cache-status {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f7f7f7;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.stat {
+    background: #fff;
+    padding: 18px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.stat strong {
+    display: block;
+    font-size: 25px;
+    margin-bottom: 5px;
+}
+
+.stat span {
+    color: #666;
+    font-size: 13px;
+}
+
+.match {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.match-header {
+    background: #222;
+    color: #fff;
+    padding: 13px 18px;
+    font-weight: bold;
+}
+
+.confidence {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background: #198754;
+    color: #fff;
+    font-size: 11px;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.column {
+    padding: 20px;
+    min-width: 0;
+}
+
+.column:first-child {
+    border-right: 1px solid #ddd;
+}
+
+.column h2 {
     margin-top: 0;
 }
 
-
-.batch-grid {
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(4, 1fr);
-
-    gap:
-        10px;
-}
-
-
-.batch-button {
-    border:
-        0;
-
-    border-radius:
-        7px;
-
-    padding:
-        14px 10px;
-
-    background:
-        #fe5301;
-
-    color:
-        white;
-
-    font-weight:
-        bold;
-
-    cursor:
-        pointer;
-
-    font-size:
-        14px;
-}
-
-
-.batch-button:hover {
-    opacity:
-        .9;
-}
-
-
-.batch-button.done {
-    background:
-        #198754;
-}
-
-
-.batch-button.running {
-    background:
-        #555;
-}
-
-
-.batch-button:disabled {
-    background:
-        #999;
-
-    cursor:
-        not-allowed;
-}
-
-
-.actions {
-    margin-top:
-        18px;
-}
-
-
-.action-button {
-    border:
-        0;
-
-    border-radius:
-        7px;
-
-    padding:
-        12px 18px;
-
-    background:
-        #222;
-
-    color:
-        white;
-
-    font-weight:
-        bold;
-
-    cursor:
-        pointer;
-
-    margin-right:
-        8px;
-}
-
-
-.action-button:disabled {
-    opacity:
-        .5;
-
-    cursor:
-        not-allowed;
-}
-
-
-#status {
-    margin-top:
-        15px;
-
-    font-weight:
-        bold;
-
-    line-height:
-        1.5;
-}
-
-
-.progress {
-    margin-top:
-        15px;
-
-    width:
-        100%;
-
-    height:
-        20px;
-
-    background:
-        #ddd;
-
-    border-radius:
-        20px;
-
-    overflow:
-        hidden;
-}
-
-
-#progressBar {
-    height:
-        100%;
-
-    width:
-        0%;
-
-    background:
-        #fe5301;
-
-    transition:
-        width .2s;
-}
-
-
-.stats {
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(5, 1fr);
-
-    gap:
-        12px;
-
-    margin-bottom:
-        20px;
-}
-
-
-.stat {
-    background:
-        white;
-
-    padding:
-        18px;
-
-    border-radius:
-        8px;
-
-    box-shadow:
-        0 2px 8px
-        rgba(0,0,0,.06);
-}
-
-
-.stat strong {
-    display:
-        block;
-
-    font-size:
-        25px;
-
-    margin-bottom:
-        5px;
-}
-
-
-.stat span {
-    color:
-        #666;
-
-    font-size:
-        13px;
-}
-
-
-.match {
-    background:
-        white;
-
-    border-radius:
-        10px;
-
-    overflow:
-        hidden;
-
-    margin-bottom:
-        22px;
-
-    box-shadow:
-        0 2px 10px
-        rgba(0,0,0,.08);
-}
-
-
-.match-header {
-    background:
-        #222;
-
-    color:
-        white;
-
-    padding:
-        13px 18px;
-
-    font-weight:
-        bold;
-}
-
-
-.columns {
-    display:
-        grid;
-
-    grid-template-columns:
-        1fr 1fr;
-}
-
-
-.column {
-    padding:
-        20px;
-
-    min-width:
-        0;
-}
-
-
-.column:first-child {
-    border-right:
-        1px solid #ddd;
-}
-
-
-.column h2 {
-    margin-top:
-        0;
-}
-
-
 .post-title {
-    font-size:
-        20px;
-
-    font-weight:
-        bold;
-
-    margin-bottom:
-        10px;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
 }
-
 
 .post-date {
-    color:
-        #666;
-
-    font-size:
-        13px;
-
-    margin-bottom:
-        12px;
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 12px;
 }
-
 
 .url-box {
-    background:
-        #f1f1f1;
-
-    padding:
-        10px;
-
-    border-radius:
-        5px;
-
-    word-break:
-        break-all;
-
-    font-size:
-        13px;
+    background: #f1f1f1;
+    padding: 10px;
+    border-radius: 5px;
+    word-break: break-all;
+    font-size: 13px;
 }
-
 
 .url-box a {
-    color:
-        #06c;
+    color: #06c;
 }
-
 
 .image-list {
-    margin-top:
-        18px;
+    margin-top: 18px;
 }
-
 
 .image-name {
-    background:
-        #f7f7f7;
-
-    padding:
-        7px;
-
-    border-radius:
-        4px;
-
-    margin-bottom:
-        5px;
-
-    font-size:
-        11px;
-
-    word-break:
-        break-all;
+    background: #f7f7f7;
+    padding: 7px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    font-size: 11px;
+    word-break: break-all;
 }
-
-
-.confidence {
-    display:
-        inline-block;
-
-    margin-left:
-        10px;
-
-    padding:
-        4px 8px;
-
-    border-radius:
-        12px;
-
-    background:
-        #198754;
-
-    color:
-        white;
-
-    font-size:
-        11px;
-}
-
 
 .empty {
-    background:
-        white;
-
-    padding:
-        40px;
-
-    border-radius:
-        10px;
-
-    text-align:
-        center;
+    background: #fff;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
 }
 
-
-.cache-status {
-    margin-top:
-        10px;
-
-    padding:
-        10px;
-
-    background:
-        #f7f7f7;
-
-    border-radius:
-        6px;
-
-    font-size:
-        13px;
+.error-box {
+    background: #fff;
+    border-left: 5px solid #d93025;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
 }
 
-
-@media(max-width:1000px) {
-
+@media (max-width: 1000px) {
     .batch-grid {
-        grid-template-columns:
-            repeat(3, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .stats {
-        grid-template-columns:
-            repeat(3, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
-
-@media(max-width:700px) {
-
+@media (max-width: 700px) {
     .batch-grid {
-        grid-template-columns:
-            repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .stats {
-        grid-template-columns:
-            repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .columns {
-        grid-template-columns:
-            1fr;
+        grid-template-columns: 1fr;
     }
 
     .column:first-child {
-        border-right:
-            0;
-
-        border-bottom:
-            1px solid #ddd;
+        border-right: 0;
+        border-bottom: 1px solid #ddd;
     }
 }
 
-
-@media(max-width:500px) {
-
+@media (max-width: 500px) {
     .batch-grid {
-        grid-template-columns:
-            1fr;
+        grid-template-columns: 1fr;
     }
 
     .stats {
-        grid-template-columns:
-            1fr;
+        grid-template-columns: 1fr;
     }
 }
-
 </style>
-
 </head>
-
 
 <body>
 
-
 <header>
-
-<h1>
-Blogger Duplicate Finder
-</h1>
-
-<p>
-TollywoodBoost 1,000-post batch
-↔
-ALL TollyBoost posts
-</p>
-
+    <h1>Blogger Duplicate Finder</h1>
+    <p>
+        TollywoodBoost 1,000-post batch
+        ↔ ALL TollyBoost posts
+    </p>
 </header>
-
 
 <div class="container">
 
+    <div class="panel">
 
-<div class="panel">
+        <h2>Choose TollywoodBoost Batch</h2>
 
+        <p>
+            Each button scans that 1,000-post section of
+            <strong>TollywoodBoost</strong> against the
+            <strong>entire TollyBoost archive</strong>.
+        </p>
 
-<h2>
-Choose TollywoodBoost Batch
-</h2>
+        <div id="batchGrid" class="batch-grid"></div>
 
+        <div id="cacheStatus" class="cache-status">
+            TollyBoost archive: checking...
+        </div>
 
-<p>
+        <div style="margin-top: 18px;">
 
-Each button scans only that
-1,000-post section of
-TollywoodBoost against the
-<strong>entire TollyBoost archive</strong>.
+            <button
+                id="rebuildButton"
+                class="action-button"
+                type="button"
+                onclick="rebuildTollyBoostIndex()">
+                Rebuild TollyBoost Index
+            </button>
 
-</p>
+            <button
+                id="csvButton"
+                class="action-button"
+                type="button"
+                onclick="downloadCSV()"
+                disabled>
+                Download Current CSV
+            </button>
 
+        </div>
 
-<div
-    class="batch-grid"
-    id="batchGrid"
-></div>
+        <div id="status">
+            Ready. Select a batch.
+        </div>
 
+        <div class="progress">
+            <div id="progressBar"></div>
+        </div>
 
-<div
-    class="cache-status"
-    id="cacheStatus"
->
+    </div>
 
-TollyBoost archive:
-Not loaded
 
-</div>
+    <div class="stats">
 
+        <div class="stat">
+            <strong id="abcCount">0</strong>
+            <span>TollywoodBoost Batch</span>
+        </div>
 
-<div class="actions">
+        <div class="stat">
+            <strong id="xyzCount">0</strong>
+            <span>TollyBoost Indexed</span>
+        </div>
 
+        <div class="stat">
+            <strong id="duplicateCount">0</strong>
+            <span>Duplicates</span>
+        </div>
 
-<button
-    class="action-button"
-    id="rebuildButton"
-    onclick="rebuildXYZIndex()"
->
+        <div class="stat">
+            <strong id="notFoundCount">0</strong>
+            <span>Not Matched</span>
+        </div>
 
-Build / Rebuild TollyBoost Index
+        <div class="stat">
+            <strong id="matchRate">0%</strong>
+            <span>Match Rate</span>
+        </div>
 
-</button>
+    </div>
 
 
-<button
-    class="action-button"
-    id="csvButton"
-    onclick="downloadCSV()"
-    disabled
->
+    <div id="results">
 
-Download Current CSV
+        <div class="empty">
+            Select a batch above.
+        </div>
 
-</button>
-
-
-</div>
-
-
-<div id="status">
-
-Ready.
-
-</div>
-
-
-<div class="progress">
-
-<div id="progressBar">
-</div>
-
-</div>
-
-
-</div>
-
-
-<div class="stats">
-
-
-<div class="stat">
-
-<strong id="abcCount">
-0
-</strong>
-
-<span>
-TollywoodBoost Batch
-</span>
-
-</div>
-
-
-<div class="stat">
-
-<strong id="xyzCount">
-0
-</strong>
-
-<span>
-TollyBoost Indexed
-</span>
-
-</div>
-
-
-<div class="stat">
-
-<strong id="duplicateCount">
-0
-</strong>
-
-<span>
-Duplicates
-</span>
-
-</div>
-
-
-<div class="stat">
-
-<strong id="notFoundCount">
-0
-</strong>
-
-<span>
-Not Matched
-</span>
-
-</div>
-
-
-<div class="stat">
-
-<strong id="matchRate">
-0%
-</strong>
-
-<span>
-Match Rate
-</span>
-
-</div>
-
-
-</div>
-
-
-<div id="results">
-
-<div class="empty">
-
-Select a batch above.
-
-</div>
-
-</div>
-
+    </div>
 
 </div>
 
 
 <script>
 
-
-/* =========================================
-   SETTINGS
-========================================= */
-
 const BATCH_SIZE = 1000;
-
 const FEED_PAGE_SIZE = 150;
 
 const MAX_RETRIES = 5;
+const REQUEST_DELAY = 1800;
 
-const REQUEST_DELAY = 1500;
+let currentBatch = 0;
+let currentMatches = [];
+
+
+/* =====================================================
+   CREATE 16 BATCH BUTTONS
+===================================================== */
+
+createBatchButtons();
+
+
+function createBatchButtons() {
+
+    const grid =
+        document.getElementById("batchGrid");
+
+    for (let i = 1; i <= 16; i++) {
+
+        const start =
+            ((i - 1) * BATCH_SIZE) + 1;
+
+        const end =
+            i * BATCH_SIZE;
+
+        const button =
+            document.createElement("button");
+
+        button.type = "button";
+
+        button.className =
+            "batch-button";
+
+        button.id =
+            "batch-" + i;
+
+        button.textContent =
+            "Batch " +
+            i +
+            ": " +
+            start.toLocaleString() +
+            "–" +
+            end.toLocaleString();
+
+        button.addEventListener(
+            "click",
+            function () {
+
+                scanBatch(
+                    i,
+                    start
+                );
+
+            }
+        );
+
+        grid.appendChild(button);
+    }
+}
+
+
+/* =====================================================
+   INDEXED DB
+===================================================== */
 
 const DB_NAME =
     "FilmstarsBloggerDuplicateDB";
@@ -775,98 +471,7 @@ const STORE_NAME =
     "tollyboost";
 
 
-let currentBatch = 0;
-
-let currentMatches = [];
-
-
-/* =========================================
-   CREATE BATCH BUTTONS
-========================================= */
-
-createButtons();
-
-
-function createButtons() {
-
-    const grid =
-        document.getElementById(
-            "batchGrid"
-        );
-
-
-    /*
-     * 16 buttons:
-     *
-     * 1-1000
-     * 1001-2000
-     * ...
-     * 15001-16000
-     */
-
-    for(
-        let i = 1;
-        i <= 16;
-        i++
-    ) {
-
-        const start =
-            (
-                (i - 1) *
-                BATCH_SIZE
-            ) + 1;
-
-
-        const end =
-            i *
-            BATCH_SIZE;
-
-
-        const button =
-            document.createElement(
-                "button"
-            );
-
-
-        button.id =
-            "batch-" + i;
-
-
-        button.className =
-            "batch-button";
-
-
-        button.textContent =
-            "Batch " +
-            i +
-            ": " +
-            start.toLocaleString() +
-            "–" +
-            end.toLocaleString();
-
-
-        button.onclick =
-            function() {
-
-                scanABCBatch(
-                    i,
-                    start
-                );
-            };
-
-
-        grid.appendChild(
-            button
-        );
-    }
-}
-
-
-/* =========================================
-   OPEN INDEXED DB
-========================================= */
-
-function openDB() {
+function openDatabase() {
 
     return new Promise(
         function(resolve, reject) {
@@ -877,31 +482,26 @@ function openDB() {
                     DB_VERSION
                 );
 
-
             request.onupgradeneeded =
                 function(event) {
 
                     const db =
                         event.target.result;
 
-
-                    if(
-                        !db.objectStoreNames
-                            .contains(
-                                STORE_NAME
-                            )
+                    if (
+                        !db.objectStoreNames.contains(
+                            STORE_NAME
+                        )
                     ) {
 
                         db.createObjectStore(
                             STORE_NAME,
                             {
-                                keyPath:
-                                    "id"
+                                keyPath: "id"
                             }
                         );
                     }
                 };
-
 
             request.onsuccess =
                 function() {
@@ -911,7 +511,6 @@ function openDB() {
                     );
                 };
 
-
             request.onerror =
                 function() {
 
@@ -919,21 +518,15 @@ function openDB() {
                         request.error
                     );
                 };
-
         }
     );
 }
 
 
-/* =========================================
-   CLEAR INDEX
-========================================= */
-
 async function clearIndex() {
 
     const db =
-        await openDB();
-
+        await openDatabase();
 
     return new Promise(
         function(resolve, reject) {
@@ -944,11 +537,9 @@ async function clearIndex() {
                     "readwrite"
                 );
 
-
             transaction.objectStore(
                 STORE_NAME
             ).clear();
-
 
             transaction.oncomplete =
                 function() {
@@ -957,7 +548,6 @@ async function clearIndex() {
 
                     resolve();
                 };
-
 
             transaction.onerror =
                 function() {
@@ -968,23 +558,17 @@ async function clearIndex() {
                         transaction.error
                     );
                 };
-
         }
     );
 }
 
 
-/* =========================================
-   STORE POSTS
-========================================= */
-
-async function storePosts(
+async function savePosts(
     posts
 ) {
 
     const db =
-        await openDB();
-
+        await openDatabase();
 
     return new Promise(
         function(resolve, reject) {
@@ -994,21 +578,18 @@ async function storePosts(
                     STORE_NAME,
                     "readwrite"
                 );
-
 
             const store =
                 transaction.objectStore(
                     STORE_NAME
                 );
 
-
-            for(
+            for (
                 const post of posts
             ) {
 
                 store.put(post);
             }
-
 
             transaction.oncomplete =
                 function() {
@@ -1017,7 +598,6 @@ async function storePosts(
 
                     resolve();
                 };
-
 
             transaction.onerror =
                 function() {
@@ -1028,21 +608,15 @@ async function storePosts(
                         transaction.error
                     );
                 };
-
         }
     );
 }
 
 
-/* =========================================
-   READ ALL XYZ
-========================================= */
-
-async function readAllXYZ() {
+async function getAllSavedPosts() {
 
     const db =
-        await openDB();
-
+        await openDatabase();
 
     return new Promise(
         function(resolve, reject) {
@@ -1053,14 +627,12 @@ async function readAllXYZ() {
                     "readonly"
                 );
 
-
             const request =
                 transaction
                     .objectStore(
                         STORE_NAME
                     )
                     .getAll();
-
 
             request.onsuccess =
                 function() {
@@ -1072,7 +644,6 @@ async function readAllXYZ() {
                     );
                 };
 
-
             request.onerror =
                 function() {
 
@@ -1082,21 +653,15 @@ async function readAllXYZ() {
                         request.error
                     );
                 };
-
         }
     );
 }
 
 
-/* =========================================
-   COUNT XYZ
-========================================= */
-
-async function countXYZ() {
+async function getSavedCount() {
 
     const db =
-        await openDB();
-
+        await openDatabase();
 
     return new Promise(
         function(resolve, reject) {
@@ -1112,7 +677,6 @@ async function countXYZ() {
                     )
                     .count();
 
-
             request.onsuccess =
                 function() {
 
@@ -1123,7 +687,6 @@ async function countXYZ() {
                     );
                 };
 
-
             request.onerror =
                 function() {
 
@@ -1133,220 +696,398 @@ async function countXYZ() {
                         request.error
                     );
                 };
-
         }
     );
 }
 
 
-/* =========================================
-   REBUILD XYZ INDEX
-========================================= */
+/* =====================================================
+   BUILD TOLLYBOOST INDEX
+===================================================== */
 
-async function rebuildXYZIndex() {
+async function rebuildTollyBoostIndex() {
 
-    disableAllButtons(
-        true
-    );
-
+    disableControls(true);
 
     currentMatches = [];
 
+    setProgress(0);
 
     try {
 
         await clearIndex();
 
-
-        document.getElementById(
-            "cacheStatus"
-        ).textContent =
-            "TollyBoost archive: downloading...";
-
-
-        setProgress(
-            0
+        setStatus(
+            "Building complete TollyBoost archive..."
         );
 
-
         const posts =
-            await loadAllXYZ();
+            await loadAllPosts(
+                "tollyboost"
+            );
 
-
-        if(
-            posts.length === 0
-        ) {
+        if (!posts.length) {
 
             throw new Error(
-                "No TollyBoost posts were returned."
+                "TollyBoost returned 0 posts."
             );
         }
 
-
-        await storePosts(
-            posts
+        setStatus(
+            "Saving " +
+            posts.length.toLocaleString() +
+            " TollyBoost posts..."
         );
 
+        await savePosts(posts);
 
         document.getElementById(
             "xyzCount"
         ).textContent =
             posts.length.toLocaleString();
 
-
         document.getElementById(
             "cacheStatus"
         ).textContent =
             "TollyBoost archive: " +
             posts.length.toLocaleString() +
-            " posts stored in this browser.";
+            " posts cached in this browser.";
 
-
-        setProgress(
-            100
-        );
-
+        setProgress(100);
 
         setStatus(
             "TollyBoost index is ready."
         );
 
     }
-    catch(error) {
+    catch (error) {
 
-        console.error(error);
-
-
-        setStatus(
-            "ERROR: " +
+        showError(
             error.message
         );
 
     }
     finally {
 
-        disableAllButtons(
-            false
-        );
+        disableControls(false);
     }
 }
 
 
-/* =========================================
-   LOAD ALL XYZ
-========================================= */
+/* =====================================================
+   LOAD ALL POSTS FROM ONE BLOG
+===================================================== */
 
-async function loadAllXYZ() {
+async function loadAllPosts(
+    blog
+) {
 
     const posts = [];
 
     let position = 1;
 
-
-    while(true) {
+    while (true) {
 
         const data =
             await fetchWithRetry(
-                "tollyboost",
+                blog,
                 position,
                 FEED_PAGE_SIZE
             );
 
-
         const batch =
             data.posts || [];
 
-
-        if(
+        if (
             batch.length === 0
         ) {
 
             break;
         }
 
-
-        /*
-         * Prevent duplicate records
-         * caused by an overlapping feed.
-         */
-
-        const existingIds =
-            new Set(
-                posts.map(
-                    post => post.id
-                )
-            );
-
-
-        for(
+        for (
             const post of batch
         ) {
 
-            if(
-                !existingIds.has(
-                    post.id
-                )
-            ) {
-
-                posts.push(
-                    post
+            const exists =
+                posts.some(
+                    x =>
+                        x.id === post.id
                 );
+
+            if (!exists) {
+
+                posts.push(post);
             }
         }
-
 
         position +=
             batch.length;
 
+        if (
+            blog ===
+            "tollyboost"
+        ) {
 
-        setStatus(
-            "Indexing TollyBoost: " +
-            posts.length.toLocaleString() +
-            " posts..."
-        );
+            setStatus(
+                "Indexing TollyBoost: " +
+                posts.length.toLocaleString() +
+                " posts..."
+            );
 
-
-        setProgress(
-            Math.min(
-                100,
-                (
+            setProgress(
+                Math.min(
+                    99,
                     posts.length /
-                    15000
-                ) * 100
-            )
-        );
+                    15000 *
+                    100
+                )
+            );
 
-
-        /*
-         * Do NOT stop merely because
-         * Blogger returned fewer than 150.
-         */
+        }
 
         await sleep(
             REQUEST_DELAY
         );
 
-
-        if(
+        if (
             position > 100000
         ) {
 
             throw new Error(
-                "Safety limit reached at 100,000 posts."
+                "Safety limit reached."
             );
         }
     }
-
 
     return posts;
 }
 
 
-/* =========================================
-   SCAN ABC BATCH
-========================================= */
+/* =====================================================
+   LOAD ONE ABC BATCH
+===================================================== */
 
-async function scanABCBatch(
+async function loadABCBatch(
+    start
+) {
+
+    const posts = [];
+
+    let position =
+        start;
+
+    const end =
+        start +
+        BATCH_SIZE -
+        1;
+
+    while (
+        position <= end
+    ) {
+
+        const remaining =
+            end -
+            position +
+            1;
+
+        const count =
+            Math.min(
+                FEED_PAGE_SIZE,
+                remaining
+            );
+
+        const data =
+            await fetchWithRetry(
+                "tollywoodboost",
+                position,
+                count
+            );
+
+        const batch =
+            data.posts || [];
+
+        if (
+            batch.length === 0
+        ) {
+
+            break;
+        }
+
+        for (
+            const post of batch
+        ) {
+
+            const exists =
+                posts.some(
+                    x =>
+                        x.id === post.id
+                );
+
+            if (!exists) {
+
+                posts.push(post);
+            }
+        }
+
+        position +=
+            batch.length;
+
+        setStatus(
+            "TollywoodBoost batch: " +
+            posts.length.toLocaleString() +
+            " / " +
+            BATCH_SIZE.toLocaleString()
+        );
+
+        setProgress(
+            Math.min(
+                50,
+                posts.length /
+                BATCH_SIZE *
+                50
+            )
+        );
+
+        await sleep(
+            REQUEST_DELAY
+        );
+    }
+
+    return posts;
+}
+
+
+/* =====================================================
+   FETCH WITH RETRIES
+===================================================== */
+
+async function fetchWithRetry(
+    blog,
+    start,
+    count
+) {
+
+    let lastError =
+        null;
+
+    for (
+        let attempt = 1;
+        attempt <= MAX_RETRIES;
+        attempt++
+    ) {
+
+        try {
+
+            const apiUrl =
+                "/api/blogger-posts" +
+                "?blog=" +
+                encodeURIComponent(
+                    blog
+                ) +
+                "&start=" +
+                start +
+                "&limit=" +
+                count;
+
+            const response =
+                await fetch(
+                    apiUrl,
+                    {
+                        cache: "no-store"
+                    }
+                );
+
+            const contentType =
+                response.headers.get(
+                    "content-type"
+                ) || "";
+
+            if (
+                !contentType
+                    .toLowerCase()
+                    .includes(
+                        "application/json"
+                    )
+            ) {
+
+                const text =
+                    await response.text();
+
+                throw new Error(
+                    "API returned HTML instead of JSON. " +
+                    "HTTP " +
+                    response.status +
+                    ". " +
+                    text.substring(0, 120)
+                );
+            }
+
+            const data =
+                await response.json();
+
+            if (
+                !response.ok ||
+                data.success !== true
+            ) {
+
+                throw new Error(
+                    data.error ||
+                    "API request failed."
+                );
+            }
+
+            return data;
+
+        }
+        catch (error) {
+
+            lastError =
+                error;
+
+            if (
+                attempt ===
+                MAX_RETRIES
+            ) {
+
+                break;
+            }
+
+            const wait =
+                attempt *
+                5000;
+
+            setStatus(
+                blog +
+                " temporary error. Retry " +
+                (attempt + 1) +
+                "/" +
+                MAX_RETRIES +
+                " after " +
+                (wait / 1000) +
+                " seconds..."
+            );
+
+            await sleep(
+                wait
+            );
+        }
+    }
+
+    throw (
+        lastError ||
+        new Error(
+            "Blogger request failed."
+        )
+    );
+}
+
+
+/* =====================================================
+   SCAN ABC BATCH AGAINST ALL XYZ
+===================================================== */
+
+async function scanBatch(
     batchNumber,
     start
 ) {
@@ -1354,66 +1095,56 @@ async function scanABCBatch(
     currentBatch =
         batchNumber;
 
-
     currentMatches = [];
 
-
-    disableAllButtons(
-        true
-    );
-
+    disableControls(true);
 
     markRunning(
         batchNumber
     );
 
-
-    setProgress(
-        0
-    );
-
+    setProgress(0);
 
     try {
 
         /*
-         * Read cached full TollyBoost.
+         * Read the complete TollyBoost
+         * archive from IndexedDB.
          */
 
-        let xyzIndex =
-            await readAllXYZ();
+        let xyzPosts =
+            await getAllSavedPosts();
 
 
         /*
-         * Automatically create it if
-         * it doesn't exist.
+         * If not present, build it.
          */
 
-        if(
-            xyzIndex.length === 0
+        if (
+            xyzPosts.length === 0
         ) {
 
             setStatus(
-                "TollyBoost index not found. " +
-                "Building full TollyBoost index..."
+                "Full TollyBoost index is not built. " +
+                "Building it first..."
             );
 
+            xyzPosts =
+                await loadAllPosts(
+                    "tollyboost"
+                );
 
-            xyzIndex =
-                await loadAllXYZ();
-
-
-            if(
-                xyzIndex.length === 0
+            if (
+                xyzPosts.length === 0
             ) {
 
                 throw new Error(
-                    "TollyBoost returned zero posts."
+                    "TollyBoost returned 0 posts."
                 );
             }
 
-
-            await storePosts(
-                xyzIndex
+            await savePosts(
+                xyzPosts
             );
         }
 
@@ -1421,34 +1152,20 @@ async function scanABCBatch(
         document.getElementById(
             "xyzCount"
         ).textContent =
-            xyzIndex.length.toLocaleString();
+            xyzPosts.length.toLocaleString();
 
 
         document.getElementById(
             "cacheStatus"
         ).textContent =
             "TollyBoost archive: " +
-            xyzIndex.length.toLocaleString() +
+            xyzPosts.length.toLocaleString() +
             " posts ready.";
 
 
         /*
-         * Load only the selected
-         * TollywoodBoost 1000 posts.
+         * Load only ABC 1,000.
          */
-
-        setStatus(
-            "Loading TollywoodBoost posts " +
-            start.toLocaleString() +
-            "–" +
-            (
-                start +
-                BATCH_SIZE -
-                1
-            ).toLocaleString() +
-            "..."
-        );
-
 
         const abcPosts =
             await loadABCBatch(
@@ -1462,37 +1179,48 @@ async function scanABCBatch(
             abcPosts.length.toLocaleString();
 
 
+        if (
+            abcPosts.length === 0
+        ) {
+
+            throw new Error(
+                "No TollywoodBoost posts returned for this batch."
+            );
+        }
+
+
         /*
-         * Create full XYZ indexes.
+         * Build search indexes for
+         * ALL XYZ posts.
          */
 
         setStatus(
-            "Preparing full TollyBoost index..."
+            "Creating full TollyBoost search index..."
         );
 
 
         const indexes =
             buildIndexes(
-                xyzIndex
+                xyzPosts
             );
 
 
         /*
          * Compare ABC batch against
-         * ALL XYZ posts.
+         * EVERY XYZ post.
          */
 
         setStatus(
             "Comparing " +
             abcPosts.length.toLocaleString() +
             " TollywoodBoost posts against ALL " +
-            xyzIndex.length.toLocaleString() +
+            xyzPosts.length.toLocaleString() +
             " TollyBoost posts..."
         );
 
 
         currentMatches =
-            comparePosts(
+            findMatches(
                 abcPosts,
                 indexes
             );
@@ -1501,8 +1229,7 @@ async function scanABCBatch(
         document.getElementById(
             "duplicateCount"
         ).textContent =
-            currentMatches.length
-                .toLocaleString();
+            currentMatches.length.toLocaleString();
 
 
         document.getElementById(
@@ -1545,9 +1272,7 @@ async function scanABCBatch(
         );
 
 
-        setProgress(
-            100
-        );
+        setProgress(100);
 
 
         setStatus(
@@ -1559,286 +1284,23 @@ async function scanABCBatch(
         );
 
     }
-    catch(error) {
+    catch (error) {
 
-        console.error(error);
-
-
-        setStatus(
-            "ERROR: " +
+        showError(
             error.message
         );
 
     }
     finally {
 
-        disableAllButtons(
-            false
-        );
+        disableControls(false);
     }
 }
 
 
-/* =========================================
-   LOAD ABC BATCH
-========================================= */
-
-async function loadABCBatch(
-    start
-) {
-
-    const posts = [];
-
-    let position =
-        start;
-
-
-    const end =
-        start +
-        BATCH_SIZE -
-        1;
-
-
-    while(
-        position <= end
-    ) {
-
-        const remaining =
-            end -
-            position +
-            1;
-
-
-        const count =
-            Math.min(
-                FEED_PAGE_SIZE,
-                remaining
-            );
-
-
-        const data =
-            await fetchWithRetry(
-                "tollywoodboost",
-                position,
-                count
-            );
-
-
-        const batch =
-            data.posts || [];
-
-
-        if(
-            batch.length === 0
-        ) {
-
-            break;
-        }
-
-
-        /*
-         * Avoid duplicates.
-         */
-
-        const existingIds =
-            new Set(
-                posts.map(
-                    post => post.id
-                )
-            );
-
-
-        for(
-            const post of batch
-        ) {
-
-            if(
-                !existingIds.has(
-                    post.id
-                )
-            ) {
-
-                posts.push(
-                    post
-                );
-            }
-        }
-
-
-        position +=
-            batch.length;
-
-
-        setStatus(
-            "Loading TollywoodBoost batch: " +
-            posts.length.toLocaleString() +
-            " / " +
-            BATCH_SIZE
-        );
-
-
-        setProgress(
-            (
-                posts.length /
-                BATCH_SIZE
-            ) * 50
-        );
-
-
-        await sleep(
-            REQUEST_DELAY
-        );
-    }
-
-
-    return posts;
-}
-
-
-/* =========================================
-   RETRY FETCH
-========================================= */
-
-async function fetchWithRetry(
-    blog,
-    start,
-    count
-) {
-
-    let lastError =
-        null;
-
-
-    for(
-        let attempt = 1;
-        attempt <= MAX_RETRIES;
-        attempt++
-    ) {
-
-        try {
-
-            const apiUrl =
-                "/api/blogger-posts" +
-                "?blog=" +
-                encodeURIComponent(
-                    blog
-                ) +
-                "&start=" +
-                start +
-                "&limit=" +
-                count;
-
-
-            const response =
-                await fetch(
-                    apiUrl,
-                    {
-                        cache:
-                            "no-store"
-                    }
-                );
-
-
-            const contentType =
-                response.headers.get(
-                    "content-type"
-                ) || "";
-
-
-            if(
-                !contentType
-                    .toLowerCase()
-                    .includes(
-                        "application/json"
-                    )
-            ) {
-
-                const text =
-                    await response.text();
-
-
-                throw new Error(
-                    "API returned HTML instead of JSON. " +
-                    "HTTP " +
-                    response.status +
-                    ". Response begins: " +
-                    text.substring(
-                        0,
-                        120
-                    )
-                );
-            }
-
-
-            const data =
-                await response.json();
-
-
-            if(
-                !response.ok ||
-                data.success !== true
-            ) {
-
-                throw new Error(
-                    data.error ||
-                    "API request failed."
-                );
-            }
-
-
-            return data;
-
-        }
-        catch(error) {
-
-            lastError =
-                error;
-
-
-            if(
-                attempt >=
-                MAX_RETRIES
-            ) {
-
-                break;
-            }
-
-
-            const wait =
-                attempt *
-                5000;
-
-
-            setStatus(
-                blog +
-                " temporary error. " +
-                "Retry " +
-                (attempt + 1) +
-                "/" +
-                MAX_RETRIES +
-                " after " +
-                (wait / 1000) +
-                " seconds..."
-            );
-
-
-            await sleep(
-                wait
-            );
-        }
-    }
-
-
-    throw lastError ||
-        new Error(
-            "Blogger request failed."
-        );
-}
-
-
-/* =========================================
-   BUILD INDEXES
-========================================= */
+/* =====================================================
+   BUILD SEARCH INDEX
+===================================================== */
 
 function buildIndexes(
     posts
@@ -1854,7 +1316,7 @@ function buildIndexes(
         new Map();
 
 
-    for(
+    for (
         const post of posts
     ) {
 
@@ -1872,7 +1334,7 @@ function buildIndexes(
         );
 
 
-        for(
+        for (
             const image
             of post.imageKeys || []
         ) {
@@ -1894,11 +1356,11 @@ function buildIndexes(
 }
 
 
-/* =========================================
-   COMPARE
-========================================= */
+/* =====================================================
+   FIND MATCHES
+===================================================== */
 
-function comparePosts(
+function findMatches(
     abcPosts,
     indexes
 ) {
@@ -1909,18 +1371,18 @@ function comparePosts(
         new Set();
 
 
-    for(
-        const abc
-        of abcPosts
+    for (
+        let i = 0;
+        i < abcPosts.length;
+        i++
     ) {
 
-        let best =
-            null;
+        const abc =
+            abcPosts[i];
 
 
         /*
-         * 1. Exact normalized
-         * content.
+         * Exact normalized content.
          */
 
         const textCandidates =
@@ -1929,43 +1391,44 @@ function comparePosts(
             ) || [];
 
 
-        if(
-            textCandidates.length
+        let match =
+            findUnusedByDate(
+                textCandidates,
+                abc,
+                usedXYZ
+            );
+
+
+        if (
+            match
         ) {
 
-            best =
-                bestUnusedByDate(
-                    textCandidates,
-                    abc,
-                    usedXYZ
-                );
+            results.push({
+                abc,
+                xyz: match,
+                method:
+                    "EXACT NORMALIZED CONTENT",
+                confidence:
+                    100
+            });
 
 
-            if(best) {
-
-                results.push({
-                    abc,
-                    xyz: best,
-                    method:
-                        "EXACT NORMALIZED CONTENT",
-                    confidence:
-                        100
-                });
+            usedXYZ.add(
+                match.id
+            );
 
 
-                usedXYZ.add(
-                    best.id
-                );
+            updateComparisonProgress(
+                i + 1,
+                abcPosts.length
+            );
 
-
-                continue;
-            }
+            continue;
         }
 
 
         /*
-         * 2. Exact title + image
-         * filename candidate.
+         * Same title / image candidates.
          */
 
         const titleCandidates =
@@ -1982,12 +1445,7 @@ function comparePosts(
             );
 
 
-        /*
-         * Prefer same title
-         * candidates first.
-         */
-
-        const combined =
+        const candidates =
             uniquePosts(
                 [
                     ...titleCandidates,
@@ -1996,54 +1454,59 @@ function comparePosts(
             );
 
 
+        let best =
+            null;
+
         let bestScore =
             0;
 
+        let bestMethod =
+            "";
 
-        for(
-            const xyz
-            of combined
+
+        for (
+            const xyz of candidates
         ) {
 
-            if(
+            if (
                 usedXYZ.has(
                     xyz.id
                 )
             ) {
-
                 continue;
             }
 
 
-            const result =
+            const scored =
                 scoreMatch(
                     abc,
                     xyz
                 );
 
 
-            if(
-                result.score >
+            if (
+                scored.score >
                 bestScore
             ) {
 
                 bestScore =
-                    result.score;
+                    scored.score;
 
                 best =
                     xyz;
 
                 bestMethod =
-                    result.method;
+                    scored.method;
             }
         }
 
 
         /*
-         * Strong match threshold.
+         * 65+ is accepted as a
+         * reasonably strong duplicate.
          */
 
-        if(
+        if (
             best &&
             bestScore >= 65
         ) {
@@ -2061,7 +1524,6 @@ function comparePosts(
                     Math.round(
                         bestScore
                     )
-
             });
 
 
@@ -2069,6 +1531,12 @@ function comparePosts(
                 best.id
             );
         }
+
+
+        updateComparisonProgress(
+            i + 1,
+            abcPosts.length
+        );
     }
 
 
@@ -2076,34 +1544,27 @@ function comparePosts(
 }
 
 
-/* =========================================
-   SCORE
-========================================= */
+/* =====================================================
+   MATCH SCORE
+===================================================== */
 
 function scoreMatch(
     abc,
     xyz
 ) {
 
-    let score =
-        0;
+    let score = 0;
 
-    const reasons =
-        [];
+    const reasons = [];
 
 
-    /*
-     * Exact title = very strong.
-     */
-
-    if(
+    if (
         abc.titleKey &&
         abc.titleKey ===
         xyz.titleKey
     ) {
 
-        score +=
-            60;
+        score += 60;
 
         reasons.push(
             "same title"
@@ -2119,9 +1580,8 @@ function scoreMatch(
             );
 
 
-        if(
-            similarity >=
-            0.80
+        if (
+            similarity >= 0.8
         ) {
 
             score +=
@@ -2135,24 +1595,13 @@ function scoreMatch(
     }
 
 
-    /*
-     * Same date.
-     */
-
-    if(
-        getDate(
-            abc.published
-        ) &&
-        getDate(
-            abc.published
-        ) ===
-        getDate(
-            xyz.published
-        )
+    if (
+        getDate(abc.published) &&
+        getDate(abc.published) ===
+        getDate(xyz.published)
     ) {
 
-        score +=
-            15;
+        score += 15;
 
         reasons.push(
             "same date"
@@ -2160,25 +1609,21 @@ function scoreMatch(
     }
 
 
-    /*
-     * Image filename overlap.
-     */
-
-    const overlap =
+    const imageOverlapValue =
         imageOverlap(
             abc.imageKeys,
             xyz.imageKeys
         );
 
 
-    if(
-        overlap > 0
+    if (
+        imageOverlapValue > 0
     ) {
 
         score +=
             Math.min(
                 35,
-                overlap * 50
+                imageOverlapValue * 50
             );
 
         reasons.push(
@@ -2188,34 +1633,79 @@ function scoreMatch(
 
 
     return {
-
         score,
-
         method:
             reasons.length
-                ? reasons.join(
-                    " + "
-                )
+                ? reasons.join(" + ")
                 : "similar post"
     };
 }
 
 
-/* =========================================
+/* =====================================================
+   IMAGE OVERLAP
+===================================================== */
+
+function imageOverlap(
+    a,
+    b
+) {
+
+    if (
+        !a ||
+        !b ||
+        !a.length ||
+        !b.length
+    ) {
+
+        return 0;
+    }
+
+
+    const set =
+        new Set(a);
+
+
+    let same =
+        0;
+
+
+    for (
+        const image of b
+    ) {
+
+        if (
+            set.has(image)
+        ) {
+
+            same++;
+        }
+    }
+
+
+    return same /
+        Math.max(
+            a.length,
+            b.length
+        );
+}
+
+
+/* =====================================================
    IMAGE CANDIDATES
-========================================= */
+===================================================== */
 
 function getImageCandidates(
     post,
     imageMap,
-    used
+    usedXYZ
 ) {
 
     const map =
         new Map();
 
 
-    for(
+    for (
         const image
         of post.imageKeys || []
     ) {
@@ -2226,13 +1716,13 @@ function getImageCandidates(
             ) || [];
 
 
-        for(
+        for (
             const candidate
             of candidates
         ) {
 
-            if(
-                !used.has(
+            if (
+                !usedXYZ.has(
                     candidate.id
                 )
             ) {
@@ -2252,9 +1742,9 @@ function getImageCandidates(
 }
 
 
-/* =========================================
+/* =====================================================
    UNIQUE POSTS
-========================================= */
+===================================================== */
 
 function uniquePosts(
     posts
@@ -2264,7 +1754,7 @@ function uniquePosts(
         new Map();
 
 
-    for(
+    for (
         const post of posts
     ) {
 
@@ -2281,141 +1771,23 @@ function uniquePosts(
 }
 
 
-/* =========================================
-   IMAGE OVERLAP
-========================================= */
+/* =====================================================
+   FIND UNUSED BY DATE
+===================================================== */
 
-function imageOverlap(
-    a,
-    b
-) {
-
-    if(
-        !a ||
-        !b ||
-        !a.length ||
-        !b.length
-    ) {
-
-        return 0;
-    }
-
-
-    const set =
-        new Set(
-            a
-        );
-
-
-    let same =
-        0;
-
-
-    for(
-        const image
-        of b
-    ) {
-
-        if(
-            set.has(
-                image
-            )
-        ) {
-
-            same++;
-        }
-    }
-
-
-    return same /
-        Math.max(
-            a.length,
-            b.length
-        );
-}
-
-
-/* =========================================
-   TITLE SIMILARITY
-========================================= */
-
-function titleSimilarity(
-    a,
-    b
-) {
-
-    if(
-        !a ||
-        !b
-    ) {
-
-        return 0;
-    }
-
-
-    const A =
-        new Set(
-            a.split(" ")
-                .filter(Boolean)
-        );
-
-
-    const B =
-        new Set(
-            b.split(" ")
-                .filter(Boolean)
-        );
-
-
-    let common =
-        0;
-
-
-    for(
-        const word of A
-    ) {
-
-        if(
-            B.has(
-                word
-            )
-        ) {
-
-            common++;
-        }
-    }
-
-
-    const total =
-        new Set([
-            ...A,
-            ...B
-        ]).size;
-
-
-    return total
-        ? common / total
-        : 0;
-}
-
-
-/* =========================================
-   BEST BY DATE
-========================================= */
-
-function bestUnusedByDate(
+function findUnusedByDate(
     candidates,
-    post,
+    source,
     used
 ) {
 
     const date =
         getDate(
-            post.published
+            source.published
         );
 
 
-    return (
+    const sameDate =
         candidates.find(
             candidate =>
                 !used.has(
@@ -2424,32 +1796,100 @@ function bestUnusedByDate(
                 getDate(
                     candidate.published
                 ) === date
-        )
-        ||
-        candidates.find(
-            candidate =>
-                !used.has(
-                    candidate.id
-                )
-        )
-        ||
-        null
-    );
+        );
+
+
+    if (
+        sameDate
+    ) {
+        return sameDate;
+    }
+
+
+    return candidates.find(
+        candidate =>
+            !used.has(
+                candidate.id
+            )
+    ) || null;
 }
 
 
-/* =========================================
-   GET DATE
-========================================= */
+/* =====================================================
+   TITLE SIMILARITY
+===================================================== */
+
+function titleSimilarity(
+    a,
+    b
+) {
+
+    if (
+        !a ||
+        !b
+    ) {
+        return 0;
+    }
+
+
+    const A =
+        new Set(
+            a
+                .split(" ")
+                .filter(Boolean)
+        );
+
+
+    const B =
+        new Set(
+            b
+                .split(" ")
+                .filter(Boolean)
+        );
+
+
+    let common = 0;
+
+
+    for (
+        const word of A
+    ) {
+
+        if (
+            B.has(word)
+        ) {
+
+            common++;
+        }
+    }
+
+
+    const total =
+        new Set(
+            [
+                ...A,
+                ...B
+            ]
+        ).size;
+
+
+    return total
+        ? common / total
+        : 0;
+}
+
+
+/* =====================================================
+   DATE
+===================================================== */
 
 function getDate(
     value
 ) {
 
-    if(
+    if (
         !value
     ) {
-
         return "";
     }
 
@@ -2463,9 +1903,9 @@ function getDate(
 }
 
 
-/* =========================================
-   ADD TO MAP
-========================================= */
+/* =====================================================
+   MAP
+===================================================== */
 
 function addMap(
     map,
@@ -2473,18 +1913,15 @@ function addMap(
     value
 ) {
 
-    if(
+    if (
         !key
     ) {
-
         return;
     }
 
 
-    if(
-        !map.has(
-            key
-        )
+    if (
+        !map.has(key)
     ) {
 
         map.set(
@@ -2494,17 +1931,15 @@ function addMap(
     }
 
 
-    map.get(
-        key
-    ).push(
+    map.get(key).push(
         value
     );
 }
 
 
-/* =========================================
-   RENDER RESULTS
-========================================= */
+/* =====================================================
+   DISPLAY
+===================================================== */
 
 function renderResults() {
 
@@ -2514,27 +1949,21 @@ function renderResults() {
         );
 
 
-    if(
+    if (
         currentMatches.length === 0
     ) {
 
         container.innerHTML = `
-
-<div class="empty">
-
-No duplicates found in this
-TollywoodBoost batch.
-
-</div>
-
-`;
+            <div class="empty">
+                No duplicates found in this batch.
+            </div>
+        `;
 
         return;
     }
 
 
-    let html =
-        "";
+    let html = "";
 
 
     const limit =
@@ -2544,7 +1973,7 @@ TollywoodBoost batch.
         );
 
 
-    for(
+    for (
         let i = 0;
         i < limit;
         i++
@@ -2558,26 +1987,19 @@ TollywoodBoost batch.
     }
 
 
-    if(
+    if (
         currentMatches.length >
         limit
     ) {
 
         html += `
-
-<div class="empty">
-
-Showing first
-${limit}
-results.
-
-<br><br>
-
-Download CSV for every match.
-
-</div>
-
-`;
+            <div class="empty">
+                Showing first ${limit} matches.
+                Download CSV for all
+                ${currentMatches.length}
+                matches.
+            </div>
+        `;
     }
 
 
@@ -2586,9 +2008,9 @@ Download CSV for every match.
 }
 
 
-/* =========================================
-   RENDER MATCH
-========================================= */
+/* =====================================================
+   MATCH CARD
+===================================================== */
 
 function renderMatch(
     match,
@@ -2596,167 +2018,139 @@ function renderMatch(
 ) {
 
     return `
+        <div class="match">
 
-<div class="match">
+            <div class="match-header">
 
+                Duplicate #${number}
 
-<div class="match-header">
+                &nbsp; | &nbsp;
 
-Duplicate #${number}
+                ${escapeHTML(
+                    match.method
+                )}
 
-&nbsp; | &nbsp;
+                <span class="confidence">
+                    ${match.confidence}%
+                </span>
 
-${escapeHTML(
-    match.method
-)}
-
-<span class="confidence">
-
-${match.confidence}%
-
-</span>
-
-</div>
+            </div>
 
 
-<div class="columns">
+            <div class="columns">
 
 
-<div class="column">
+                <div class="column">
 
-<h2>
-TollywoodBoost
-</h2>
+                    <h2>
+                        TollywoodBoost
+                    </h2>
 
+                    <div class="post-title">
+                        ${escapeHTML(
+                            match.abc.title
+                        )}
+                    </div>
 
-<div class="post-title">
+                    <div class="post-date">
+                        Published:
+                        ${escapeHTML(
+                            match.abc.published
+                        )}
+                    </div>
 
-${escapeHTML(
-    match.abc.title
-)}
+                    <div class="url-box">
 
-</div>
+                        <strong>URL</strong>
 
+                        <br><br>
 
-<div class="post-date">
+                        <a
+                            href="${escapeAttribute(
+                                match.abc.url
+                            )}"
+                            target="_blank"
+                            rel="noopener">
 
-Published:
-${escapeHTML(
-    match.abc.published
-)}
+                            ${escapeHTML(
+                                match.abc.url
+                            )}
 
-</div>
+                        </a>
 
+                    </div>
 
-<div class="url-box">
+                    ${renderImageNames(
+                        match.abc.imageKeys
+                    )}
 
-<strong>
-URL
-</strong>
-
-<br><br>
-
-<a
-href="${escapeAttribute(
-    match.abc.url
-)}"
-target="_blank"
-rel="noopener"
->
-
-${escapeHTML(
-    match.abc.url
-)}
-
-</a>
-
-</div>
+                </div>
 
 
-${renderImages(
-    match.abc.imageKeys
-)}
+                <div class="column">
 
-</div>
+                    <h2>
+                        TollyBoost
+                    </h2>
 
+                    <div class="post-title">
+                        ${escapeHTML(
+                            match.xyz.title
+                        )}
+                    </div>
 
-<div class="column">
+                    <div class="post-date">
+                        Published:
+                        ${escapeHTML(
+                            match.xyz.published
+                        )}
+                    </div>
 
-<h2>
-TollyBoost
-</h2>
+                    <div class="url-box">
 
+                        <strong>URL</strong>
 
-<div class="post-title">
+                        <br><br>
 
-${escapeHTML(
-    match.xyz.title
-)}
+                        <a
+                            href="${escapeAttribute(
+                                match.xyz.url
+                            )}"
+                            target="_blank"
+                            rel="noopener">
 
-</div>
+                            ${escapeHTML(
+                                match.xyz.url
+                            )}
 
+                        </a>
 
-<div class="post-date">
+                    </div>
 
-Published:
-${escapeHTML(
-    match.xyz.published
-)}
+                    ${renderImageNames(
+                        match.xyz.imageKeys
+                    )}
 
-</div>
+                </div>
 
+            </div>
 
-<div class="url-box">
-
-<strong>
-URL
-</strong>
-
-<br><br>
-
-<a
-href="${escapeAttribute(
-    match.xyz.url
-)}"
-target="_blank"
-rel="noopener"
->
-
-${escapeHTML(
-    match.xyz.url
-)}
-
-</a>
-
-</div>
-
-
-${renderImages(
-    match.xyz.imageKeys
-)}
-
-</div>
-
-
-</div>
-
-</div>
-
-`;
+        </div>
+    `;
 }
 
 
-/* =========================================
-   RENDER IMAGE FILENAMES
-========================================= */
+/* =====================================================
+   IMAGE NAMES
+===================================================== */
 
-function renderImages(
+function renderImageNames(
     images
 ) {
 
-    if(
+    if (
         !images ||
-        !images.length
+        images.length === 0
     ) {
 
         return "";
@@ -2764,42 +2158,39 @@ function renderImages(
 
 
     return `
+        <div class="image-list">
 
-<div class="image-list">
+            <strong>
+                Image filenames
+            </strong>
 
-<strong>
-Image filenames
-</strong>
+            <br><br>
 
-<br><br>
+            ${
+                images
+                    .map(
+                        image =>
+                            `<div class="image-name">
+                                ${escapeHTML(image)}
+                            </div>`
+                    )
+                    .join("")
+            }
 
-${
-    images
-        .map(
-            image =>
-                `<div class="image-name">
-                    ${escapeHTML(image)}
-                </div>`
-        )
-        .join("")
+        </div>
+    `;
 }
 
-</div>
 
-`;
-}
-
-
-/* =========================================
-   DOWNLOAD CSV
-========================================= */
+/* =====================================================
+   CSV
+===================================================== */
 
 function downloadCSV() {
 
-    if(
+    if (
         currentMatches.length === 0
     ) {
-
         return;
     }
 
@@ -2816,11 +2207,10 @@ function downloadCSV() {
             "Match Method",
             "Confidence"
         ]
-
     ];
 
 
-    for(
+    for (
         const match
         of currentMatches
     ) {
@@ -2841,8 +2231,7 @@ function downloadCSV() {
 
             match.method,
 
-            match.confidence +
-            "%"
+            match.confidence + "%"
 
         ]);
     }
@@ -2886,7 +2275,6 @@ function downloadCSV() {
     link.href =
         url;
 
-
     link.download =
         "tollywoodboost-vs-tollyboost-" +
         "batch-" +
@@ -2901,9 +2289,7 @@ function downloadCSV() {
 
     link.click();
 
-
     link.remove();
-
 
     URL.revokeObjectURL(
         url
@@ -2911,11 +2297,11 @@ function downloadCSV() {
 }
 
 
-/* =========================================
-   DISABLE BUTTONS
-========================================= */
+/* =====================================================
+   BUTTON CONTROL
+===================================================== */
 
-function disableAllButtons(
+function disableControls(
     disabled
 ) {
 
@@ -2936,10 +2322,6 @@ function disableAllButtons(
         disabled;
 }
 
-
-/* =========================================
-   MARK RUNNING
-========================================= */
 
 function markRunning(
     batch
@@ -2964,7 +2346,7 @@ function markRunning(
         );
 
 
-    if(
+    if (
         button
     ) {
 
@@ -2974,10 +2356,6 @@ function markRunning(
     }
 }
 
-
-/* =========================================
-   MARK DONE
-========================================= */
 
 function markDone(
     batch
@@ -2990,7 +2368,7 @@ function markDone(
         );
 
 
-    if(
+    if (
         button
     ) {
 
@@ -3005,9 +2383,91 @@ function markDone(
 }
 
 
-/* =========================================
-   ESCAPE HTML
-========================================= */
+/* =====================================================
+   ERROR
+===================================================== */
+
+function showError(
+    message
+) {
+
+    setStatus(
+        "ERROR: " +
+        message
+    );
+
+
+    document.getElementById(
+        "results"
+    ).innerHTML = `
+        <div class="error-box">
+            <strong>Error</strong>
+            <br><br>
+            ${escapeHTML(message)}
+        </div>
+    `;
+}
+
+
+/* =====================================================
+   PROGRESS
+===================================================== */
+
+function updateComparisonProgress(
+    current,
+    total
+) {
+
+    const percent =
+        50 +
+        (
+            current /
+            total
+        ) *
+        50;
+
+
+    setProgress(
+        percent
+    );
+}
+
+
+function setProgress(
+    value
+) {
+
+    document.getElementById(
+        "progressBar"
+    ).style.width =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                value
+            )
+        ) + "%";
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+function setStatus(
+    text
+) {
+
+    document.getElementById(
+        "status"
+    ).textContent =
+        text;
+}
+
+
+/* =====================================================
+   ESCAPE
+===================================================== */
 
 function escapeHTML(
     value
@@ -3049,10 +2509,6 @@ function escapeAttribute(
 }
 
 
-/* =========================================
-   CSV ESCAPE
-========================================= */
-
 function csvEscape(
     value
 ) {
@@ -3063,7 +2519,7 @@ function csvEscape(
         );
 
 
-    if(
+    if (
         /[",\r\n]/.test(
             text
         )
@@ -3082,37 +2538,40 @@ function csvEscape(
 }
 
 
-/* =========================================
+/* =====================================================
    SLEEP
-========================================= */
+===================================================== */
 
 function sleep(
-    milliseconds
+    ms
 ) {
 
     return new Promise(
-        resolve =>
+        function(resolve) {
+
             setTimeout(
                 resolve,
-                milliseconds
-            )
+                ms
+            );
+
+        }
     );
 }
 
 
-/* =========================================
-   CHECK CACHE ON LOAD
-========================================= */
+/* =====================================================
+   CHECK EXISTING CACHE
+===================================================== */
 
 (async function() {
 
     try {
 
         const count =
-            await countXYZ();
+            await getSavedCount();
 
 
-        if(
+        if (
             count > 0
         ) {
 
@@ -3130,19 +2589,28 @@ function sleep(
                 " posts already cached in this browser.";
 
         }
+        else {
+
+            document.getElementById(
+                "cacheStatus"
+            ).textContent =
+                "TollyBoost archive: not loaded yet.";
+
+        }
 
     }
     catch(error) {
 
-        console.log(
-            "No existing TollyBoost cache."
-        );
+        document.getElementById(
+            "cacheStatus"
+        ).textContent =
+            "TollyBoost archive: not loaded yet.";
+
     }
 
 })();
+
 </script>
 
-
 </body>
-
 </html>
