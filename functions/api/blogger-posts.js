@@ -18,14 +18,14 @@ export async function onRequestGet(context) {
     if (!BLOGS[blog]) {
         return json({
             success: false,
-            error: "Invalid blog."
+            error: "Invalid blog. Use tollywoodboost or tollyboost."
         }, 400);
     }
 
     if (!Number.isInteger(start) || start < 1) {
         return json({
             success: false,
-            error: "Invalid start."
+            error: "Invalid start value."
         }, 400);
     }
 
@@ -34,13 +34,15 @@ export async function onRequestGet(context) {
             BLOGS[blog] +
             "/feeds/posts/default" +
             "?alt=json" +
-            "&start-index=" + start +
-            "&max-results=" + limit;
+            "&start-index=" +
+            start +
+            "&max-results=" +
+            limit;
 
         const response = await fetch(feedUrl, {
             headers: {
                 "User-Agent":
-                    "Mozilla/5.0 Filmstars Blogger Duplicate Finder"
+                    "Mozilla/5.0 (compatible; FilmstarsDuplicateFinder/1.0)"
             }
         });
 
@@ -49,16 +51,17 @@ export async function onRequestGet(context) {
                 success: false,
                 retryable: [429, 500, 502, 503, 504]
                     .includes(response.status),
+                status: response.status,
                 error:
                     "Blogger returned HTTP " +
                     response.status
             }, 502);
         }
 
-        const type =
+        const contentType =
             response.headers.get("content-type") || "";
 
-        if (!type.toLowerCase().includes("json")) {
+        if (!contentType.toLowerCase().includes("json")) {
             return json({
                 success: false,
                 retryable: true,
@@ -78,6 +81,7 @@ export async function onRequestGet(context) {
             success: true,
             blog,
             start,
+            requested: limit,
             count: posts.length,
             posts
         });
@@ -128,7 +132,7 @@ function parsePost(entry) {
         entry.id?.$t || "";
 
     const images =
-        extractImageNames(content);
+        extractImages(content);
 
     return {
         id,
@@ -146,22 +150,24 @@ function parsePost(entry) {
             ),
 
         imageKeys:
-            images
+            images.map(
+                normalizeImageFilename
+            )
     };
 }
 
 
 /* =========================================
-   IMAGE FILENAMES
+   EXTRACT IMAGES
 ========================================= */
 
-function extractImageNames(html) {
+function extractImages(html) {
 
     if (!html) {
         return [];
     }
 
-    const result = [];
+    const results = [];
 
     const regex =
         /<img[^>]+(?:src|data-src)\s*=\s*["']([^"']+)["']/gi;
@@ -178,48 +184,52 @@ function extractImageNames(html) {
 
         if (
             filename &&
-            !result.includes(filename)
+            !results.includes(filename)
         ) {
-            result.push(filename);
+            results.push(filename);
         }
     }
 
-    return result;
+    return results;
 }
 
 
+/* =========================================
+   IMAGE FILENAME NORMALIZATION
+========================================= */
+
 function normalizeImageFilename(url) {
+
     try {
+
         const clean =
             String(url)
                 .split("?")[0];
 
-        const pieces =
+        const parts =
             clean.split("/");
 
-        let name =
-            pieces[pieces.length - 1] || "";
-
-        name =
-            decodeURIComponent(name);
-
-        /*
-         * A second decode handles filenames
-         * that Blogger encoded twice.
-         */
+        let filename =
+            parts[parts.length - 1] || "";
 
         try {
-            name =
-                decodeURIComponent(name);
+            filename =
+                decodeURIComponent(filename);
         } catch {}
 
-        return name
+        try {
+            filename =
+                decodeURIComponent(filename);
+        } catch {}
+
+        return filename
             .toLowerCase()
             .replace(/\+/g, " ")
             .replace(/\s+/g, " ")
             .trim();
 
     } catch {
+
         return "";
     }
 }
@@ -230,6 +240,7 @@ function normalizeImageFilename(url) {
 ========================================= */
 
 function normalizeTitle(value) {
+
     return String(value || "")
         .normalize("NFKC")
         .toLowerCase()
@@ -261,9 +272,9 @@ function normalizeText(html) {
         );
 
     /*
-     * Replace images with their filenames
-     * so different Blogger AVvXs IDs do not
-     * make otherwise identical posts different.
+     * Replace images by their filenames.
+     * This removes dependency on different
+     * Blogger AVvXs image IDs.
      */
 
     value =
@@ -290,28 +301,17 @@ function normalizeText(html) {
             }
         );
 
-    /*
-     * Remove HTML.
-     */
-
     value =
         value.replace(
             /<[^>]+>/g,
             " "
         );
 
-    /*
-     * Decode common entities.
-     */
-
-    value =
-        value
-            .replace(/&nbsp;/gi, " ")
-            .replace(/&amp;/gi, "&")
-            .replace(/&quot;/gi, '"')
-            .replace(/&#39;/gi, "'");
-
     return value
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, "'")
         .toLowerCase()
         .replace(/\s+/g, " ")
         .trim();
@@ -319,7 +319,7 @@ function normalizeText(html) {
 
 
 /* =========================================
-   SIMPLE HASH
+   HASH
 ========================================= */
 
 function simpleHash(value) {
@@ -343,7 +343,7 @@ function simpleHash(value) {
 
 
 /* =========================================
-   JSON RESPONSE
+   JSON
 ========================================= */
 
 function json(data, status = 200) {
