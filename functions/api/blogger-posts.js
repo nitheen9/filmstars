@@ -6,30 +6,55 @@ const BLOGS = {
 const MAX_RESULTS = 150;
 
 export async function onRequestGet(context) {
-    const url = new URL(context.request.url);
 
-    const blog = url.searchParams.get("blog");
-    const start = Number(url.searchParams.get("start") || "1");
+    const requestUrl = new URL(context.request.url);
+
+    const blog = requestUrl.searchParams.get("blog");
+    const start = Number(
+        requestUrl.searchParams.get("start") || "1"
+    );
+
+    const requestedLimit = Number(
+        requestUrl.searchParams.get("limit") || MAX_RESULTS
+    );
+
     const limit = Math.min(
-        Number(url.searchParams.get("limit") || MAX_RESULTS),
+        Math.max(requestedLimit, 1),
         MAX_RESULTS
     );
 
+    const cacheBust =
+        requestUrl.searchParams.get("v") ||
+        Date.now().toString();
+
     if (!BLOGS[blog]) {
-        return json({
-            success: false,
-            error: "Invalid blog. Use tollywoodboost or tollyboost."
-        }, 400);
+
+        return json(
+            {
+                success: false,
+                error:
+                    "Invalid blog. Use tollywoodboost or tollyboost."
+            },
+            400
+        );
     }
 
-    if (!Number.isInteger(start) || start < 1) {
-        return json({
-            success: false,
-            error: "Invalid start value."
-        }, 400);
+    if (
+        !Number.isInteger(start) ||
+        start < 1
+    ) {
+
+        return json(
+            {
+                success: false,
+                error: "Invalid start value."
+            },
+            400
+        );
     }
 
     try {
+
         const feedUrl =
             BLOGS[blog] +
             "/feeds/posts/default" +
@@ -37,70 +62,135 @@ export async function onRequestGet(context) {
             "&start-index=" +
             start +
             "&max-results=" +
-            limit;
+            limit +
+            "&_cb=" +
+            encodeURIComponent(cacheBust);
 
-        const response = await fetch(feedUrl, {
-            headers: {
-                "User-Agent":
-                    "Mozilla/5.0 (compatible; FilmstarsDuplicateFinder/1.0)"
-            }
-        });
+
+        const response =
+            await fetch(
+                feedUrl,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "User-Agent":
+                            "Mozilla/5.0 (compatible; FilmstarsDuplicateFinder/1.0)",
+                        "Cache-Control":
+                            "no-cache",
+                        "Pragma":
+                            "no-cache"
+                    },
+
+                    cf: {
+                        cacheTtl: 0,
+                        cacheEverything: false
+                    }
+                }
+            );
+
 
         if (!response.ok) {
-            return json({
-                success: false,
-                retryable: [429, 500, 502, 503, 504]
-                    .includes(response.status),
-                status: response.status,
-                error:
-                    "Blogger returned HTTP " +
-                    response.status
-            }, 502);
+
+            return json(
+                {
+                    success: false,
+                    retryable:
+                        [429, 500, 502, 503, 504]
+                            .includes(
+                                response.status
+                            ),
+                    status:
+                        response.status,
+                    error:
+                        "Blogger returned HTTP " +
+                        response.status
+                },
+                502
+            );
         }
+
 
         const contentType =
-            response.headers.get("content-type") || "";
+            response.headers.get(
+                "content-type"
+            ) || "";
 
-        if (!contentType.toLowerCase().includes("json")) {
-            return json({
-                success: false,
-                retryable: true,
-                error: "Blogger returned non-JSON."
-            }, 502);
+
+        if (
+            !contentType
+                .toLowerCase()
+                .includes("json")
+        ) {
+
+            const text =
+                await response.text();
+
+
+            return json(
+                {
+                    success: false,
+                    retryable: true,
+                    error:
+                        "Blogger returned non-JSON.",
+                    response:
+                        text.substring(
+                            0,
+                            500
+                        )
+                },
+                502
+            );
         }
 
-        const data = await response.json();
+
+        const data =
+            await response.json();
+
 
         const entries =
             data?.feed?.entry || [];
 
+
         const posts =
-            entries.map(parsePost);
+            entries.map(
+                parsePost
+            );
 
-        return json({
-            success: true,
-            blog,
-            start,
-            requested: limit,
-            count: posts.length,
-            posts
-        });
 
-    } catch (error) {
-        return json({
-            success: false,
-            retryable: true,
-            error:
-                error?.message ||
-                "Blogger request failed."
-        }, 503);
+        return json(
+            {
+                success: true,
+                blog,
+                start,
+                requested: limit,
+                count: posts.length,
+                fetchedAt:
+                    new Date().toISOString(),
+                posts
+            }
+        );
+
+    }
+    catch (error) {
+
+        return json(
+            {
+                success: false,
+                retryable: true,
+                error:
+                    error?.message ||
+                    "Blogger request failed."
+            },
+            503
+        );
     }
 }
 
 
-/* =========================================
+/* =========================================================
    PARSE POST
-========================================= */
+========================================================= */
 
 function parsePost(entry) {
 
@@ -109,155 +199,224 @@ function parsePost(entry) {
             ? entry.link
             : [];
 
+
     const alternate =
         links.find(
-            x => x.rel === "alternate"
+            item =>
+                item.rel === "alternate"
         );
+
 
     const title =
         entry.title?.$t || "";
+
 
     const content =
         entry.content?.$t ||
         entry.summary?.$t ||
         "";
 
+
     const published =
         entry.published?.$t || "";
+
 
     const updated =
         entry.updated?.$t || "";
 
+
     const id =
         entry.id?.$t || "";
 
-    const images =
-        extractImages(content);
+
+    const imageKeys =
+        extractImageKeys(
+            content
+        );
+
 
     return {
+
         id,
+
         title,
+
         published,
+
         updated,
-        url: alternate?.href || "",
+
+        url:
+            alternate?.href || "",
 
         titleKey:
-            normalizeTitle(title),
+            normalizeTitle(
+                title
+            ),
 
         textHash:
             simpleHash(
-                normalizeText(content)
+                normalizeText(
+                    content
+                )
             ),
 
-        imageKeys:
-            images.map(
-                normalizeImageFilename
-            )
+        imageKeys
     };
 }
 
 
-/* =========================================
-   EXTRACT IMAGES
-========================================= */
+/* =========================================================
+   IMAGE EXTRACTION
+========================================================= */
 
-function extractImages(html) {
+function extractImageKeys(
+    html
+) {
 
     if (!html) {
         return [];
     }
 
-    const results = [];
+
+    const result = [];
+
 
     const regex =
         /<img[^>]+(?:src|data-src)\s*=\s*["']([^"']+)["']/gi;
 
+
     let match;
+
 
     while (
         (match = regex.exec(html)) !== null
     ) {
+
         const filename =
             normalizeImageFilename(
                 match[1]
             );
 
+
         if (
             filename &&
-            !results.includes(filename)
+            !result.includes(
+                filename
+            )
         ) {
-            results.push(filename);
+
+            result.push(
+                filename
+            );
         }
     }
 
-    return results;
+
+    return result;
 }
 
 
-/* =========================================
-   IMAGE FILENAME NORMALIZATION
-========================================= */
+/* =========================================================
+   IMAGE FILENAME
+========================================================= */
 
-function normalizeImageFilename(url) {
+function normalizeImageFilename(
+    url
+) {
 
     try {
 
-        const clean =
+        let value =
             String(url)
                 .split("?")[0];
 
+
         const parts =
-            clean.split("/");
+            value.split("/");
+
 
         let filename =
-            parts[parts.length - 1] || "";
+            parts[
+                parts.length - 1
+            ] || "";
+
 
         try {
             filename =
-                decodeURIComponent(filename);
-        } catch {}
+                decodeURIComponent(
+                    filename
+                );
+        }
+        catch {}
+
 
         try {
             filename =
-                decodeURIComponent(filename);
-        } catch {}
+                decodeURIComponent(
+                    filename
+                );
+        }
+        catch {}
+
 
         return filename
             .toLowerCase()
-            .replace(/\+/g, " ")
-            .replace(/\s+/g, " ")
+            .replace(
+                /\+/g,
+                " "
+            )
+            .replace(
+                /\s+/g,
+                " "
+            )
             .trim();
 
-    } catch {
+    }
+    catch {
 
         return "";
     }
 }
 
 
-/* =========================================
-   TITLE NORMALIZATION
-========================================= */
+/* =========================================================
+   TITLE
+========================================================= */
 
-function normalizeTitle(value) {
+function normalizeTitle(
+    value
+) {
 
-    return String(value || "")
+    return String(
+        value || ""
+    )
         .normalize("NFKC")
         .toLowerCase()
-        .replace(/[^\p{L}\p{N}\s]/gu, " ")
-        .replace(/\s+/g, " ")
+        .replace(
+            /[^\p{L}\p{N}\s]/gu,
+            " "
+        )
+        .replace(
+            /\s+/g,
+            " "
+        )
         .trim();
 }
 
 
-/* =========================================
-   TEXT NORMALIZATION
-========================================= */
+/* =========================================================
+   TEXT
+========================================================= */
 
-function normalizeText(html) {
+function normalizeText(
+    html
+) {
 
     let value =
-        String(html || "");
+        String(
+            html || ""
+        );
+
 
     value =
         value.replace(
@@ -265,17 +424,13 @@ function normalizeText(html) {
             " "
         );
 
+
     value =
         value.replace(
             /<style[\s\S]*?<\/style>/gi,
             " "
         );
 
-    /*
-     * Replace images by their filenames.
-     * This removes dependency on different
-     * Blogger AVvXs image IDs.
-     */
 
     value =
         value.replace(
@@ -287,9 +442,11 @@ function normalizeText(html) {
                         /(?:src|data-src)\s*=\s*["']([^"']+)["']/i
                     );
 
+
                 if (!match) {
                     return " ";
                 }
+
 
                 return (
                     " " +
@@ -301,63 +458,103 @@ function normalizeText(html) {
             }
         );
 
+
     value =
         value.replace(
             /<[^>]+>/g,
             " "
         );
 
+
     return value
-        .replace(/&nbsp;/gi, " ")
-        .replace(/&amp;/gi, "&")
-        .replace(/&quot;/gi, '"')
-        .replace(/&#39;/gi, "'")
+        .replace(
+            /&nbsp;/gi,
+            " "
+        )
+        .replace(
+            /&amp;/gi,
+            "&"
+        )
+        .replace(
+            /&quot;/gi,
+            '"'
+        )
+        .replace(
+            /&#39;/gi,
+            "'"
+        )
         .toLowerCase()
-        .replace(/\s+/g, " ")
+        .replace(
+            /\s+/g,
+            " "
+        )
         .trim();
 }
 
 
-/* =========================================
+/* =========================================================
    HASH
-========================================= */
+========================================================= */
 
-function simpleHash(value) {
+function simpleHash(
+    value
+) {
 
     let hash = 0;
+
 
     for (
         let i = 0;
         i < value.length;
         i++
     ) {
+
         hash =
-            ((hash << 5) - hash) +
+            (
+                (hash << 5) -
+                hash
+            ) +
             value.charCodeAt(i);
+
 
         hash |= 0;
     }
 
-    return String(hash);
+
+    return String(
+        hash
+    );
 }
 
 
-/* =========================================
+/* =========================================================
    JSON
-========================================= */
+========================================================= */
 
-function json(data, status = 200) {
+function json(
+    data,
+    status = 200
+) {
 
     return new Response(
-        JSON.stringify(data),
+        JSON.stringify(
+            data
+        ),
         {
             status,
+
             headers: {
                 "Content-Type":
                     "application/json; charset=UTF-8",
 
                 "Cache-Control":
-                    "no-store",
+                    "no-store, no-cache, must-revalidate, max-age=0",
+
+                "Pragma":
+                    "no-cache",
+
+                "Expires":
+                    "0",
 
                 "Access-Control-Allow-Origin":
                     "*"
