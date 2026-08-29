@@ -13,7 +13,6 @@ export async function onRequestGet(context) {
     const start = Number(
         requestUrl.searchParams.get("start") || "1"
     );
-
     const requestedLimit = Number(
         requestUrl.searchParams.get("limit") || MAX_RESULTS
     );
@@ -23,12 +22,7 @@ export async function onRequestGet(context) {
         MAX_RESULTS
     );
 
-    const cacheBust =
-        requestUrl.searchParams.get("v") ||
-        Date.now().toString();
-
     if (!BLOGS[blog]) {
-
         return json(
             {
                 success: false,
@@ -39,11 +33,7 @@ export async function onRequestGet(context) {
         );
     }
 
-    if (
-        !Number.isInteger(start) ||
-        start < 1
-    ) {
-
+    if (!Number.isInteger(start) || start < 1) {
         return json(
             {
                 success: false,
@@ -54,6 +44,13 @@ export async function onRequestGet(context) {
     }
 
     try {
+
+        /*
+         * Cache-busting value supplied by browser.
+         */
+        const cacheBust =
+            requestUrl.searchParams.get("v") ||
+            Date.now().toString();
 
         const feedUrl =
             BLOGS[blog] +
@@ -66,22 +63,19 @@ export async function onRequestGet(context) {
             "&_cb=" +
             encodeURIComponent(cacheBust);
 
-
         const response =
             await fetch(
                 feedUrl,
                 {
                     method: "GET",
-
                     headers: {
                         "User-Agent":
-                            "Mozilla/5.0 (compatible; FilmstarsDuplicateFinder/1.0)",
+                            "Mozilla/5.0 Filmstars Blogger Duplicate Finder",
                         "Cache-Control":
                             "no-cache",
                         "Pragma":
                             "no-cache"
                     },
-
                     cf: {
                         cacheTtl: 0,
                         cacheEverything: false
@@ -89,17 +83,13 @@ export async function onRequestGet(context) {
                 }
             );
 
-
         if (!response.ok) {
-
             return json(
                 {
                     success: false,
                     retryable:
                         [429, 500, 502, 503, 504]
-                            .includes(
-                                response.status
-                            ),
+                            .includes(response.status),
                     status:
                         response.status,
                     error:
@@ -110,12 +100,8 @@ export async function onRequestGet(context) {
             );
         }
 
-
         const contentType =
-            response.headers.get(
-                "content-type"
-            ) || "";
-
+            response.headers.get("content-type") || "";
 
         if (
             !contentType
@@ -126,7 +112,6 @@ export async function onRequestGet(context) {
             const text =
                 await response.text();
 
-
             return json(
                 {
                     success: false,
@@ -134,45 +119,35 @@ export async function onRequestGet(context) {
                     error:
                         "Blogger returned non-JSON.",
                     response:
-                        text.substring(
-                            0,
-                            500
-                        )
+                        text.substring(0, 500)
                 },
                 502
             );
         }
 
-
         const data =
             await response.json();
 
-
         const entries =
-            data?.feed?.entry || [];
-
+            Array.isArray(data?.feed?.entry)
+                ? data.feed.entry
+                : [];
 
         const posts =
-            entries.map(
-                parsePost
-            );
+            entries.map(parsePost);
 
+        return json({
+            success: true,
+            blog,
+            start,
+            requested: limit,
+            count: posts.length,
+            fetchedAt:
+                new Date().toISOString(),
+            posts
+        });
 
-        return json(
-            {
-                success: true,
-                blog,
-                start,
-                requested: limit,
-                count: posts.length,
-                fetchedAt:
-                    new Date().toISOString(),
-                posts
-            }
-        );
-
-    }
-    catch (error) {
+    } catch (error) {
 
         return json(
             {
@@ -188,9 +163,9 @@ export async function onRequestGet(context) {
 }
 
 
-/* =========================================================
+/* =========================================
    PARSE POST
-========================================================= */
+========================================= */
 
 function parsePost(entry) {
 
@@ -199,65 +174,46 @@ function parsePost(entry) {
             ? entry.link
             : [];
 
-
     const alternate =
         links.find(
-            item =>
-                item.rel === "alternate"
+            link =>
+                link.rel === "alternate"
         );
-
 
     const title =
         entry.title?.$t || "";
-
 
     const content =
         entry.content?.$t ||
         entry.summary?.$t ||
         "";
 
-
     const published =
         entry.published?.$t || "";
-
 
     const updated =
         entry.updated?.$t || "";
 
-
     const id =
         entry.id?.$t || "";
 
-
     const imageKeys =
-        extractImageKeys(
-            content
-        );
-
+        extractImageKeys(content);
 
     return {
-
         id,
-
         title,
-
         published,
-
         updated,
-
         url:
             alternate?.href || "",
 
         titleKey:
-            normalizeTitle(
-                title
-            ),
+            normalizeTitle(title),
 
         textHash:
             simpleHash(
-                normalizeText(
-                    content
-                )
+                normalizeText(content)
             ),
 
         imageKeys
@@ -265,28 +221,22 @@ function parsePost(entry) {
 }
 
 
-/* =========================================================
+/* =========================================
    IMAGE EXTRACTION
-========================================================= */
+========================================= */
 
-function extractImageKeys(
-    html
-) {
+function extractImageKeys(html) {
 
     if (!html) {
         return [];
     }
 
-
     const result = [];
-
 
     const regex =
         /<img[^>]+(?:src|data-src)\s*=\s*["']([^"']+)["']/gi;
 
-
     let match;
-
 
     while (
         (match = regex.exec(html)) !== null
@@ -297,32 +247,23 @@ function extractImageKeys(
                 match[1]
             );
 
-
         if (
             filename &&
-            !result.includes(
-                filename
-            )
+            !result.includes(filename)
         ) {
-
-            result.push(
-                filename
-            );
+            result.push(filename);
         }
     }
-
 
     return result;
 }
 
 
-/* =========================================================
-   IMAGE FILENAME
-========================================================= */
+/* =========================================
+   NORMALIZE IMAGE FILENAME
+========================================= */
 
-function normalizeImageFilename(
-    url
-) {
+function normalizeImageFilename(url) {
 
     try {
 
@@ -330,93 +271,61 @@ function normalizeImageFilename(
             String(url)
                 .split("?")[0];
 
-
-        const parts =
+        const pieces =
             value.split("/");
 
-
         let filename =
-            parts[
-                parts.length - 1
-            ] || "";
-
+            pieces[pieces.length - 1] || "";
 
         try {
             filename =
-                decodeURIComponent(
-                    filename
-                );
-        }
-        catch {}
-
+                decodeURIComponent(filename);
+        } catch {}
 
         try {
             filename =
-                decodeURIComponent(
-                    filename
-                );
-        }
-        catch {}
-
+                decodeURIComponent(filename);
+        } catch {}
 
         return filename
             .toLowerCase()
-            .replace(
-                /\+/g,
-                " "
-            )
-            .replace(
-                /\s+/g,
-                " "
-            )
+            .replace(/\+/g, " ")
+            .replace(/\s+/g, " ")
             .trim();
 
-    }
-    catch {
+    } catch {
 
         return "";
     }
 }
 
 
-/* =========================================================
-   TITLE
-========================================================= */
+/* =========================================
+   NORMALIZE TITLE
+========================================= */
 
-function normalizeTitle(
-    value
-) {
+function normalizeTitle(value) {
 
-    return String(
-        value || ""
-    )
+    return String(value || "")
         .normalize("NFKC")
         .toLowerCase()
         .replace(
             /[^\p{L}\p{N}\s]/gu,
             " "
         )
-        .replace(
-            /\s+/g,
-            " "
-        )
+        .replace(/\s+/g, " ")
         .trim();
 }
 
 
-/* =========================================================
-   TEXT
-========================================================= */
+/* =========================================
+   NORMALIZE TEXT
+========================================= */
 
-function normalizeText(
-    html
-) {
+function normalizeText(html) {
 
     let value =
-        String(
-            html || ""
-        );
-
+        String(html || "");
 
     value =
         value.replace(
@@ -424,14 +333,17 @@ function normalizeText(
             " "
         );
 
-
     value =
         value.replace(
             /<style[\s\S]*?<\/style>/gi,
             " "
         );
 
-
+    /*
+     * Replace image URLs with filenames.
+     * Different AVvXs IDs therefore do
+     * not make the text different.
+     */
     value =
         value.replace(
             /<img[^>]*>/gi,
@@ -442,11 +354,9 @@ function normalizeText(
                         /(?:src|data-src)\s*=\s*["']([^"']+)["']/i
                     );
 
-
                 if (!match) {
                     return " ";
                 }
-
 
                 return (
                     " " +
@@ -458,50 +368,30 @@ function normalizeText(
             }
         );
 
-
     value =
         value.replace(
             /<[^>]+>/g,
             " "
         );
 
-
     return value
-        .replace(
-            /&nbsp;/gi,
-            " "
-        )
-        .replace(
-            /&amp;/gi,
-            "&"
-        )
-        .replace(
-            /&quot;/gi,
-            '"'
-        )
-        .replace(
-            /&#39;/gi,
-            "'"
-        )
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, "'")
         .toLowerCase()
-        .replace(
-            /\s+/g,
-            " "
-        )
+        .replace(/\s+/g, " ")
         .trim();
 }
 
 
-/* =========================================================
+/* =========================================
    HASH
-========================================================= */
+========================================= */
 
-function simpleHash(
-    value
-) {
+function simpleHash(value) {
 
     let hash = 0;
-
 
     for (
         let i = 0;
@@ -510,26 +400,19 @@ function simpleHash(
     ) {
 
         hash =
-            (
-                (hash << 5) -
-                hash
-            ) +
+            ((hash << 5) - hash) +
             value.charCodeAt(i);
-
 
         hash |= 0;
     }
 
-
-    return String(
-        hash
-    );
+    return String(hash);
 }
 
 
-/* =========================================================
+/* =========================================
    JSON
-========================================================= */
+========================================= */
 
 function json(
     data,
@@ -537,12 +420,9 @@ function json(
 ) {
 
     return new Response(
-        JSON.stringify(
-            data
-        ),
+        JSON.stringify(data),
         {
             status,
-
             headers: {
                 "Content-Type":
                     "application/json; charset=UTF-8",
