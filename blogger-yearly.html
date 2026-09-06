@@ -29,7 +29,7 @@ body {
 
 header {
     background: #fe5301;
-    color: #fff;
+    color: white;
     padding: 24px 20px;
 }
 
@@ -49,7 +49,7 @@ header p {
 }
 
 .panel {
-    background: #fff;
+    background: white;
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 20px;
@@ -67,7 +67,7 @@ header p {
     border: 0;
     border-radius: 7px;
     background: #fe5301;
-    color: #fff;
+    color: white;
     padding: 14px;
     cursor: pointer;
     font-size: 16px;
@@ -87,7 +87,7 @@ header p {
 }
 
 .year-button:disabled {
-    opacity: .65;
+    opacity: .6;
     cursor: not-allowed;
 }
 
@@ -99,7 +99,7 @@ header p {
     border: 0;
     border-radius: 7px;
     background: #222;
-    color: #fff;
+    color: white;
     padding: 12px 18px;
     font-weight: bold;
     cursor: pointer;
@@ -108,6 +108,7 @@ header p {
 
 .action-button:disabled {
     opacity: .5;
+    cursor: not-allowed;
 }
 
 #status {
@@ -139,7 +140,7 @@ header p {
 }
 
 .stat {
-    background: #fff;
+    background: white;
     padding: 18px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,.06);
@@ -158,14 +159,14 @@ header p {
 
 .results-header {
     background: #222;
-    color: #fff;
+    color: white;
     padding: 14px 18px;
     border-radius: 8px 8px 0 0;
     font-weight: bold;
 }
 
 .url-list {
-    background: #fff;
+    background: white;
     border-radius: 0 0 8px 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,.08);
 }
@@ -195,23 +196,29 @@ header p {
 }
 
 .empty {
-    background: #fff;
+    background: white;
     padding: 40px;
     text-align: center;
     border-radius: 10px;
 }
 
 .error {
-    background: #fff;
+    background: white;
     padding: 20px;
     border-left: 5px solid #b42318;
     border-radius: 8px;
 }
 
-@media(max-width:900px) {
+.small {
+    color: #666;
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+@media (max-width: 900px) {
 
     .year-grid {
-        grid-template-columns: repeat(3,1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .stats {
@@ -219,10 +226,10 @@ header p {
     }
 }
 
-@media(max-width:600px) {
+@media (max-width: 600px) {
 
     .year-grid {
-        grid-template-columns: repeat(2,1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .stats {
@@ -237,7 +244,6 @@ header p {
 
 <body>
 
-
 <header>
 
 <h1>
@@ -245,14 +251,13 @@ TollyBoost Yearly Post URL Scanner
 </h1>
 
 <p>
-Find all individual post URLs by year
+Scan individual TollyBoost Blogger post URLs by year
 </p>
 
 </header>
 
 
 <div class="container">
-
 
 <div class="panel">
 
@@ -261,8 +266,12 @@ Choose Year
 </h2>
 
 <p>
-Click a year to scan TollyBoost posts whose
-URLs begin with that year.
+Click a year to scan the TollyBoost Blogger archive.
+</p>
+
+<p class="small">
+Example post URL:
+https://tollyboost.blogspot.com/2022/01/example-post.html
 </p>
 
 
@@ -277,8 +286,9 @@ URLs begin with that year.
 <button
     id="csvButton"
     class="action-button"
-    onclick="downloadCSV()"
-    disabled>
+    type="button"
+    disabled
+>
 Download CSV
 </button>
 
@@ -292,8 +302,7 @@ Ready. Select a year.
 
 <div class="progress">
 
-<div id="progressBar">
-</div>
+<div id="progressBar"></div>
 
 </div>
 
@@ -330,12 +339,12 @@ Post URLs Found
 
 <div class="stat">
 
-<strong id="scanYear">
--
+<strong id="pageCount">
+0
 </strong>
 
 <span>
-Year
+Pages Scanned
 </span>
 
 </div>
@@ -346,48 +355,55 @@ Year
 <div id="results">
 
 <div class="empty">
-
 Select a year above.
-
 </div>
 
 </div>
-
 
 </div>
 
 
 <script>
 
+const START_YEAR = 2010;
 
-const START_YEAR =
-    2010;
+const END_YEAR = 2026;
 
-const END_YEAR =
-    2026;
+const PAGE_SIZE = 150;
 
-const PAGE_SIZE =
-    150;
+const MAX_RETRIES = 5;
 
-const MAX_RETRIES =
-    5;
+const REQUEST_DELAY = 1500;
 
-const REQUEST_DELAY =
-    1800;
+const MAX_START = 100000;
 
 
-let currentYear =
-    null;
+let currentYear = null;
 
-let currentPosts =
-    [];
+let currentPosts = [];
 
 
-/* =====================================================
-   CREATE YEAR BUTTONS
-===================================================== */
+/*
+=========================================================
+CREATE YEAR BUTTONS
+=========================================================
+*/
 
-createYearButtons();
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        createYearButtons();
+
+        document
+            .getElementById("csvButton")
+            .addEventListener(
+                "click",
+                downloadCSV
+            );
+
+    }
+);
 
 
 function createYearButtons() {
@@ -397,12 +413,11 @@ function createYearButtons() {
             "yearGrid"
         );
 
+    grid.innerHTML = "";
 
     for (
-        let year =
-            START_YEAR;
-        year <=
-            END_YEAR;
+        let year = START_YEAR;
+        year <= END_YEAR;
         year++
     ) {
 
@@ -411,34 +426,23 @@ function createYearButtons() {
                 "button"
             );
 
-
-        button.type =
-            "button";
-
+        button.type = "button";
 
         button.className =
             "year-button";
 
-
         button.id =
-            "year-" +
-            year;
-
+            "year-" + year;
 
         button.textContent =
             year;
 
-
         button.addEventListener(
             "click",
             function() {
-
-                scanYear(
-                    year
-                );
+                scanYear(year);
             }
         );
-
 
         grid.appendChild(
             button
@@ -447,203 +451,233 @@ function createYearButtons() {
 }
 
 
-/* =====================================================
-   SCAN YEAR
-===================================================== */
+/*
+=========================================================
+SCAN YEAR
+=========================================================
+*/
 
-async function scanYear(
-    year
-) {
+async function scanYear(year) {
 
-    currentYear =
-        year;
+    currentYear = year;
 
-    currentPosts =
-        [];
+    currentPosts = [];
 
+    clearDoneButtons();
 
-    disableButtons(
-        true
-    );
+    disableYearButtons(true);
 
+    const currentButton =
+        document.getElementById(
+            "year-" + year
+        );
 
-    markRunning(
-        year
-    );
-
+    if (currentButton) {
+        currentButton.classList.add(
+            "running"
+        );
+    }
 
     document.getElementById(
         "csvButton"
-    ).disabled =
-        true;
-
+    ).disabled = true;
 
     document.getElementById(
         "results"
-    ).innerHTML =
-        "";
-
-
-    setProgress(
-        0
-    );
-
+    ).innerHTML = "";
 
     document.getElementById(
         "yearCount"
-    ).textContent =
-        year;
-
+    ).textContent = year;
 
     document.getElementById(
         "postCount"
-    ).textContent =
-        "0";
-
+    ).textContent = "0";
 
     document.getElementById(
-        "scanYear"
-    ).textContent =
-        year;
+        "pageCount"
+    ).textContent = "0";
 
+    setProgress(0);
+
+    setStatus(
+        "Starting scan for " +
+        year +
+        "..."
+    );
 
     try {
 
-        let position =
-            1;
+        let start = 1;
 
+        let pageNumber = 0;
 
-        const seen =
-            new Set();
+        const seenIds = new Set();
 
+        const seenUrls = new Set();
 
-        while(true) {
+        while (true) {
 
-
-            const data =
-                await fetchYearPage(
-                    year,
-                    position
-                );
-
-
-            const posts =
-                data.posts || [];
-
-
-            if (
-                posts.length === 0
-            ) {
-
-                break;
-            }
-
-
-            let newPosts =
-                0;
-
-
-            for (
-                const post
-                of posts
-            ) {
-
-                if (
-                    !seen.has(
-                        post.id ||
-                        post.url
-                    )
-                ) {
-
-                    seen.add(
-                        post.id ||
-                        post.url
-                    );
-
-                    currentPosts.push(
-                        post
-                    );
-
-                    newPosts++;
-                }
-            }
-
-
-            /*
-             * Stop if Blogger begins
-             * returning the same page.
-             */
-
-            if (
-                newPosts === 0
-            ) {
-
-                break;
-            }
-
-
-            position +=
-                posts.length;
-
-
-            setStatus(
-                "Scanning " +
-                year +
-                ": " +
-                currentPosts.length.toLocaleString() +
-                " post URLs found..."
-            );
-
-
-            document.getElementById(
-                "postCount"
-            ).textContent =
-                currentPosts.length
-                    .toLocaleString();
-
-
-            /*
-             * The progress is approximate
-             * because we don't know the
-             * exact yearly total until
-             * the feed ends.
-             */
-
-            setProgress(
-                Math.min(
-                    95,
-                    (
-                        currentPosts.length /
-                        1000
-                    ) * 100
-                )
-            );
-
-
-            await sleep(
-                REQUEST_DELAY
-            );
-
-
-            if (
-                position >
-                100000
-            ) {
-
+            if (start > MAX_START) {
                 throw new Error(
                     "Safety limit reached."
                 );
             }
+
+            pageNumber++;
+
+            setStatus(
+                "Scanning " +
+                year +
+                " — Blogger page " +
+                pageNumber +
+                "..."
+            );
+
+            const data =
+                await fetchYearPage(
+                    year,
+                    start
+                );
+
+            const feedCount =
+                Number(
+                    data.feedCount || 0
+                );
+
+            const posts =
+                Array.isArray(data.posts)
+                    ? data.posts
+                    : [];
+
+            document.getElementById(
+                "pageCount"
+            ).textContent =
+                pageNumber;
+
+            /*
+             * If Blogger has no feed entries,
+             * we are at the end.
+             */
+            if (feedCount === 0) {
+                break;
+            }
+
+            let newPosts = 0;
+
+            for (const post of posts) {
+
+                const id =
+                    post.id ||
+                    post.url;
+
+                const url =
+                    normalizeUrl(
+                        post.url
+                    );
+
+                if (!url) {
+                    continue;
+                }
+
+                if (
+                    seenIds.has(id) ||
+                    seenUrls.has(url)
+                ) {
+                    continue;
+                }
+
+                seenIds.add(id);
+
+                seenUrls.add(url);
+
+                currentPosts.push({
+                    id: id,
+                    title:
+                        post.title || "",
+                    published:
+                        post.published || "",
+                    updated:
+                        post.updated || "",
+                    url: url
+                });
+
+                newPosts++;
+            }
+
+            document.getElementById(
+                "postCount"
+            ).textContent =
+                currentPosts.length.toLocaleString();
+
+            setStatus(
+                "Scanning " +
+                year +
+                " — found " +
+                currentPosts.length.toLocaleString() +
+                " post URLs. Blogger page " +
+                pageNumber +
+                " returned " +
+                feedCount +
+                " posts."
+            );
+
+            /*
+             * No individual post matched this page,
+             * but Blogger still returned feed entries.
+             * Continue because later feed pages can
+             * contain the selected year.
+             *
+             * Stop only when Blogger gives zero
+             * feed entries or repeats the same page.
+             */
+            if (
+                feedCount === 0 ||
+                posts.length === 0
+            ) {
+                break;
+            }
+
+            if (
+                newPosts === 0 &&
+                posts.length > 0
+            ) {
+
+                /*
+                 * Blogger has started repeating pages.
+                 */
+                break;
+            }
+
+            start += feedCount;
+
+            setProgress(
+                Math.min(
+                    95,
+                    currentPosts.length > 0
+                        ? 15 +
+                          Math.min(
+                              80,
+                              currentPosts.length / 20
+                          )
+                        : Math.min(
+                              90,
+                              pageNumber * 2
+                          )
+                )
+            );
+
+            await sleep(
+                REQUEST_DELAY
+            );
         }
 
 
         /*
-         * Sort by URL.
+         * Sort oldest/latest by URL.
          */
-
         currentPosts.sort(
-            function(a,b) {
-
+            function(a, b) {
                 return a.url.localeCompare(
                     b.url
                 );
@@ -660,58 +694,82 @@ async function scanYear(
             currentPosts.length === 0;
 
 
-        markDone(
-            year
-        );
+        if (currentButton) {
+
+            currentButton.classList.remove(
+                "running"
+            );
+
+            currentButton.classList.add(
+                "done"
+            );
+        }
 
 
-        setProgress(
-            100
-        );
+        setProgress(100);
 
 
         setStatus(
             "Finished " +
             year +
-            ": " +
+            " — " +
             currentPosts.length.toLocaleString() +
-            " post URLs found."
+            " individual post URLs found."
         );
 
     }
-    catch(error) {
+    catch (error) {
 
         showError(
-            error.message
+            error?.message ||
+            "Unknown error."
         );
 
     }
     finally {
 
-        disableButtons(
-            false
-        );
+        disableYearButtons(false);
+
+        if (currentButton) {
+            currentButton.classList.remove(
+                "running"
+            );
+        }
+
+        if (
+            currentPosts.length > 0
+        ) {
+            const button =
+                document.getElementById(
+                    "year-" + year
+                );
+
+            if (button) {
+                button.classList.add(
+                    "done"
+                );
+            }
+        }
     }
 }
 
 
-/* =====================================================
-   FETCH YEAR PAGE WITH RETRIES
-===================================================== */
+/*
+=========================================================
+FETCH BLOGGER PAGE
+=========================================================
+*/
 
 async function fetchYearPage(
     year,
     start
 ) {
 
-    let lastError =
-        null;
-
+    let lastError = null;
 
     for (
         let attempt = 1;
-        attempt <=
-        MAX_RETRIES;
+        attempt <= MAX_RETRIES;
         attempt++
     ) {
 
@@ -728,11 +786,9 @@ async function fetchYearPage(
             const apiUrl =
                 "/api/blogger-yearly" +
                 "?year=" +
-                encodeURIComponent(
-                    year
-                ) +
+                encodeURIComponent(year) +
                 "&start=" +
-                start +
+                encodeURIComponent(start) +
                 "&v=" +
                 encodeURIComponent(
                     cacheBust
@@ -743,14 +799,12 @@ async function fetchYearPage(
                 await fetch(
                     apiUrl,
                     {
-                        method:
-                            "GET",
-
-                        cache:
-                            "no-store",
-
+                        method: "GET",
+                        cache: "no-store",
                         headers: {
                             "Cache-Control":
+                                "no-cache",
+                            "Pragma":
                                 "no-cache"
                         }
                     }
@@ -766,14 +820,11 @@ async function fetchYearPage(
             if (
                 !contentType
                     .toLowerCase()
-                    .includes(
-                        "application/json"
-                    )
+                    .includes("json")
             ) {
 
                 const text =
                     await response.text();
-
 
                 throw new Error(
                     "API returned HTML instead of JSON. " +
@@ -782,7 +833,7 @@ async function fetchYearPage(
                     ". " +
                     text.substring(
                         0,
-                        120
+                        150
                     )
                 );
             }
@@ -799,7 +850,7 @@ async function fetchYearPage(
 
                 throw new Error(
                     data.error ||
-                    "Year scan failed."
+                    "Year scan API failed."
                 );
             }
 
@@ -807,46 +858,37 @@ async function fetchYearPage(
             return data;
 
         }
-        catch(error) {
+        catch (error) {
 
-            lastError =
-                error;
-
+            lastError = error;
 
             if (
-                attempt >=
-                MAX_RETRIES
+                attempt >= MAX_RETRIES
             ) {
-
                 break;
             }
 
 
             const wait =
-                attempt *
-                5000;
+                attempt * 4000;
 
 
             setStatus(
-                "Temporary error for " +
+                "Temporary error while scanning " +
                 year +
                 ". Retry " +
-                (
-                    attempt + 1
-                ) +
+                (attempt + 1) +
                 "/" +
                 MAX_RETRIES +
-                " after " +
-                (
+                " in " +
+                Math.round(
                     wait / 1000
                 ) +
                 " seconds..."
             );
 
 
-            await sleep(
-                wait
-            );
+            await sleep(wait);
         }
     }
 
@@ -854,15 +896,46 @@ async function fetchYearPage(
     throw (
         lastError ||
         new Error(
-            "Unable to scan year."
+            "Unable to load Blogger page."
         )
     );
 }
 
 
-/* =====================================================
-   DISPLAY
-===================================================== */
+/*
+=========================================================
+NORMALIZE URL
+=========================================================
+*/
+
+function normalizeUrl(url) {
+
+    if (!url) {
+        return "";
+    }
+
+    try {
+
+        const parsed =
+            new URL(url);
+
+        parsed.hash = "";
+
+        return parsed.href;
+
+    }
+    catch {
+
+        return "";
+    }
+}
+
+
+/*
+=========================================================
+RESULTS
+=========================================================
+*/
 
 function renderResults() {
 
@@ -876,33 +949,26 @@ function renderResults() {
         currentPosts.length === 0
     ) {
 
-        container.innerHTML = `
-            <div class="empty">
-                No TollyBoost post URLs found for
-                ${currentYear}.
-            </div>
-        `;
+        container.innerHTML =
+            '<div class="empty">' +
+            'No individual Blogger post URLs found for ' +
+            escapeHTML(currentYear) +
+            '.' +
+            '</div>';
 
         return;
     }
 
 
-    let html = `
-
-<div class="results-header">
-
-TollyBoost posts for
-${currentYear}
-
-—
-${currentPosts.length.toLocaleString()}
-URLs
-
-</div>
-
-<div class="url-list">
-
-`;
+    let html =
+        '<div class="results-header">' +
+        'TollyBoost posts for ' +
+        escapeHTML(currentYear) +
+        ' — ' +
+        currentPosts.length.toLocaleString() +
+        ' URLs' +
+        '</div>' +
+        '<div class="url-list">';
 
 
     for (
@@ -915,46 +981,39 @@ URLs
             currentPosts[i];
 
 
-        html += `
+        html +=
+            '<div class="url-row">' +
 
-<div class="url-row">
+            '<div class="title">' +
+            (i + 1) +
+            '. ' +
+            escapeHTML(
+                post.title
+            ) +
+            '</div>' +
 
-<div class="title">
+            '<div class="url">' +
 
-${i + 1}.
-${escapeHTML(
-    post.title || ""
-)}
+            '<a href="' +
+            escapeAttribute(
+                post.url
+            ) +
+            '" target="_blank" rel="noopener">' +
 
-</div>
+            escapeHTML(
+                post.url
+            ) +
 
-<div class="url">
+            '</a>' +
 
-<a
-href="${escapeAttribute(
-    post.url
-)}"
-target="_blank"
-rel="noopener"
->
+            '</div>' +
 
-${escapeHTML(
-    post.url
-)}
-
-</a>
-
-</div>
-
-</div>
-
-`;
+            '</div>';
     }
 
 
-    html += `
-</div>
-`;
+    html +=
+        '</div>';
 
 
     container.innerHTML =
@@ -962,47 +1021,42 @@ ${escapeHTML(
 }
 
 
-/* =====================================================
-   CSV
-===================================================== */
+/*
+=========================================================
+CSV
+=========================================================
+*/
 
 function downloadCSV() {
 
     if (
         currentPosts.length === 0
     ) {
-
         return;
     }
 
 
     const rows = [
-
         [
             "Year",
             "Title",
             "TollyBoost URL",
-            "Published"
+            "Published",
+            "Updated"
         ]
-
     ];
 
 
     for (
-        const post
-        of currentPosts
+        const post of currentPosts
     ) {
 
         rows.push([
-
             currentYear,
-
             post.title || "",
-
             post.url || "",
-
-            post.published || ""
-
+            post.published || "",
+            post.updated || ""
         ]);
     }
 
@@ -1042,9 +1096,7 @@ function downloadCSV() {
         );
 
 
-    link.href =
-        url;
-
+    link.href = url;
 
     link.download =
         "tollyboost-" +
@@ -1056,9 +1108,7 @@ function downloadCSV() {
         link
     );
 
-
     link.click();
-
 
     link.remove();
 
@@ -1069,175 +1119,125 @@ function downloadCSV() {
 }
 
 
-/* =====================================================
-   BUTTON STATE
-===================================================== */
+/*
+=========================================================
+BUTTONS
+=========================================================
+*/
 
-function disableButtons(
-    disabled
-) {
+function disableYearButtons(disabled) {
 
     document
         .querySelectorAll(
             ".year-button"
         )
         .forEach(
-            button =>
+            function(button) {
                 button.disabled =
-                    disabled
+                    disabled;
+            }
         );
-
-
-    document.getElementById(
-        "rebuildButton"
-    ).disabled =
-        disabled;
 }
 
 
-function markRunning(
-    year
-) {
+function clearDoneButtons() {
 
     document
         .querySelectorAll(
             ".year-button"
         )
         .forEach(
-            button =>
+            function(button) {
+
                 button.classList.remove(
                     "running"
-                )
+                );
+
+            }
         );
-
-
-    const button =
-        document.getElementById(
-            "year-" +
-            year
-        );
-
-
-    if (
-        button
-    ) {
-
-        button.classList.add(
-            "running"
-        );
-    }
 }
 
 
-function markDone(
-    year
-) {
+/*
+=========================================================
+STATUS
+=========================================================
+*/
 
-    const button =
-        document.getElementById(
-            "year-" +
-            year
-        );
-
-
-    if (
-        button
-    ) {
-
-        button.classList.remove(
-            "running"
-        );
-
-
-        button.classList.add(
-            "done"
-        );
-    }
-}
-
-
-/* =====================================================
-   STATUS
-===================================================== */
-
-function setStatus(
-    text
-) {
+function setStatus(text) {
 
     document.getElementById(
         "status"
-    ).textContent =
-        text;
+    ).textContent = text;
 }
 
 
-/* =====================================================
-   PROGRESS
-===================================================== */
+/*
+=========================================================
+PROGRESS
+=========================================================
+*/
 
-function setProgress(
-    value
-) {
+function setProgress(value) {
 
-    document.getElementById(
-        "progressBar"
-    ).style.width =
+    const safeValue =
         Math.max(
             0,
             Math.min(
                 100,
-                value
+                Number(value) || 0
             )
-        ) + "%";
+        );
+
+
+    document.getElementById(
+        "progressBar"
+    ).style.width =
+        safeValue + "%";
 }
 
 
-/* =====================================================
-   ERROR
-===================================================== */
+/*
+=========================================================
+ERROR
+=========================================================
+*/
 
-function showError(
-    message
-) {
+function showError(message) {
 
     setStatus(
-        "ERROR: " +
-        message
+        "ERROR: " + message
     );
 
 
     document.getElementById(
         "results"
-    ).innerHTML = `
+    ).innerHTML =
 
-<div class="error">
+        '<div class="error">' +
 
-<strong>
-Error
-</strong>
+        '<strong>Error</strong>' +
 
-<br><br>
+        '<br><br>' +
 
-${escapeHTML(
-    message
-)}
+        escapeHTML(
+            message
+        ) +
 
-</div>
-
-`;
+        '</div>';
 }
 
 
-/* =====================================================
-   ESCAPE
-===================================================== */
+/*
+=========================================================
+HTML ESCAPE
+=========================================================
+*/
 
-function escapeHTML(
-    value
-) {
+function escapeHTML(value) {
 
     return String(
-        value || ""
+        value ?? ""
     )
         .replace(
             /&/g,
@@ -1262,9 +1262,7 @@ function escapeHTML(
 }
 
 
-function escapeAttribute(
-    value
-) {
+function escapeAttribute(value) {
 
     return escapeHTML(
         value
@@ -1272,17 +1270,17 @@ function escapeAttribute(
 }
 
 
-/* =====================================================
-   CSV ESCAPE
-===================================================== */
+/*
+=========================================================
+CSV ESCAPE
+=========================================================
+*/
 
-function csvEscape(
-    value
-) {
+function csvEscape(value) {
 
     const text =
         String(
-            value || ""
+            value ?? ""
         );
 
 
@@ -1305,22 +1303,20 @@ function csvEscape(
 }
 
 
-/* =====================================================
-   SLEEP
-===================================================== */
+/*
+=========================================================
+SLEEP
+=========================================================
+*/
 
-function sleep(
-    milliseconds
-) {
+function sleep(milliseconds) {
 
     return new Promise(
         function(resolve) {
-
             setTimeout(
                 resolve,
                 milliseconds
             );
-
         }
     );
 }
