@@ -1,16 +1,10 @@
 const BLOG = "https://tollyboost.blogspot.com";
 
-const PAGE_SIZE = 150;
-
 export async function onRequestGet(context) {
-    const requestUrl = new URL(context.request.url);
+    const url = new URL(context.request.url);
 
     const year = Number(
-        requestUrl.searchParams.get("year")
-    );
-
-    const start = Number(
-        requestUrl.searchParams.get("start") || "1"
+        url.searchParams.get("year")
     );
 
     if (
@@ -27,137 +21,27 @@ export async function onRequestGet(context) {
         );
     }
 
-    if (
-        !Number.isInteger(start) ||
-        start < 1
-    ) {
-        return json(
-            {
-                success: false,
-                error: "Invalid start value."
-            },
-            400
-        );
-    }
-
     try {
-        /*
-         * Use Blogger's normal posts feed.
-         *
-         * We intentionally do not depend on Blogger's
-         * published-min / published-max pagination because
-         * Blogger can return inconsistent pagination with
-         * those filters.
-         */
-        const cacheBust =
-            Date.now() +
-            "-" +
-            Math.random()
-                .toString(36)
-                .substring(2);
-
-        const feedUrl =
-            BLOG +
-            "/feeds/posts/default" +
-            "?alt=json" +
-            "&start-index=" +
-            encodeURIComponent(start) +
-            "&max-results=" +
-            PAGE_SIZE +
-            "&_cb=" +
-            encodeURIComponent(cacheBust);
-
-        const response = await fetch(
-            feedUrl,
-            {
-                method: "GET",
-                headers: {
-                    "User-Agent":
-                        "Mozilla/5.0 Filmstars Blogger Year Scanner",
-                    "Cache-Control":
-                        "no-cache",
-                    "Pragma":
-                        "no-cache"
-                },
-                cf: {
-                    cacheTtl: 0,
-                    cacheEverything: false
-                }
-            }
-        );
-
-        if (!response.ok) {
-            return json(
-                {
-                    success: false,
-                    retryable: [429, 500, 502, 503, 504]
-                        .includes(response.status),
-                    error:
-                        "Blogger returned HTTP " +
-                        response.status
-                },
-                502
-            );
-        }
-
-        const contentType =
-            response.headers.get("content-type") || "";
-
-        if (
-            !contentType
-                .toLowerCase()
-                .includes("json")
-        ) {
-            const text = await response.text();
-
-            return json(
-                {
-                    success: false,
-                    retryable: true,
-                    error:
-                        "Blogger returned non-JSON.",
-                    response:
-                        text.substring(0, 300)
-                },
-                502
-            );
-        }
-
-        const data = await response.json();
-
-        const entries =
-            Array.isArray(data?.feed?.entry)
-                ? data.feed.entry
-                : [];
-
-        const posts = entries
-            .map(parsePost)
-            .filter(Boolean)
-            .filter(post =>
-                isYearPost(post.url, year)
-            );
+        const result = await buildYearIndex(year);
 
         return json({
             success: true,
             blog: BLOG,
             year: year,
-            start: start,
-            feedCount: entries.length,
-            count: posts.length,
-            requested: PAGE_SIZE,
-            posts: posts
+            count: result.posts.length,
+            sitemapCount: result.sitemapUrls,
+            posts: result.posts
         });
     }
     catch (error) {
         return json(
             {
                 success: false,
-                retryable: true,
                 error:
                     error?.message ||
-                    "Blogger request failed."
+                    "Unable to scan Blogger sitemap."
             },
-            503
+            502
         );
     }
 }
@@ -165,82 +49,478 @@ export async function onRequestGet(context) {
 
 /*
 =========================================================
-PARSE BLOGGER POST
+BUILD YEAR INDEX
 =========================================================
 */
 
-function parsePost(entry) {
-    const links =
-        Array.isArray(entry?.link)
-            ? entry.link
-            : [];
+async function buildYearIndex(year) {
 
-    const alternate =
-        links.find(
-            link =>
-                link?.rel === "alternate" &&
-                typeof link.href === "string"
+    const visited = new Set();
+
+    const postMap = new Map();
+
+    const rootSitemap =
+        BLOG +
+        "/sitemap.xml?cb=" +
+        Date.now();
+
+    await readSitemap(
+        rootSitemap,
+        year,
+        visited,
+        postMap
+    );
+
+    const posts =
+        Array.from(
+            postMap.values()
         );
 
-    if (!alternate?.href) {
-        return null;
-    }
+    posts.sort(
+        (a, b) =>
+            a.url.localeCompare(
+                b.url
+            )
+    );
 
     return {
-        id:
-            entry?.id?.$t ||
-            alternate.href,
-
-        title:
-            entry?.title?.$t ||
-            "",
-
-        published:
-            entry?.published?.$t ||
-            "",
-
-        updated:
-            entry?.updated?.$t ||
-            "",
-
-        url:
-            alternate.href
+        posts,
+        sitemapUrls: visited.size
     };
 }
 
 
 /*
 =========================================================
-CHECK EXACT BLOGGER POST URL
-Example:
-
-https://tollyboost.blogspot.com/2022/03/example-post.html
-
-Accepted:
- /2022/01/post.html
- /2022/12/anything-here.html
-
-Rejected:
- /2022/
- /p/about.html
- /search/label/test
+READ SITEMAP
 =========================================================
 */
 
-function isYearPost(url, year) {
+async function readSitemap(
+    sitemapUrl,
+    year,
+    visited,
+    postMap
+) {
+
+    const cleanUrl =
+        removeCacheParameter(
+            sitemapUrl
+        );
+
+    if (
+        visited.has(cleanUrl)
+    ) {
+        return;
+    }
+
+    visited.add(cleanUrl);
+
+    const xml =
+        await fetchText(
+            cleanUrl
+        );
+
+    if (!xml) {
+        return;
+    }
+
+    /*
+     * Sitemap index:
+     *
+     * <sitemap>
+     *   <loc>...</loc>
+     * </sitemap>
+     */
+
+    const sitemapLocations =
+        extractTags(
+            xml,
+            "loc"
+        );
+
+    const hasSitemapIndex =
+        /<sitemap[\s>]/i.test(
+            xml
+        );
+
+
+    if (hasSitemapIndex) {
+
+        for (
+            const childUrl of
+            sitemapLocations
+        ) {
+
+            /*
+             * Ignore sitemap-pages.xml
+             * or unrelated sitemaps.
+             */
+            if (
+                !isUsefulSitemap(
+                    childUrl
+                )
+            ) {
+                continue;
+            }
+
+            await readSitemap(
+                childUrl,
+                year,
+                visited,
+                postMap
+            );
+        }
+
+        return;
+    }
+
+
+    /*
+     * Normal URL sitemap.
+     */
+
+    const urls =
+        sitemapLocations;
+
+
+    for (
+        const postUrl of urls
+    ) {
+
+        const normalized =
+            normalizePostUrl(
+                postUrl
+            );
+
+        if (!normalized) {
+            continue;
+        }
+
+        if (
+            !matchesYear(
+                normalized,
+                year
+            )
+        ) {
+            continue;
+        }
+
+        if (
+            postMap.has(
+                normalized
+            )
+        ) {
+            continue;
+        }
+
+        postMap.set(
+            normalized,
+            {
+                url: normalized,
+                title: extractTitleFromUrl(
+                    normalized
+                )
+            }
+        );
+    }
+}
+
+
+/*
+=========================================================
+USEFUL SITEMAP
+=========================================================
+*/
+
+function isUsefulSitemap(url) {
+
     if (!url) {
         return false;
     }
 
+    const lower =
+        url.toLowerCase();
+
+    if (
+        lower.includes(
+            "sitemap-pages"
+        )
+    ) {
+        return false;
+    }
+
+    return (
+        lower.includes(
+            "tollyboost.blogspot.com"
+        ) &&
+        lower.includes(
+            "sitemap"
+        )
+    );
+}
+
+
+/*
+=========================================================
+FETCH XML
+=========================================================
+*/
+
+async function fetchText(
+    url
+) {
+
+    let lastError = null;
+
+    for (
+        let attempt = 1;
+        attempt <= 5;
+        attempt++
+    ) {
+
+        try {
+
+            const cacheBust =
+                Date.now() +
+                "-" +
+                Math.random()
+                    .toString(36)
+                    .slice(2);
+
+            const separator =
+                url.includes("?")
+                    ? "&"
+                    : "?";
+
+            const requestUrl =
+                url +
+                separator +
+                "_cb=" +
+                encodeURIComponent(
+                    cacheBust
+                );
+
+
+            const response =
+                await fetch(
+                    requestUrl,
+                    {
+                        method: "GET",
+                        headers: {
+                            "User-Agent":
+                                "Mozilla/5.0 Filmstars Yearly Scanner",
+                            "Cache-Control":
+                                "no-cache",
+                            "Pragma":
+                                "no-cache",
+                            "Accept":
+                                "application/xml,text/xml,text/plain,*/*"
+                        },
+                        cf: {
+                            cacheTtl: 0,
+                            cacheEverything: false
+                        }
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Blogger sitemap HTTP " +
+                    response.status
+                );
+            }
+
+
+            const text =
+                await response.text();
+
+
+            if (
+                !text ||
+                text.length < 20
+            ) {
+
+                throw new Error(
+                    "Blogger sitemap returned empty content."
+                );
+            }
+
+
+            /*
+             * Detect HTML error pages.
+             */
+
+            const first =
+                text
+                    .trim()
+                    .substring(
+                        0,
+                        100
+                    )
+                    .toLowerCase();
+
+
+            if (
+                first.startsWith(
+                    "<!doctype html"
+                ) ||
+                first.startsWith(
+                    "<html"
+                )
+            ) {
+
+                throw new Error(
+                    "Blogger returned HTML instead of XML."
+                );
+            }
+
+
+            return text;
+
+        }
+        catch (error) {
+
+            lastError = error;
+
+            if (
+                attempt >= 5
+            ) {
+                break;
+            }
+
+            await sleep(
+                attempt * 2500
+            );
+        }
+    }
+
+
+    throw (
+        lastError ||
+        new Error(
+            "Unable to fetch sitemap."
+        )
+    );
+}
+
+
+/*
+=========================================================
+EXTRACT XML TAGS
+=========================================================
+*/
+
+function extractTags(
+    xml,
+    tagName
+) {
+
+    const values = [];
+
+    const regex =
+        new RegExp(
+            "<" +
+            tagName +
+            "(?:\\s[^>]*)?>([\\s\\S]*?)<\\/" +
+            tagName +
+            ">",
+            "gi"
+        );
+
+    let match;
+
+    while (
+        (match = regex.exec(xml)) !== null
+    ) {
+
+        const value =
+            decodeXml(
+                match[1]
+                    .trim()
+            );
+
+        if (value) {
+            values.push(value);
+        }
+    }
+
+    return values;
+}
+
+
+/*
+=========================================================
+NORMALIZE POST URL
+=========================================================
+*/
+
+function normalizePostUrl(
+    url
+) {
+
     try {
-        const parsed = new URL(url);
+
+        const parsed =
+            new URL(url);
 
         if (
-            parsed.hostname.toLowerCase() !==
+            parsed.hostname
+                .toLowerCase() !==
             "tollyboost.blogspot.com"
         ) {
-            return false;
+            return "";
         }
+
+        const path =
+            parsed.pathname;
+
+        /*
+         * Must be an individual Blogger
+         * post URL:
+         *
+         * /2015/11/example.html
+         */
+
+        if (
+            !/^\/\d{4}\/\d{2}\/.+\.html$/i.test(
+                path
+            )
+        ) {
+            return "";
+        }
+
+        return (
+            "https://tollyboost.blogspot.com" +
+            path
+        );
+
+    }
+    catch {
+        return "";
+    }
+}
+
+
+/*
+=========================================================
+MATCH YEAR
+=========================================================
+*/
+
+function matchesYear(
+    url,
+    year
+) {
+
+    try {
+
+        const pathname =
+            new URL(
+                url
+            ).pathname;
 
         const pattern =
             new RegExp(
@@ -251,8 +531,9 @@ function isYearPost(url, year) {
             );
 
         return pattern.test(
-            parsed.pathname
+            pathname
         );
+
     }
     catch {
         return false;
@@ -262,28 +543,159 @@ function isYearPost(url, year) {
 
 /*
 =========================================================
+TITLE FROM URL
+=========================================================
+*/
+
+function extractTitleFromUrl(
+    url
+) {
+
+    try {
+
+        const pathname =
+            new URL(
+                url
+            ).pathname;
+
+        const last =
+            pathname
+                .split("/")
+                .pop() || "";
+
+        const slug =
+            last
+                .replace(
+                    /\.html$/i,
+                    ""
+                );
+
+        return slug
+            .replace(
+                /[-_]+/g,
+                " "
+            )
+            .replace(
+                /\s+/g,
+                " "
+            )
+            .trim();
+
+    }
+    catch {
+        return "";
+    }
+}
+
+
+/*
+=========================================================
+XML DECODE
+=========================================================
+*/
+
+function decodeXml(
+    value
+) {
+
+    return String(value)
+        .replace(
+            /&amp;/gi,
+            "&"
+        )
+        .replace(
+            /&lt;/gi,
+            "<"
+        )
+        .replace(
+            /&gt;/gi,
+            ">"
+        )
+        .replace(
+            /&quot;/gi,
+            '"'
+        )
+        .replace(
+            /&#39;/gi,
+            "'"
+        );
+}
+
+
+/*
+=========================================================
+REMOVE CACHE PARAMETER
+=========================================================
+*/
+
+function removeCacheParameter(
+    url
+) {
+
+    try {
+
+        const parsed =
+            new URL(url);
+
+        parsed.searchParams.delete(
+            "_cb"
+        );
+
+        return parsed.toString();
+
+    }
+    catch {
+        return url;
+    }
+}
+
+
+/*
+=========================================================
+SLEEP
+=========================================================
+*/
+
+function sleep(
+    ms
+) {
+
+    return new Promise(
+        resolve =>
+            setTimeout(
+                resolve,
+                ms
+            )
+    );
+}
+
+
+/*
+=========================================================
 JSON RESPONSE
 =========================================================
 */
 
-function json(data, status = 200) {
+function json(
+    data,
+    status = 200
+) {
+
     return new Response(
-        JSON.stringify(data),
+        JSON.stringify(
+            data
+        ),
         {
             status: status,
             headers: {
                 "Content-Type":
                     "application/json; charset=UTF-8",
-
                 "Cache-Control":
                     "no-store, no-cache, must-revalidate, max-age=0",
-
                 "Pragma":
                     "no-cache",
-
                 "Expires":
                     "0",
-
                 "Access-Control-Allow-Origin":
                     "*"
             }
