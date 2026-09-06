@@ -1,4 +1,4 @@
-const BLOG = "https://tollyboost.blogspot.com";
+const BLOG = "https://glamorousindianmodels.blogspot.com";
 
 export async function onRequestGet(context) {
     const url = new URL(context.request.url);
@@ -252,7 +252,7 @@ function isUsefulSitemap(url) {
 
     return (
         lower.includes(
-            "tollyboost.blogspot.com"
+            "glamorousindianmodels.blogspot.com"
         ) &&
         lower.includes(
             "sitemap"
@@ -469,7 +469,7 @@ function normalizePostUrl(
         if (
             parsed.hostname
                 .toLowerCase() !==
-            "tollyboost.blogspot.com"
+            "glamorousindianmodels.blogspot.com"
         ) {
             return "";
         }
@@ -493,7 +493,7 @@ function normalizePostUrl(
         }
 
         return (
-            "https://tollyboost.blogspot.com" +
+            "https://glamorousindianmodels.blogspot.com" +
             path
         );
 
