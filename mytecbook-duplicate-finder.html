@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>MyTecbook Blogger Duplicate Finder</title>
+
+<meta name="description"
+      content="Compare mytecbook.blogspot.com with mytecbooks.blogspot.com and find duplicate Blogger posts.">
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f5f7fa;
+    color: #222;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+button {
+    border: 0;
+    border-radius: 7px;
+    padding: 11px 16px;
+    margin: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    background: #fe5301;
+    color: #fff;
+}
+
+button:hover {
+    opacity: .9;
+}
+
+button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+.rebuild {
+    background: #222;
+}
+
+.download {
+    background: #198754;
+}
+
+.batch-buttons {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.batch-buttons button {
+    margin: 0;
+}
+
+.batch-buttons button.done {
+    background: #198754;
+}
+
+.batch-buttons button.running {
+    background: #f0ad00;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.stat {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.stat-title {
+    font-size: 13px;
+    color: #666;
+}
+
+.stat-value {
+    font-size: 23px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.status {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 7px;
+    background: #f1f3f5;
+    white-space: pre-wrap;
+}
+
+.progress-wrap {
+    margin-top: 15px;
+    height: 18px;
+    background: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    width: 0%;
+    background: #fe5301;
+    transition: width .2s;
+}
+
+.match {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 12px;
+    background: #fff;
+}
+
+.match-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.match a {
+    color: #0d6efd;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.score {
+    margin-top: 8px;
+    font-weight: bold;
+}
+
+small {
+    color: #666;
+}
+
+.hidden {
+    display: none;
+}
+
+@media(max-width:600px) {
+
+    .container {
+        padding: 12px;
+    }
+
+    h1 {
+        font-size: 23px;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>MyTecbook Blogger Duplicate Finder</h1>
+
+        <div class="subtitle">
+            Compare
+            <strong>mytecbook.blogspot.com</strong>
+            with
+            <strong>mytecbooks.blogspot.com</strong>
+        </div>
+
+        <button
+            id="rebuildBtn"
+            class="rebuild">
+            Force Fresh mytecbooks Rebuild
+        </button>
+
+        <button
+            id="downloadBtn"
+            class="download">
+            Download Current CSV
+        </button>
+
+        <div id="status"
+             class="status">
+            Ready.
+        </div>
+
+        <div class="progress-wrap">
+            <div id="progress"
+                 class="progress"></div>
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>
+            mytecbook 1,000-post batches
+            ↔ ALL mytecbooks posts
+        </h2>
+
+        <div id="batchButtons"
+             class="batch-buttons">
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>Statistics</h2>
+
+        <div class="stats">
+
+            <div class="stat">
+                <div class="stat-title">
+                    mytecbook Batch
+                </div>
+
+                <div id="batchStat"
+                     class="stat-value">
+                    -
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-title">
+                    mytecbooks Indexed
+                </div>
+
+                <div id="indexedStat"
+                     class="stat-value">
+                    0
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-title">
+                    Duplicates
+                </div>
+
+                <div id="duplicateStat"
+                     class="stat-value">
+                    0
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-title">
+                    Not Matched
+                </div>
+
+                <div id="notMatchedStat"
+                     class="stat-value">
+                    0
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-title">
+                    Match Rate
+                </div>
+
+                <div id="rateStat"
+                     class="stat-value">
+                    0%
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>Duplicate Results</h2>
+
+        <div id="results">
+            No scan completed yet.
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+"use strict";
+
+
+/*
+    IMPORTANT:
+
+    This is the NEW API.
+
+    Do NOT change this to /api/blogger-posts.
+
+    Old Tollywood duplicate finder remains
+    completely separate.
+*/
+
+const API_PATH =
+    "/api/mytecbook-posts";
+
+const ORIGINAL_BLOG =
+    "mytecbook";
+
+const IMPORTED_BLOG =
+    "mytecbooks";
+
+
+/*
+    Configuration
+*/
+
+const BATCH_SIZE = 1000;
+
+const FEED_PAGE_SIZE = 150;
+
+const REQUEST_DELAY = 1200;
+
+const MAX_RETRIES = 5;
+
+const DB_NAME =
+    "MyTecbookDuplicateDB";
+
+const DB_VERSION = 1;
+
+const STORE_NAME =
+    "mytecbooks";
+
+
+/*
+    Elements
+*/
+
+const statusEl =
+    document.getElementById("status");
+
+const progressEl =
+    document.getElementById("progress");
+
+const rebuildBtn =
+    document.getElementById("rebuildBtn");
+
+const downloadBtn =
+    document.getElementById("downloadBtn");
+
+const batchButtonsEl =
+    document.getElementById("batchButtons");
+
+const batchStat =
+    document.getElementById("batchStat");
+
+const indexedStat =
+    document.getElementById("indexedStat");
+
+const duplicateStat =
+    document.getElementById("duplicateStat");
+
+const notMatchedStat =
+    document.getElementById("notMatchedStat");
+
+const rateStat =
+    document.getElementById("rateStat");
+
+const resultsEl =
+    document.getElementById("results");
+
+
+/*
+    State
+*/
+
+let currentMatches = [];
+
+let currentBatch = 0;
+
+let db = null;
+
+
+/*
+    IndexedDB
+*/
+
+function openDB() {
+
+    return new Promise((resolve, reject) => {
+
+        const request =
+            indexedDB.open(
+                DB_NAME,
+                DB_VERSION
+            );
+
+        request.onupgradeneeded =
+            function(event) {
+
+                const database =
+                    event.target.result;
+
+                if (
+                    !database.objectStoreNames
+                        .contains(STORE_NAME)
+                ) {
+
+                    database.createObjectStore(
+                        STORE_NAME,
+                        {
+                            keyPath: "id"
+                        }
+                    );
+
+                }
+
+            };
+
+
+        request.onsuccess =
+            function(event) {
+
+                db =
+                    event.target.result;
+
+                resolve(db);
+
+            };
+
+
+        request.onerror =
+            function() {
+
+                reject(
+                    request.error ||
+                    new Error(
+                        "Unable to open IndexedDB."
+                    )
+                );
+
+            };
+
+    });
+
+}
+
+
+/*
+    Clear IndexedDB
+*/
+
+function clearStore() {
+
+    return new Promise((resolve, reject) => {
+
+        const transaction =
+            db.transaction(
+                STORE_NAME,
+                "readwrite"
+            );
+
+        const store =
+            transaction.objectStore(
+                STORE_NAME
+            );
+
+        const request =
+            store.clear();
+
+        request.onsuccess =
+            () => resolve();
+
+        request.onerror =
+            () => reject(request.error);
+
+    });
+
+}
+
+
+/*
+    Save posts
+*/
+
+function savePosts(posts) {
+
+    return new Promise((resolve, reject) => {
+
+        const transaction =
+            db.transaction(
+                STORE_NAME,
+                "readwrite"
+            );
+
+        const store =
+            transaction.objectStore(
+                STORE_NAME
+            );
+
+        for (const post of posts) {
+
+            if (!post.id) {
+                continue;
+            }
+
+            store.put(post);
+
+        }
+
+        transaction.oncomplete =
+            () => resolve();
+
+        transaction.onerror =
+            () => reject(
+                transaction.error
+            );
+
+    });
+
+}
+
+
+/*
+    Get ALL imported posts
+*/
+
+function getAllPosts() {
+
+    return new Promise((resolve, reject) => {
+
+        const transaction =
+            db.transaction(
+                STORE_NAME,
+                "readonly"
+            );
+
+        const store =
+            transaction.objectStore(
+                STORE_NAME
+            );
+
+        const request =
+            store.getAll();
+
+        request.onsuccess =
+            () => resolve(
+                request.result || []
+            );
+
+        request.onerror =
+            () => reject(request.error);
+
+    });
+
+}
+
+
+/*
+    Count imported posts
+*/
+
+function countPosts() {
+
+    return new Promise((resolve, reject) => {
+
+        const transaction =
+            db.transaction(
+                STORE_NAME,
+                "readonly"
+            );
+
+        const store =
+            transaction.objectStore(
+                STORE_NAME
+            );
+
+        const request =
+            store.count();
+
+        request.onsuccess =
+            () => resolve(
+                request.result || 0
+            );
+
+        request.onerror =
+            () => reject(request.error);
+
+    });
+
+}
+
+
+/*
+    API request
+*/
+
+async function apiRequest(
+    blog,
+    start,
+    limit
+) {
+
+    const url =
+        `${API_PATH}?blog=${encodeURIComponent(blog)}` +
+        `&start=${start}` +
+        `&limit=${limit}`;
+
+    let lastError = null;
+
+    for (
+        let attempt = 1;
+        attempt <= MAX_RETRIES;
+        attempt++
+    ) {
+
+        try {
+
+            const response =
+                await fetch(
+                    url,
+                    {
+                        cache: "no-store"
+                    }
+                );
+
+            const text =
+                await response.text();
+
+            let data;
+
+            try {
+
+                data =
+                    JSON.parse(text);
+
+            } catch {
+
+                throw new Error(
+                    "API returned non-JSON data."
+                );
+
+            }
+
+            if (!response.ok || !data.success) {
+
+                throw new Error(
+                    data.error ||
+                    `HTTP ${response.status}`
+                );
+
+            }
+
+            return data;
+
+        } catch (error) {
+
+            lastError = error;
+
+            if (
+                attempt < MAX_RETRIES
+            ) {
+
+                statusEl.textContent =
+                    `Temporary error loading ${blog} ` +
+                    `(attempt ${attempt}/${MAX_RETRIES}). ` +
+                    `Retrying...`;
+
+                await sleep(
+                    attempt * 2000
+                );
+
+            }
+
+        }
+
+    }
+
+    throw lastError ||
+        new Error(
+            "Unable to load Blogger posts."
+        );
+
+}
+
+
+/*
+    Sleep
+*/
+
+function sleep(ms) {
+
+    return new Promise(
+        resolve => setTimeout(resolve, ms)
+    );
+
+}
+
+
+/*
+    Rebuild ALL mytecbooks
+*/
+
+async function rebuildImportedBlog() {
+
+    rebuildBtn.disabled = true;
+
+    try {
+
+        await openDB();
+
+        await clearStore();
+
+        statusEl.textContent =
+            "Starting fresh mytecbooks rebuild...";
+
+        progressEl.style.width =
+            "0%";
+
+        let start = 1;
+
+        let total = 0;
+
+        let loaded = 0;
+
+
+        while (true) {
+
+            const data =
+                await apiRequest(
+                    IMPORTED_BLOG,
+                    start,
+                    FEED_PAGE_SIZE
+                );
+
+            const posts =
+                data.posts || [];
+
+            if (posts.length === 0) {
+                break;
+            }
+
+
+            await savePosts(posts);
+
+            loaded += posts.length;
+
+            total =
+                data.totalResults ||
+                total;
+
+
+            const percent =
+                total > 0
+                    ? Math.min(
+                        100,
+                        (loaded / total) * 100
+                    )
+                    : 0;
+
+            progressEl.style.width =
+                `${percent}%`;
+
+            indexedStat.textContent =
+                loaded.toLocaleString();
+
+
+            statusEl.textContent =
+                `Building mytecbooks index...\n` +
+                `${loaded.toLocaleString()}` +
+                ` posts loaded` +
+                (
+                    total
+                        ? ` / ${total.toLocaleString()}`
+                        : ""
+                );
+
+
+            if (
+                posts.length <
+                FEED_PAGE_SIZE
+            ) {
+                break;
+            }
+
+
+            start += posts.length;
+
+            await sleep(
+                REQUEST_DELAY
+            );
+
+        }
+
+
+        progressEl.style.width =
+            "100%";
+
+        indexedStat.textContent =
+            (
+                await countPosts()
+            ).toLocaleString();
+
+
+        statusEl.textContent =
+            `mytecbooks rebuild complete.\n` +
+            `${indexedStat.textContent} posts indexed.`;
+
+    } catch (error) {
+
+        statusEl.textContent =
+            "Rebuild failed:\n" +
+            error.message;
+
+    } finally {
+
+        rebuildBtn.disabled = false;
+
+    }
+
+}
+
+
+/*
+    Normalize text
+*/
+
+function normalizeText(text) {
+
+    return (
+        text || ""
+    )
+        .toLowerCase()
+        .replace(/&amp;/g, "&")
+        .replace(/[^a-z0-9]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+}
+
+
+/*
+    Normalize title
+*/
+
+function normalizeTitle(title) {
+
+    return normalizeText(title);
+
+}
+
+
+/*
+    Token similarity
+*/
+
+function titleSimilarity(
+    a,
+    b
+) {
+
+    const x =
+        normalizeTitle(a);
+
+    const y =
+        normalizeTitle(b);
+
+    if (!x || !y) {
+        return 0;
+    }
+
+    if (x === y) {
+        return 1;
+    }
+
+
+    const ax =
+        new Set(x.split(" "));
+
+    const bx =
+        new Set(y.split(" "));
+
+
+    let common = 0;
+
+    for (const word of ax) {
+
+        if (bx.has(word)) {
+            common++;
+        }
+
+    }
+
+
+    const union =
+        new Set([
+            ...ax,
+            ...bx
+        ]);
+
+
+    if (!union.size) {
+        return 0;
+    }
+
+
+    return common / union.size;
+
+}
+
+
+/*
+    Date normalization
+*/
+
+function normalizeDate(date) {
+
+    if (!date) {
+        return "";
+    }
+
+    const d =
+        new Date(date);
+
+    if (
+        Number.isNaN(
+            d.getTime()
+        )
+    ) {
+        return "";
+    }
+
+    return d
+        .toISOString()
+        .slice(0, 10);
+
+}
+
+
+/*
+    Image filename
+*/
+
+function imageFilename(url) {
+
+    if (!url) {
+        return "";
+    }
+
+    try {
+
+        const clean =
+            url.split("?")[0];
+
+        const parts =
+            clean.split("/");
+
+        const filename =
+            parts[parts.length - 1] || "";
+
+        return normalizeText(
+            decodeURIComponent(filename)
+        );
+
+    } catch {
+
+        return normalizeText(url);
+
+    }
+
+}
+
+
+/*
+    Compare images
+*/
+
+function matchingImageScore(
+    original,
+    imported
+) {
+
+    const a =
+        (original.imageUrls || [])
+            .map(imageFilename)
+            .filter(Boolean);
+
+    const b =
+        (imported.imageUrls || [])
+            .map(imageFilename)
+            .filter(Boolean);
+
+
+    if (!a.length || !b.length) {
+        return 0;
+    }
+
+
+    for (const x of a) {
+
+        for (const y of b) {
+
+            if (
+                x === y
+            ) {
+                return 35;
+            }
+
+        }
+
+    }
+
+
+    return 0;
+
+}
+
+
+/*
+    Calculate duplicate score
+*/
+
+function calculateScore(
+    original,
+    imported
+) {
+
+    let score = 0;
+
+
+    /*
+        Exact title
+    */
+
+    const titleA =
+        normalizeTitle(
+            original.title
+        );
+
+    const titleB =
+        normalizeTitle(
+            imported.title
+        );
+
+
+    if (
+        titleA &&
+        titleA === titleB
+    ) {
+
+        score += 60;
+
+    } else {
+
+        const similarity =
+            titleSimilarity(
+                original.title,
+                imported.title
+            );
+
+        if (
+            similarity >= 0.8
+        ) {
+
+            score +=
+                Math.round(
+                    similarity * 40
+                );
+
+        }
+
+    }
+
+
+    /*
+        Same date
+    */
+
+    const dateA =
+        normalizeDate(
+            original.date
+        );
+
+    const dateB =
+        normalizeDate(
+            imported.date
+        );
+
+
+    if (
+        dateA &&
+        dateB &&
+        dateA === dateB
+    ) {
+
+        score += 15;
+
+    }
+
+
+    /*
+        Matching image filename
+    */
+
+    score +=
+        matchingImageScore(
+            original,
+            imported
+        );
+
+
+    return score;
+
+}
+
+
+/*
+    Find best match
+*/
+
+function findBestMatch(
+    original,
+    importedPosts
+) {
+
+    let best =
+        null;
+
+    let bestScore =
+        0;
+
+
+    for (
+        const imported
+        of importedPosts
+    ) {
+
+        const score =
+            calculateScore(
+                original,
+                imported
+            );
+
+
+        if (
+            score > bestScore
+        ) {
+
+            bestScore =
+                score;
+
+            best = imported;
+
+        }
+
+    }
+
+
+    return {
+        post: best,
+        score: bestScore
+    };
+
+}
+
+
+/*
+    Scan one 1,000-post batch
+*/
+
+async function scanBatch(
+    batchNumber
+) {
+
+    currentBatch =
+        batchNumber;
+
+
+    const start =
+        (
+            batchNumber - 1
+        ) *
+        BATCH_SIZE +
+        1;
+
+
+    batchStat.textContent =
+        `${start.toLocaleString()} - ` +
+        `${(
+            start + BATCH_SIZE - 1
+        ).toLocaleString()}`;
+
+
+    resultsEl.innerHTML =
+        "";
+
+
+    currentMatches = [];
+
+
+    /*
+        Load ALL indexed imported posts
+    */
+
+    const importedPosts =
+        await getAllPosts();
+
+
+    indexedStat.textContent =
+        importedPosts.length
+            .toLocaleString();
+
+
+    if (!importedPosts.length) {
+
+        statusEl.textContent =
+            "mytecbooks index is empty. " +
+            "Run the rebuild first.";
+
+        return;
+
+    }
+
+
+    statusEl.textContent =
+        `Loading mytecbook batch ${batchNumber}...`;
+
+
+    progressEl.style.width =
+        "0%";
+
+
+    const originalPosts = [];
+
+    let position =
+        start;
+
+
+    /*
+        Load 1,000 original posts
+    */
+
+    while (
+        originalPosts.length <
+        BATCH_SIZE
+    ) {
+
+        const remaining =
+            BATCH_SIZE -
+            originalPosts.length;
+
+
+        const limit =
+            Math.min(
+                FEED_PAGE_SIZE,
+                remaining
+            );
+
+
+        const data =
+            await apiRequest(
+                ORIGINAL_BLOG,
+                position,
+                limit
+            );
+
+
+        const posts =
+            data.posts || [];
+
+
+        if (!posts.length) {
+            break;
+        }
+
+
+        originalPosts.push(
+            ...posts
+        );
+
+
+        position +=
+            posts.length;
+
+
+        const percent =
+            Math.min(
+                100,
+                (
+                    originalPosts.length /
+                    BATCH_SIZE
+                ) * 100
+            );
+
+
+        progressEl.style.width =
+            `${percent}%`;
+
+
+        statusEl.textContent =
+            `Loading mytecbook batch ` +
+            `${batchNumber}...\n` +
+            `${originalPosts.length.toLocaleString()}` +
+            ` posts loaded.`;
+
+
+        if (
+            posts.length <
+            limit
+        ) {
+            break;
+        }
+
+
+        await sleep(
+            REQUEST_DELAY
+        );
+
+    }
+
+
+    /*
+        Compare
+    */
+
+    let duplicates =
+        0;
+
+    let notMatched =
+        0;
+
+
+    statusEl.textContent =
+        `Comparing ${originalPosts.length.toLocaleString()}` +
+        ` mytecbook posts against ALL ` +
+        `${importedPosts.length.toLocaleString()}` +
+        ` mytecbooks posts...`;
+
+
+    for (
+        let i = 0;
+        i < originalPosts.length;
+        i++
+    ) {
+
+        const original =
+            originalPosts[i];
+
+
+        const result =
+            findBestMatch(
+                original,
+                importedPosts
+            );
+
+
+        if (
+            result.post &&
+            result.score >= 65
+        ) {
+
+            duplicates++;
+
+
+            currentMatches.push({
+                original,
+                imported:
+                    result.post,
+                score:
+                    result.score
+            });
+
+        } else {
+
+            notMatched++;
+
+        }
+
+
+        const percent =
+            (
+                (i + 1) /
+                originalPosts.length
+            ) *
+            100;
+
+
+        progressEl.style.width =
+            `${percent}%`;
+
+
+        if (
+            i % 10 === 0 ||
+            i ===
+                originalPosts.length - 1
+        ) {
+
+            statusEl.textContent =
+                `Comparing batch ${batchNumber}...\n` +
+                `${(
+                    i + 1
+                ).toLocaleString()}` +
+                ` / ` +
+                `${originalPosts.length.toLocaleString()}`;
+
+        }
+
+    }
+
+
+    duplicateStat.textContent =
+        duplicates.toLocaleString();
+
+
+    notMatchedStat.textContent =
+        notMatched.toLocaleString();
+
+
+    const rate =
+        originalPosts.length
+            ? (
+                duplicates /
+                originalPosts.length *
+                100
+            )
+            : 0;
+
+
+    rateStat.textContent =
+        `${rate.toFixed(2)}%`;
+
+
+    renderResults();
+
+
+    statusEl.textContent =
+        `Batch ${batchNumber} complete.\n` +
+        `Original posts: ` +
+        `${originalPosts.length.toLocaleString()}\n` +
+        `Duplicates: ` +
+        `${duplicates.toLocaleString()}\n` +
+        `Not matched: ` +
+        `${notMatched.toLocaleString()}\n` +
+        `Match rate: ${rate.toFixed(2)}%`;
+
+
+    markBatchDone(
+        batchNumber
+    );
+
+}
+
+
+/*
+    Render results
+*/
+
+function renderResults() {
+
+    if (!currentMatches.length) {
+
+        resultsEl.innerHTML =
+            "<p>No duplicates found in this batch.</p>";
+
+        return;
+
+    }
+
+
+    /*
+        Display first 300 results
+        to avoid making the browser
+        excessively heavy.
+    */
+
+    const visible =
+        currentMatches.slice(
+            0,
+            300
+        );
+
+
+    const html =
+        visible.map(
+            (match, index) => {
+
+                const original =
+                    match.original;
+
+                const imported =
+                    match.imported;
+
+
+                return `
+                    <div class="match">
+
+                        <div class="match-title">
+                            ${index + 1}.
+                            ${escapeHtml(
+                                original.title
+                            )}
+                        </div>
+
+                        <div>
+                            <small>
+                                Original:
+                            </small><br>
+
+                            <a
+                                href="${escapeAttr(
+                                    original.url
+                                )}"
+                                target="_blank"
+                                rel="noopener">
+                                ${escapeHtml(
+                                    original.url
+                                )}
+                            </a>
+                        </div>
+
+                        <br>
+
+                        <div>
+                            <small>
+                                Imported:
+                            </small><br>
+
+                            <a
+                                href="${escapeAttr(
+                                    imported.url
+                                )}"
+                                target="_blank"
+                                rel="noopener">
+                                ${escapeHtml(
+                                    imported.url
+                                )}
+                            </a>
+                        </div>
+
+                        <div class="score">
+                            Match score:
+                            ${match.score}
+                        </div>
+
+                    </div>
+                `;
+
+            }
+        ).join("");
+
+
+    resultsEl.innerHTML =
+        html;
+
+
+    if (
+        currentMatches.length >
+        300
+    ) {
+
+        resultsEl.innerHTML +=
+            `<p><small>
+                Showing first 300 of
+                ${currentMatches.length.toLocaleString()}
+                matches. The CSV contains all matches.
+            </small></p>`;
+
+    }
+
+}
+
+
+/*
+    Escape HTML
+*/
+
+function escapeHtml(value) {
+
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+/*
+    Escape URL attribute
+*/
+
+function escapeAttr(value) {
+
+    return escapeHtml(value);
+
+}
+
+
+/*
+    Batch buttons
+*/
+
+function createBatchButtons() {
+
+    batchButtonsEl.innerHTML =
+        "";
+
+
+    /*
+        16 batches:
+
+        1-1000
+        1001-2000
+        ...
+        15001-16000
+    */
+
+    for (
+        let batch = 1;
+        batch <= 16;
+        batch++
+    ) {
+
+        const start =
+            (
+                batch - 1
+            ) *
+            BATCH_SIZE +
+            1;
+
+
+        const end =
+            start +
+            BATCH_SIZE -
+            1;
+
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+
+        button.dataset.batch =
+            batch;
+
+
+        button.textContent =
+            `${start.toLocaleString()} - ` +
+            `${end.toLocaleString()}`;
+
+
+        button.addEventListener(
+            "click",
+            async function() {
+
+                await runBatchButton(
+                    batch,
+                    button
+                );
+
+            }
+        );
+
+
+        batchButtonsEl.appendChild(
+            button
+        );
+
+    }
+
+}
+
+
+/*
+    Run batch button
+*/
+
+async function runBatchButton(
+    batch,
+    button
+) {
+
+    const allButtons =
+        batchButtonsEl.querySelectorAll(
+            "button"
+        );
+
+
+    allButtons.forEach(
+        b => b.disabled = true
+    );
+
+
+    button.classList.add(
+        "running"
+    );
+
+
+    try {
+
+        await scanBatch(
+            batch
+        );
+
+
+        button.classList.remove(
+            "running"
+        );
+
+        button.classList.add(
+            "done"
+        );
+
+        button.textContent +=
+            " ✓";
+
+
+    } catch (error) {
+
+        button.classList.remove(
+            "running"
+        );
+
+        statusEl.textContent =
+            `Batch ${batch} failed:\n` +
+            error.message;
+
+    } finally {
+
+        allButtons.forEach(
+            b => b.disabled = false
+        );
+
+    }
+
+}
+
+
+/*
+    Mark batch done
+*/
+
+function markBatchDone(
+    batch
+) {
+
+    const button =
+        batchButtonsEl.querySelector(
+            `button[data-batch="${batch}"]`
+        );
+
+
+    if (!button) {
+        return;
+    }
+
+
+    button.classList.remove(
+        "running"
+    );
+
+
+    button.classList.add(
+        "done"
+    );
+
+
+    if (
+        !button.textContent.includes("✓")
+    ) {
+
+        button.textContent +=
+            " ✓";
+
+    }
+
+}
+
+
+/*
+    CSV download
+*/
+
+function csvEscape(value) {
+
+    const text =
+        String(value ?? "");
+
+    return `"${text.replace(
+        /"/g,
+        '""'
+    )}"`;
+
+}
+
+
+function downloadCSV() {
+
+    if (!currentMatches.length) {
+
+        alert(
+            "No duplicate results available."
+        );
+
+        return;
+
+    }
+
+
+    const rows = [
+
+        [
+            "Original Title",
+            "Original URL",
+            "Original Date",
+            "Imported Title",
+            "Imported URL",
+            "Imported Date",
+            "Score"
+        ]
+
+    ];
+
+
+    for (
+        const match
+        of currentMatches
+    ) {
+
+        rows.push([
+
+            match.original.title,
+
+            match.original.url,
+
+            match.original.date,
+
+            match.imported.title,
+
+            match.imported.url,
+
+            match.imported.date,
+
+            match.score
+
+        ]);
+
+    }
+
+
+    const csv =
+        rows
+            .map(
+                row =>
+                    row
+                        .map(csvEscape)
+                        .join(",")
+            )
+            .join("\r\n");
+
+
+    const blob =
+        new Blob(
+            [csv],
+            {
+                type:
+                    "text/csv;charset=utf-8;"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const a =
+        document.createElement(
+            "a"
+        );
+
+
+    a.href =
+        url;
+
+    a.download =
+        `mytecbook-duplicates-batch-${currentBatch}.csv`;
+
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    a.remove();
+
+
+    URL.revokeObjectURL(
+        url
+    );
+
+}
+
+
+/*
+    Events
+*/
+
+rebuildBtn.addEventListener(
+    "click",
+    async function() {
+
+        if (
+            !confirm(
+                "This will delete the existing " +
+                "mytecbooks browser index and " +
+                "rebuild it from Blogger. Continue?"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        await rebuildImportedBlog();
+
+    }
+);
+
+
+downloadBtn.addEventListener(
+    "click",
+    downloadCSV
+);
+
+
+/*
+    Start
+*/
+
+(async function init() {
+
+    try {
+
+        await openDB();
+
+        createBatchButtons();
+
+
+        const count =
+            await countPosts();
+
+
+        indexedStat.textContent =
+            count.toLocaleString();
+
+
+        if (count > 0) {
+
+            statusEl.textContent =
+                `Existing mytecbooks index loaded: ` +
+                `${count.toLocaleString()} posts.`;
+
+        } else {
+
+            statusEl.textContent =
+                "No mytecbooks index found. " +
+                "Click Force Fresh mytecbooks Rebuild first.";
+
+        }
+
+    } catch (error) {
+
+        statusEl.textContent =
+            "Initialization failed:\n" +
+            error.message;
+
+    }
+
+})();
+
+</script>
+
+</body>
+</html>
