@@ -323,9 +323,9 @@ Blogger Duplicate Finder
 </h1>
 
 <p>
-TollywoodBoost 1,000-post batches
+mytecbook 1,000-post batches
 ↔
-ALL TollyBoost posts
+ALL mytecbooks posts
 </p>
 
 </header>
@@ -338,7 +338,7 @@ ALL TollyBoost posts
 
 
 <h2>
-Choose TollywoodBoost Batch
+Choose mytecbook Batch
 </h2>
 
 
@@ -349,11 +349,11 @@ Important:
 </strong>
 
 The selected 1,000 posts are from
-TollywoodBoost.
+mytecbook.
 
 They are compared against the
 <strong>
-entire TollyBoost archive
+entire mytecbooks archive
 </strong>,
 not the same 1,000 positions.
 
@@ -370,7 +370,7 @@ not the same 1,000 positions.
     id="cacheStatus"
     class="cache-status">
 
-TollyBoost archive:
+mytecbooks archive:
 checking...
 
 </div>
@@ -383,9 +383,9 @@ checking...
     id="rebuildButton"
     class="action-button rebuild-button"
     type="button"
-    onclick="rebuildTollyBoostIndex()">
+    onclick="rebuildmytecbooksIndex()">
 
-Force Fresh TollyBoost Rebuild
+Force Fresh mytecbooks Rebuild
 
 </button>
 
@@ -394,9 +394,9 @@ Force Fresh TollyBoost Rebuild
     id="clearButton"
     class="action-button clear-button"
     type="button"
-    onclick="clearTollyBoostIndex()">
+    onclick="clearmytecbooksIndex()">
 
-Delete Cached TollyBoost Index
+Delete Cached mytecbooks Index
 
 </button>
 
@@ -443,7 +443,7 @@ Ready. Select a batch.
 </strong>
 
 <span>
-TollywoodBoost Batch
+mytecbook Batch
 </span>
 
 </div>
@@ -456,7 +456,7 @@ TollywoodBoost Batch
 </strong>
 
 <span>
-TollyBoost Indexed
+mytecbooks Indexed
 </span>
 
 </div>
@@ -544,7 +544,7 @@ const DB_NAME =
 const DB_VERSION = 3;
 
 const STORE_NAME =
-    "tollyboost";
+    "mytecbooks";
 
 
 let currentBatch =
@@ -703,7 +703,7 @@ function openDB() {
    CLEAR DB
 ===================================================== */
 
-async function clearTollyBoostIndex() {
+async function clearmytecbooksIndex() {
 
     disableControls(true);
 
@@ -762,14 +762,14 @@ async function clearTollyBoostIndex() {
         document.getElementById(
             "cacheStatus"
         ).textContent =
-            "TollyBoost archive: empty";
+            "mytecbooks archive: empty";
 
 
         document.getElementById(
             "results"
         ).innerHTML = `
             <div class="empty">
-                Cached TollyBoost index deleted.
+                Cached mytecbooks index deleted.
             </div>
         `;
 
@@ -784,7 +784,7 @@ async function clearTollyBoostIndex() {
 
 
         setStatus(
-            "TollyBoost cached index deleted."
+            "mytecbooks cached index deleted."
         );
 
     }
@@ -973,7 +973,7 @@ async function countXYZ() {
    FORCE FRESH XYZ INDEX
 ===================================================== */
 
-async function rebuildTollyBoostIndex() {
+async function rebuildmytecbooksIndex() {
 
     disableControls(true);
 
@@ -988,7 +988,7 @@ async function rebuildTollyBoostIndex() {
          */
 
         setStatus(
-            "Deleting old TollyBoost index..."
+            "Deleting old mytecbooks index..."
         );
 
 
@@ -999,17 +999,17 @@ async function rebuildTollyBoostIndex() {
 
 
         /*
-         * Fetch the current TollyBoost archive.
+         * Fetch the current mytecbooks archive.
          */
 
         setStatus(
-            "Downloading current TollyBoost archive..."
+            "Downloading current mytecbooks archive..."
         );
 
 
         const posts =
             await loadAllPosts(
-                "tollyboost"
+                "mytecbooks"
             );
 
 
@@ -1018,7 +1018,7 @@ async function rebuildTollyBoostIndex() {
         ) {
 
             throw new Error(
-                "TollyBoost returned zero posts."
+                "mytecbooks returned zero posts."
             );
         }
 
@@ -1030,7 +1030,7 @@ async function rebuildTollyBoostIndex() {
         setStatus(
             "Saving " +
             posts.length.toLocaleString() +
-            " TollyBoost posts..."
+            " mytecbooks posts..."
         );
 
 
@@ -1052,7 +1052,7 @@ async function rebuildTollyBoostIndex() {
         document.getElementById(
             "cacheStatus"
         ).innerHTML =
-            "TollyBoost archive: <strong>" +
+            "mytecbooks archive: <strong>" +
             posts.length.toLocaleString() +
             " posts</strong><br>" +
             "Fresh rebuild: " +
@@ -1065,7 +1065,7 @@ async function rebuildTollyBoostIndex() {
 
 
         setStatus(
-            "TollyBoost full index ready: " +
+            "mytecbooks full index ready: " +
             posts.length.toLocaleString() +
             " posts."
         );
@@ -1312,7 +1312,7 @@ async function loadABCBatch(
 
         const data =
             await fetchWithRetry(
-                "tollywoodboost",
+                "mytecbook",
                 position,
                 count
             );
@@ -1367,7 +1367,7 @@ async function loadABCBatch(
         ) {
 
             throw new Error(
-                "Blogger returned the same TollywoodBoost page repeatedly at start " +
+                "Blogger returned the same mytecbook page repeatedly at start " +
                 position +
                 "."
             );
@@ -1379,7 +1379,7 @@ async function loadABCBatch(
 
 
         setStatus(
-            "Loading TollywoodBoost batch: " +
+            "Loading mytecbook batch: " +
             posts.length.toLocaleString() +
             " / " +
             BATCH_SIZE.toLocaleString()
@@ -1607,7 +1607,7 @@ async function scanBatch(
     try {
 
         /*
-         * Get ALL TollyBoost posts.
+         * Get ALL mytecbooks posts.
          */
 
         let xyzPosts =
@@ -1624,14 +1624,14 @@ async function scanBatch(
         ) {
 
             setStatus(
-                "TollyBoost full index is not available. " +
+                "mytecbooks full index is not available. " +
                 "Building it now..."
             );
 
 
             xyzPosts =
                 await loadAllPosts(
-                    "tollyboost"
+                    "mytecbooks"
                 );
 
 
@@ -1640,7 +1640,7 @@ async function scanBatch(
             ) {
 
                 throw new Error(
-                    "No TollyBoost posts were returned."
+                    "No mytecbooks posts were returned."
                 );
             }
 
@@ -1660,7 +1660,7 @@ async function scanBatch(
         document.getElementById(
             "cacheStatus"
         ).innerHTML =
-            "TollyBoost archive: <strong>" +
+            "mytecbooks archive: <strong>" +
             xyzPosts.length.toLocaleString() +
             " posts</strong> ready.";
 
@@ -1680,7 +1680,7 @@ async function scanBatch(
         ) {
 
             throw new Error(
-                "No TollywoodBoost posts were returned for this batch."
+                "No mytecbook posts were returned for this batch."
             );
         }
 
@@ -1698,7 +1698,7 @@ async function scanBatch(
         setStatus(
             "Building search index for ALL " +
             xyzPosts.length.toLocaleString() +
-            " TollyBoost posts..."
+            " mytecbooks posts..."
         );
 
 
@@ -1719,9 +1719,9 @@ async function scanBatch(
         setStatus(
             "Comparing " +
             abcPosts.length.toLocaleString() +
-            " TollywoodBoost posts against ALL " +
+            " mytecbook posts against ALL " +
             xyzPosts.length.toLocaleString() +
-            " TollyBoost posts..."
+            " mytecbooks posts..."
         );
 
 
@@ -1788,7 +1788,7 @@ async function scanBatch(
             currentMatches.length +
             " duplicate(s) found against ALL " +
             xyzPosts.length.toLocaleString() +
-            " TollyBoost posts."
+            " mytecbooks posts."
         );
 
     }
@@ -2608,7 +2608,7 @@ function renderMatch(
         <div class="column">
 
             <h2>
-                TollywoodBoost
+                mytecbook
             </h2>
 
             <div class="post-title">
@@ -2662,7 +2662,7 @@ function renderMatch(
         <div class="column">
 
             <h2>
-                TollyBoost
+                mytecbooks
             </h2>
 
             <div class="post-title">
@@ -2782,12 +2782,12 @@ function downloadCSV() {
     const rows = [
 
         [
-            "TollywoodBoost URL",
-            "TollyBoost URL",
-            "TollywoodBoost Title",
-            "TollyBoost Title",
-            "TollywoodBoost Published",
-            "TollyBoost Published",
+            "mytecbook URL",
+            "mytecbooks URL",
+            "mytecbook Title",
+            "mytecbooks Title",
+            "mytecbook Published",
+            "mytecbooks Published",
             "Match Method",
             "Confidence"
         ]
@@ -2860,7 +2860,7 @@ function downloadCSV() {
 
 
     link.download =
-        "tollywoodboost-vs-tollyboost-" +
+        "mytecbook-vs-mytecbooks-" +
         "batch-" +
         currentBatch +
         ".csv";
@@ -3190,7 +3190,7 @@ function sleep(
             document.getElementById(
                 "cacheStatus"
             ).innerHTML =
-                "TollyBoost archive: <strong>" +
+                "mytecbooks archive: <strong>" +
                 count.toLocaleString() +
                 " posts cached</strong> in this browser.";
 
@@ -3200,7 +3200,7 @@ function sleep(
             document.getElementById(
                 "cacheStatus"
             ).textContent =
-                "TollyBoost archive: not loaded yet.";
+                "mytecbooks archive: not loaded yet.";
         }
 
     }
@@ -3209,7 +3209,7 @@ function sleep(
         document.getElementById(
             "cacheStatus"
         ).textContent =
-            "TollyBoost archive: not loaded yet.";
+            "mytecbooks archive: not loaded yet.";
 
     }
 
