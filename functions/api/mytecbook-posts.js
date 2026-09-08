@@ -12,20 +12,65 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function toText(value) {
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    if (typeof value === "string") {
+        return value;
+    }
+
+    if (typeof value === "number" || typeof value === "boolean") {
+        return String(value);
+    }
+
+    if (typeof value === "object") {
+        if (typeof value.$t === "string") {
+            return value.$t;
+        }
+
+        if (typeof value.text === "string") {
+            return value.text;
+        }
+
+        if (typeof value.value === "string") {
+            return value.value;
+        }
+
+        try {
+            return JSON.stringify(value);
+        } catch {
+            return "";
+        }
+    }
+
+    return String(value);
+}
+
 function getAlternateUrl(entry) {
-    const links = entry?.link || [];
+    const links = Array.isArray(entry?.link)
+        ? entry.link
+        : [];
 
     const alternate = links.find(
-        link => link.rel === "alternate" && link.href
+        link =>
+            link &&
+            link.rel === "alternate" &&
+            link.href
     );
 
     return alternate?.href || "";
 }
 
 function cleanHtml(html) {
-    if (!html) return "";
+    const text = toText(html);
 
-    return html
+    if (!text) {
+        return "";
+    }
+
+    return text
         .replace(/<script[\s\S]*?<\/script>/gi, " ")
         .replace(/<style[\s\S]*?<\/style>/gi, " ")
         .replace(/<[^>]+>/g, " ")
@@ -33,19 +78,27 @@ function cleanHtml(html) {
         .replace(/&amp;/gi, "&")
         .replace(/&quot;/gi, '"')
         .replace(/&#39;/gi, "'")
+        .replace(/&#x27;/gi, "'")
         .replace(/\s+/g, " ")
         .trim();
 }
 
 function extractImagesFromHtml(html) {
-    if (!html) return [];
+    const text = toText(html);
+
+    if (!text) {
+        return [];
+    }
 
     const images = [];
-    const regex = /<img[^>]+src=["']([^"']+)["']/gi;
+    const regex =
+        /<img[^>]+src=["']([^"']+)["']/gi;
 
     let match;
 
-    while ((match = regex.exec(html)) !== null) {
+    while (
+        (match = regex.exec(text)) !== null
+    ) {
         if (match[1]) {
             images.push(match[1]);
         }
@@ -55,26 +108,55 @@ function extractImagesFromHtml(html) {
 }
 
 function normalizeImageUrl(url) {
-    if (!url) return "";
+    const value = toText(url);
 
-    return url
-        .replace(/\/s72-c\//gi, "/s1600/")
-        .replace(/\/s72\//gi, "/s1600/")
-        .replace(/\/w72-h72-p-k-no-nu\//gi, "/s1600/")
-        .replace(/\/s\d+(-c)?\//gi, "/s1600/");
+    if (!value) {
+        return "";
+    }
+
+    return value
+        .replace(
+            /\/s72-c\//gi,
+            "/s1600/"
+        )
+        .replace(
+            /\/s72\//gi,
+            "/s1600/"
+        )
+        .replace(
+            /\/w72-h72-p-k-no-nu\//gi,
+            "/s1600/"
+        )
+        .replace(
+            /\/s\d+(-c)?\//gi,
+            "/s1600/"
+        );
 }
 
 function extractImageUrls(entry) {
     const images = [];
 
-    if (entry?.media$thumbnail?.url) {
-        images.push(entry.media$thumbnail.url);
+    if (
+        entry?.media$thumbnail?.url
+    ) {
+        images.push(
+            entry.media$thumbnail.url
+        );
     }
 
-    if (Array.isArray(entry?.media$content)) {
-        for (const media of entry.media$content) {
+    if (
+        Array.isArray(
+            entry?.media$content
+        )
+    ) {
+        for (
+            const media
+            of entry.media$content
+        ) {
             if (media?.url) {
-                images.push(media.url);
+                images.push(
+                    media.url
+                );
             }
         }
     }
@@ -84,47 +166,60 @@ function extractImageUrls(entry) {
         entry?.content ||
         "";
 
-    images.push(...extractImagesFromHtml(html));
+    images.push(
+        ...extractImagesFromHtml(
+            html
+        )
+    );
 
     return [
         ...new Set(
             images
+                .map(
+                    normalizeImageUrl
+                )
                 .filter(Boolean)
-                .map(normalizeImageUrl)
         )
     ];
 }
 
 function normalizePost(entry) {
+
+    const rawTitle =
+        entry?.title;
+
     const title =
-        entry?.title?.$t ||
-        entry?.title ||
-        "";
+        toText(rawTitle)
+            .trim();
 
     const published =
-        entry?.published?.$t ||
-        entry?.published ||
-        "";
+        toText(
+            entry?.published
+        );
 
     const updated =
-        entry?.updated?.$t ||
-        entry?.updated ||
-        "";
+        toText(
+            entry?.updated
+        );
 
     const content =
-        entry?.content?.$t ||
-        entry?.content ||
-        "";
+        toText(
+            entry?.content
+        );
 
     return {
+
         id:
-            entry?.id?.$t ||
-            entry?.id ||
-            "",
+            toText(
+                entry?.id
+            ),
 
-        title: title.trim(),
+        title,
 
-        url: getAlternateUrl(entry),
+        url:
+            getAlternateUrl(
+                entry
+            ),
 
         published,
 
@@ -137,10 +232,16 @@ function normalizePost(entry) {
 
         content,
 
-        text: cleanHtml(content),
+        text:
+            cleanHtml(
+                content
+            ),
 
         imageUrls:
-            extractImageUrls(entry)
+            extractImageUrls(
+                entry
+            )
+
     };
 }
 
@@ -170,6 +271,10 @@ async function fetchWithRetry(url) {
             const text =
                 await response.text();
 
+            /*
+                Temporary Blogger errors
+            */
+
             if (
                 response.status === 429 ||
                 response.status === 500 ||
@@ -186,9 +291,11 @@ async function fetchWithRetry(url) {
                 if (
                     attempt < MAX_RETRIES
                 ) {
+
                     await sleep(
                         attempt * 1500
                     );
+
                     continue;
                 }
 
@@ -205,6 +312,11 @@ async function fetchWithRetry(url) {
 
             const trimmed =
                 text.trim();
+
+            /*
+                Blogger/Cloudflare sometimes
+                returns HTML instead of JSON.
+            */
 
             if (
                 !trimmed.startsWith("{") &&
@@ -232,7 +344,9 @@ async function fetchWithRetry(url) {
 
             try {
 
-                return JSON.parse(text);
+                return JSON.parse(
+                    text
+                );
 
             } catch {
 
@@ -257,7 +371,8 @@ async function fetchWithRetry(url) {
 
         } catch (error) {
 
-            lastError = error;
+            lastError =
+                error;
 
             if (
                 attempt < MAX_RETRIES
@@ -281,7 +396,9 @@ async function fetchWithRetry(url) {
     );
 }
 
-export async function onRequestGet(context) {
+export async function onRequestGet(
+    context
+) {
 
     try {
 
@@ -315,16 +432,22 @@ export async function onRequestGet(context) {
                 10
             );
 
+        /*
+            Only these two blogs are allowed.
+        */
+
         if (!BLOGS[blog]) {
 
             return Response.json(
                 {
                     success: false,
+
                     error:
                         "Invalid blog. Use mytecbook or mytecbooks."
                 },
                 {
                     status: 400,
+
                     headers: {
                         "Access-Control-Allow-Origin":
                             "*"
@@ -335,13 +458,17 @@ export async function onRequestGet(context) {
         }
 
         const start =
-            Number.isFinite(startRaw) &&
+            Number.isFinite(
+                startRaw
+            ) &&
             startRaw > 0
                 ? startRaw
                 : 1;
 
         const limit =
-            Number.isFinite(limitRaw) &&
+            Number.isFinite(
+                limitRaw
+            ) &&
             limitRaw > 0
                 ? Math.min(
                     limitRaw,
@@ -350,7 +477,8 @@ export async function onRequestGet(context) {
                 : MAX_LIMIT;
 
         const feedUrl =
-            `${BLOGS[blog]}/feeds/posts/default` +
+            `${BLOGS[blog]}` +
+            `/feeds/posts/default` +
             `?alt=json` +
             `&start-index=${start}` +
             `&max-results=${limit}`;
@@ -364,7 +492,9 @@ export async function onRequestGet(context) {
             data?.feed || {};
 
         const entries =
-            Array.isArray(feed.entry)
+            Array.isArray(
+                feed.entry
+            )
                 ? feed.entry
                 : [];
 
@@ -375,21 +505,27 @@ export async function onRequestGet(context) {
 
         const totalResults =
             parseInt(
-                feed?.openSearch$totalResults?.$t ||
+                feed
+                    ?.openSearch$totalResults
+                    ?.$t ||
                 "0",
                 10
             ) || 0;
 
         const startIndex =
             parseInt(
-                feed?.openSearch$startIndex?.$t ||
+                feed
+                    ?.openSearch$startIndex
+                    ?.$t ||
                 String(start),
                 10
             ) || start;
 
         const itemsPerPage =
             parseInt(
-                feed?.openSearch$itemsPerPage?.$t ||
+                feed
+                    ?.openSearch$itemsPerPage
+                    ?.$t ||
                 String(posts.length),
                 10
             ) || posts.length;
@@ -402,7 +538,8 @@ export async function onRequestGet(context) {
 
                 start,
 
-                requested: limit,
+                requested:
+                    limit,
 
                 returned:
                     posts.length,
@@ -417,11 +554,13 @@ export async function onRequestGet(context) {
             },
             {
                 headers: {
+
                     "Access-Control-Allow-Origin":
                         "*",
 
                     "Cache-Control":
                         "public, max-age=60"
+
                 }
             }
         );
@@ -457,6 +596,7 @@ export async function onRequestOptions() {
             status: 204,
 
             headers: {
+
                 "Access-Control-Allow-Origin":
                     "*",
 
@@ -465,6 +605,7 @@ export async function onRequestOptions() {
 
                 "Access-Control-Allow-Headers":
                     "Content-Type"
+
             }
         }
     );
