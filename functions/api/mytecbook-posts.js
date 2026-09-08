@@ -1,552 +1,456 @@
-export async function onRequestGet(context) {
-    const url = new URL(context.request.url);
+// functions/api/mytecbook-posts.js
 
-    const blog = (url.searchParams.get("blog") || "")
-        .trim()
-        .toLowerCase();
+const BLOGS = {
+    mytecbook: "https://mytecbook.blogspot.com",
+    mytecbooks: "https://mytecbooks.blogspot.com"
+};
 
-    let start = parseInt(
-        url.searchParams.get("start") || "1",
-        10
+const MAX_LIMIT = 150;
+const MAX_RETRIES = 5;
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function getAlternateUrl(entry) {
+    const links = entry?.link || [];
+
+    const alternate = links.find(
+        link => link.rel === "alternate" && link.href
     );
 
-    let limit = parseInt(
-        url.searchParams.get("limit") || "150",
-        10
-    );
+    return alternate?.href || "";
+}
 
-    if (!Number.isFinite(start) || start < 1) {
-        start = 1;
+function cleanHtml(html) {
+    if (!html) return "";
+
+    return html
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, "'")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function extractImagesFromHtml(html) {
+    if (!html) return [];
+
+    const images = [];
+    const regex = /<img[^>]+src=["']([^"']+)["']/gi;
+
+    let match;
+
+    while ((match = regex.exec(html)) !== null) {
+        if (match[1]) {
+            images.push(match[1]);
+        }
     }
 
-    if (!Number.isFinite(limit) || limit < 1) {
-        limit = 150;
+    return images;
+}
+
+function normalizeImageUrl(url) {
+    if (!url) return "";
+
+    return url
+        .replace(/\/s72-c\//gi, "/s1600/")
+        .replace(/\/s72\//gi, "/s1600/")
+        .replace(/\/w72-h72-p-k-no-nu\//gi, "/s1600/")
+        .replace(/\/s\d+(-c)?\//gi, "/s1600/");
+}
+
+function extractImageUrls(entry) {
+    const images = [];
+
+    if (entry?.media$thumbnail?.url) {
+        images.push(entry.media$thumbnail.url);
     }
 
-    limit = Math.min(limit, 150);
+    if (Array.isArray(entry?.media$content)) {
+        for (const media of entry.media$content) {
+            if (media?.url) {
+                images.push(media.url);
+            }
+        }
+    }
 
-    /*
-     * NEW / SEPARATE BLOG CONFIGURATION
-     *
-     * This does NOT modify the existing
-     * tollywoodboost / tollyboost API.
-     */
-    const BLOGS = {
-        mytecbook: "https://mytecbook.blogspot.com",
-        mytecbooks: "https://mytecbooks.blogspot.com"
+    const html =
+        entry?.content?.$t ||
+        entry?.content ||
+        "";
+
+    images.push(...extractImagesFromHtml(html));
+
+    return [
+        ...new Set(
+            images
+                .filter(Boolean)
+                .map(normalizeImageUrl)
+        )
+    ];
+}
+
+function normalizePost(entry) {
+    const title =
+        entry?.title?.$t ||
+        entry?.title ||
+        "";
+
+    const published =
+        entry?.published?.$t ||
+        entry?.published ||
+        "";
+
+    const updated =
+        entry?.updated?.$t ||
+        entry?.updated ||
+        "";
+
+    const content =
+        entry?.content?.$t ||
+        entry?.content ||
+        "";
+
+    return {
+        id:
+            entry?.id?.$t ||
+            entry?.id ||
+            "",
+
+        title: title.trim(),
+
+        url: getAlternateUrl(entry),
+
+        published,
+
+        updated,
+
+        date:
+            published ||
+            updated ||
+            "",
+
+        content,
+
+        text: cleanHtml(content),
+
+        imageUrls:
+            extractImageUrls(entry)
     };
+}
 
-    if (!Object.prototype.hasOwnProperty.call(BLOGS, blog)) {
-        return jsonResponse(
-            {
-                success: false,
-                error: "Invalid blog. Use mytecbook or mytecbooks."
-            },
-            400
-        );
-    }
-
-    const blogUrl = BLOGS[blog];
-
-    const feedUrl =
-        blogUrl +
-        "/feeds/posts/default" +
-        "?alt=json" +
-        "&start-index=" +
-        encodeURIComponent(start) +
-        "&max-results=" +
-        encodeURIComponent(limit);
+async function fetchWithRetry(url) {
 
     let lastError = null;
 
-    /*
-     * Retry temporary Blogger errors.
-     */
-    for (let attempt = 1; attempt <= 5; attempt++) {
+    for (
+        let attempt = 1;
+        attempt <= MAX_RETRIES;
+        attempt++
+    ) {
+
         try {
-            const response = await fetch(feedUrl, {
-                method: "GET",
-                headers: {
-                    "Accept":
-                        "application/json, text/javascript, */*",
-                    "User-Agent":
-                        "Mozilla/5.0 Blogger Archive Scanner"
-                },
-                cf: {
-                    cacheTtl: 0,
-                    cacheEverything: false
-                }
-            });
 
-            const contentType =
-                response.headers.get("content-type") || "";
-
-            const body = await response.text();
-
-            /*
-             * Temporary Blogger errors.
-             */
-            if (!response.ok) {
-                lastError = new Error(
-                    "Blogger HTTP " + response.status
+            const response =
+                await fetch(
+                    url,
+                    {
+                        headers: {
+                            "Accept":
+                                "application/json"
+                        }
+                    }
                 );
 
+            const text =
+                await response.text();
+
+            if (
+                response.status === 429 ||
+                response.status === 500 ||
+                response.status === 502 ||
+                response.status === 503 ||
+                response.status === 504
+            ) {
+
+                lastError =
+                    new Error(
+                        `Blogger returned HTTP ${response.status}`
+                    );
+
                 if (
-                    response.status === 429 ||
-                    response.status === 500 ||
-                    response.status === 502 ||
-                    response.status === 503 ||
-                    response.status === 504
+                    attempt < MAX_RETRIES
                 ) {
                     await sleep(
-                        2000 * attempt
+                        attempt * 1500
+                    );
+                    continue;
+                }
+
+                throw lastError;
+            }
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Blogger returned HTTP ${response.status}`
+                );
+
+            }
+
+            const trimmed =
+                text.trim();
+
+            if (
+                !trimmed.startsWith("{") &&
+                !trimmed.startsWith("[")
+            ) {
+
+                lastError =
+                    new Error(
+                        "Blogger returned a non-JSON response."
+                    );
+
+                if (
+                    attempt < MAX_RETRIES
+                ) {
+
+                    await sleep(
+                        attempt * 1500
                     );
 
                     continue;
                 }
 
-                return jsonResponse(
-                    {
-                        success: false,
-                        error:
-                            "Blogger returned HTTP " +
-                            response.status
-                    },
-                    502
-                );
+                throw lastError;
             }
-
-            /*
-             * Blogger sometimes returns HTML instead of JSON.
-             */
-            if (
-                !contentType
-                    .toLowerCase()
-                    .includes("json") &&
-                !body.trim().startsWith("{")
-            ) {
-                lastError = new Error(
-                    "Blogger returned non-JSON content."
-                );
-
-                await sleep(
-                    2000 * attempt
-                );
-
-                continue;
-            }
-
-            let data;
 
             try {
-                data = JSON.parse(body);
-            } catch (error) {
-                lastError = new Error(
-                    "Unable to parse Blogger JSON."
-                );
 
-                await sleep(
-                    2000 * attempt
-                );
+                return JSON.parse(text);
 
-                continue;
+            } catch {
+
+                lastError =
+                    new Error(
+                        "Unable to parse Blogger JSON response."
+                    );
+
+                if (
+                    attempt < MAX_RETRIES
+                ) {
+
+                    await sleep(
+                        attempt * 1500
+                    );
+
+                    continue;
+                }
+
+                throw lastError;
             }
 
-            const entries =
-                data &&
-                data.feed &&
-                Array.isArray(data.feed.entry)
-                    ? data.feed.entry
-                    : [];
-
-            const posts = entries.map(
-                function (entry, index) {
-                    return normalizePost(
-                        entry,
-                        start + index
-                    );
-                }
-            );
-
-            return jsonResponse(
-                {
-                    success: true,
-                    blog: blog,
-                    start: start,
-                    requested: limit,
-                    returned: posts.length,
-
-                    totalResults:
-                        getFeedNumber(
-                            data,
-                            "openSearch$totalResults"
-                        ),
-
-                    startIndex:
-                        getFeedNumber(
-                            data,
-                            "openSearch$startIndex"
-                        ),
-
-                    itemsPerPage:
-                        getFeedNumber(
-                            data,
-                            "openSearch$itemsPerPage"
-                        ),
-
-                    posts: posts
-                },
-                200
-            );
-
         } catch (error) {
+
             lastError = error;
 
-            await sleep(
-                2000 * attempt
-            );
+            if (
+                attempt < MAX_RETRIES
+            ) {
+
+                await sleep(
+                    attempt * 1500
+                );
+
+            }
+
         }
+
     }
 
-    return jsonResponse(
-        {
-            success: false,
-            error:
-                "Temporary Blogger error after 5 attempts.",
-            detail:
-                lastError &&
-                lastError.message
-                    ? lastError.message
-                    : "Unknown error"
-        },
-        503
+    throw (
+        lastError ||
+        new Error(
+            "Blogger request failed."
+        )
     );
 }
 
+export async function onRequestGet(context) {
 
-/* =====================================================
-   NORMALIZE BLOGGER POST
-===================================================== */
-
-function normalizePost(
-    entry,
-    fallbackNumber
-) {
-    const id =
-        getText(
-            entry && entry.id
-        );
-
-    const title =
-        getText(
-            entry && entry.title
-        ) ||
-        "Untitled";
-
-    const published =
-        getText(
-            entry && entry.published
-        ) ||
-        getText(
-            entry && entry.updated
-        ) ||
-        "";
-
-    const updated =
-        getText(
-            entry && entry.updated
-        ) ||
-        published;
-
-    const url =
-        getPostUrl(entry);
-
-    const content =
-        getText(
-            entry && entry.content
-        ) ||
-        getText(
-            entry && entry.summary
-        ) ||
-        "";
-
-    const imageUrls =
-        extractImageUrls(
-            entry,
-            content
-        );
-
-    return {
-        id:
-            id ||
-            url ||
-            "post-" + fallbackNumber,
-
-        title: title,
-
-        url: url,
-
-        published: published,
-
-        updated: updated,
-
-        date:
-            published ||
-            updated,
-
-        content: content,
-
-        imageUrls: imageUrls
-    };
-}
-
-
-/* =====================================================
-   POST URL
-===================================================== */
-
-function getPostUrl(entry) {
-    if (
-        !entry ||
-        !Array.isArray(entry.link)
-    ) {
-        return "";
-    }
-
-    const alternate =
-        entry.link.find(
-            function (link) {
-                return (
-                    link &&
-                    link.rel === "alternate" &&
-                    link.href
-                );
-            }
-        );
-
-    if (alternate) {
-        return alternate.href;
-    }
-
-    const first =
-        entry.link.find(
-            function (link) {
-                return (
-                    link &&
-                    link.href
-                );
-            }
-        );
-
-    return first
-        ? first.href
-        : "";
-}
-
-
-/* =====================================================
-   IMAGE URLS
-===================================================== */
-
-function extractImageUrls(
-    entry,
-    content
-) {
-    const urls = [];
-
-    function add(value) {
-        if (!value) {
-            return;
-        }
-
-        const valueString =
-            String(value).trim();
-
-        if (
-            !valueString.startsWith(
-                "http://"
-            ) &&
-            !valueString.startsWith(
-                "https://"
-            )
-        ) {
-            return;
-        }
-
-        if (
-            !urls.includes(
-                valueString
-            )
-        ) {
-            urls.push(
-                valueString
-            );
-        }
-    }
-
-    if (
-        entry &&
-        entry.media$thumbnail &&
-        entry.media$thumbnail.url
-    ) {
-        add(
-            entry.media$thumbnail.url
-        );
-    }
-
-    if (
-        entry &&
-        entry.media$content &&
-        Array.isArray(
-            entry.media$content
-        )
-    ) {
-        entry.media$content.forEach(
-            function (item) {
-                if (
-                    item &&
-                    item.url
-                ) {
-                    add(item.url);
-                }
-            }
-        );
-    }
-
-    if (content) {
-        const regex =
-            /<img[^>]+src=["']([^"']+)["']/gi;
-
-        let match;
-
-        while (
-            (match = regex.exec(content)) !== null
-        ) {
-            add(match[1]);
-
-            if (urls.length >= 50) {
-                break;
-            }
-        }
-    }
-
-    return urls;
-}
-
-
-/* =====================================================
-   TEXT
-===================================================== */
-
-function getText(value) {
-    if (
-        value === null ||
-        value === undefined
-    ) {
-        return "";
-    }
-
-    if (
-        typeof value === "string"
-    ) {
-        return value;
-    }
-
-    if (
-        typeof value === "object" &&
-        value.$t
-    ) {
-        return String(value.$t);
-    }
-
-    return "";
-}
-
-
-/* =====================================================
-   FEED NUMBER
-===================================================== */
-
-function getFeedNumber(
-    data,
-    property
-) {
     try {
-        const value =
-            data.feed &&
-            data.feed[property] &&
-            data.feed[property].$t;
 
-        const number =
+        const requestUrl =
+            new URL(
+                context.request.url
+            );
+
+        const blog =
+            (
+                requestUrl.searchParams.get(
+                    "blog"
+                ) || ""
+            )
+                .trim()
+                .toLowerCase();
+
+        const startRaw =
             parseInt(
-                value,
+                requestUrl.searchParams.get(
+                    "start"
+                ) || "1",
                 10
             );
 
-        return Number.isFinite(number)
-            ? number
-            : null;
+        const limitRaw =
+            parseInt(
+                requestUrl.searchParams.get(
+                    "limit"
+                ) || "150",
+                10
+            );
+
+        if (!BLOGS[blog]) {
+
+            return Response.json(
+                {
+                    success: false,
+                    error:
+                        "Invalid blog. Use mytecbook or mytecbooks."
+                },
+                {
+                    status: 400,
+                    headers: {
+                        "Access-Control-Allow-Origin":
+                            "*"
+                    }
+                }
+            );
+
+        }
+
+        const start =
+            Number.isFinite(startRaw) &&
+            startRaw > 0
+                ? startRaw
+                : 1;
+
+        const limit =
+            Number.isFinite(limitRaw) &&
+            limitRaw > 0
+                ? Math.min(
+                    limitRaw,
+                    MAX_LIMIT
+                )
+                : MAX_LIMIT;
+
+        const feedUrl =
+            `${BLOGS[blog]}/feeds/posts/default` +
+            `?alt=json` +
+            `&start-index=${start}` +
+            `&max-results=${limit}`;
+
+        const data =
+            await fetchWithRetry(
+                feedUrl
+            );
+
+        const feed =
+            data?.feed || {};
+
+        const entries =
+            Array.isArray(feed.entry)
+                ? feed.entry
+                : [];
+
+        const posts =
+            entries.map(
+                normalizePost
+            );
+
+        const totalResults =
+            parseInt(
+                feed?.openSearch$totalResults?.$t ||
+                "0",
+                10
+            ) || 0;
+
+        const startIndex =
+            parseInt(
+                feed?.openSearch$startIndex?.$t ||
+                String(start),
+                10
+            ) || start;
+
+        const itemsPerPage =
+            parseInt(
+                feed?.openSearch$itemsPerPage?.$t ||
+                String(posts.length),
+                10
+            ) || posts.length;
+
+        return Response.json(
+            {
+                success: true,
+
+                blog,
+
+                start,
+
+                requested: limit,
+
+                returned:
+                    posts.length,
+
+                totalResults,
+
+                startIndex,
+
+                itemsPerPage,
+
+                posts
+            },
+            {
+                headers: {
+                    "Access-Control-Allow-Origin":
+                        "*",
+
+                    "Cache-Control":
+                        "public, max-age=60"
+                }
+            }
+        );
 
     } catch (error) {
-        return null;
+
+        return Response.json(
+            {
+                success: false,
+
+                error:
+                    error?.message ||
+                    "Unable to load Blogger posts."
+            },
+            {
+                status: 500,
+
+                headers: {
+                    "Access-Control-Allow-Origin":
+                        "*"
+                }
+            }
+        );
+
     }
 }
 
+export async function onRequestOptions() {
 
-/* =====================================================
-   SLEEP
-===================================================== */
-
-function sleep(ms) {
-    return new Promise(
-        function (resolve) {
-            setTimeout(
-                resolve,
-                ms
-            );
-        }
-    );
-}
-
-
-/* =====================================================
-   JSON RESPONSE
-===================================================== */
-
-function jsonResponse(
-    data,
-    status
-) {
-    return new Response(
-        JSON.stringify(data),
-        {
-            status: status,
-
-            headers: {
-                "Content-Type":
-                    "application/json; charset=UTF-8",
-
-                "Cache-Control":
-                    "no-store, no-cache, must-revalidate, max-age=0",
-
-                "Pragma":
-                    "no-cache",
-
-                "Access-Control-Allow-Origin":
-                    "*",
-
-                "Access-Control-Allow-Methods":
-                    "GET, OPTIONS",
-
-                "Access-Control-Allow-Headers":
-                    "Content-Type"
-            }
-        }
-    );
-}
-
-
-export function onRequestOptions() {
     return new Response(
         null,
         {
@@ -560,11 +464,9 @@ export function onRequestOptions() {
                     "GET, OPTIONS",
 
                 "Access-Control-Allow-Headers":
-                    "Content-Type",
-
-                "Access-Control-Max-Age":
-                    "86400"
+                    "Content-Type"
             }
         }
     );
+
 }
