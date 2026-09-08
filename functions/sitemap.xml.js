@@ -2,31 +2,29 @@
 // FILMSTARS - DYNAMIC SITEMAP
 // ============================================================
 //
-// Main sitemap index:
-//
+// Main sitemap:
 // https://filmstars.pages.dev/sitemap.xml
 //
-// Post sitemap page:
+// Static pages:
+// https://filmstars.pages.dev/sitemap.xml?type=pages
 //
+// Blog post sitemap:
 // https://filmstars.pages.dev/sitemap.xml?type=posts&page=1
-// https://filmstars.pages.dev/sitemap.xml?type=posts&page=2
-// https://filmstars.pages.dev/sitemap.xml?type=posts&page=3
 //
-// Each post sitemap contains 800 Blogger post URLs.
-//
+// 800 Blogger posts per sitemap
 // ============================================================
 
-const SITE_URL =
-    "https://filmstars.pages.dev";
+const SITE_URL = "https://filmstars.pages.dev";
 
 const BLOG_FEED =
     "https://tollywoodboost.blogspot.com/feeds/posts/default";
 
-const POSTS_PER_SITEMAP =
-    800;
+const POSTS_PER_SITEMAP = 800;
+const BLOGGER_BATCH_SIZE = 150;
 
-const BLOGGER_BATCH_SIZE =
-    150;
+// Current blog is approximately 15,000+ posts.
+// This is only used if Blogger's total-count request temporarily fails.
+const FALLBACK_POST_SITEMAPS = 20;
 
 
 // ============================================================
@@ -34,52 +32,26 @@ const BLOGGER_BATCH_SIZE =
 // ============================================================
 
 function escapeXml(value) {
-
     return String(value || "")
-
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-
-        .replace(
-            /</g,
-            "&lt;"
-        )
-
-        .replace(
-            />/g,
-            "&gt;"
-        )
-
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-
-        .replace(
-            /'/g,
-            "&apos;"
-        );
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
 }
 
 
 // ============================================================
-// GET TEXT
+// TEXT FROM BLOGGER JSON
 // ============================================================
 
 function getText(value) {
-
     if (
         value &&
         typeof value === "object" &&
         "$t" in value
     ) {
-
-        return String(
-            value.$t || ""
-        );
-
+        return String(value.$t || "");
     }
 
     return "";
@@ -91,67 +63,42 @@ function getText(value) {
 // ============================================================
 
 function getAlternateUrl(entry) {
-
-    if (
-        !Array.isArray(
-            entry?.link
-        )
-    ) {
-
+    if (!Array.isArray(entry?.link)) {
         return "";
-
     }
 
+    const link = entry.link.find(
+        item =>
+            item &&
+            item.rel === "alternate" &&
+            item.href
+    );
 
-    const link =
-        entry.link.find(
-            item =>
-                item &&
-                item.rel === "alternate" &&
-                item.href
-        );
-
-
-    return link
-        ? link.href
-        : "";
-
+    return link ? link.href : "";
 }
 
 
 // ============================================================
-// CONVERT BLOGGER URL
+// CONVERT BLOGGER URL TO FILMSTARS URL
 // ============================================================
 
-function convertToSiteUrl(
-    bloggerUrl
-) {
+function convertToSiteUrl(bloggerUrl) {
 
     if (!bloggerUrl) {
         return "";
     }
 
-
     try {
 
-        const url =
-            new URL(
-                bloggerUrl
-            );
+        const url = new URL(bloggerUrl);
 
-
-        const match =
-            url.pathname.match(
-                /^\/(\d{4})\/(\d{2})\/([^/]+)\.html$/
-            );
-
+        const match = url.pathname.match(
+            /^\/(\d{4})\/(\d{2})\/([^/]+)\.html$/
+        );
 
         if (!match) {
-
             return "";
-
         }
-
 
         return (
             SITE_URL +
@@ -169,61 +116,35 @@ function convertToSiteUrl(
         return "";
 
     }
-
 }
 
 
 // ============================================================
-// CREATE POST URL DATA
+// CREATE POST OBJECT
 // ============================================================
 
-function createPost(
-    entry
-) {
+function createPost(entry) {
 
     const bloggerUrl =
-        getAlternateUrl(
-            entry
-        );
-
+        getAlternateUrl(entry);
 
     const url =
-        convertToSiteUrl(
-            bloggerUrl
-        );
-
+        convertToSiteUrl(bloggerUrl);
 
     if (!url) {
-
         return null;
-
     }
 
-
     const updated =
-        getText(
-            entry?.updated
-        );
-
+        getText(entry?.updated);
 
     const published =
-        getText(
-            entry?.published
-        );
-
+        getText(entry?.published);
 
     return {
-
-        url:
-            url,
-
-        lastmod:
-            updated ||
-            published ||
-            ""
-
+        url: url,
+        lastmod: updated || published || ""
     };
-
 }
 
 
@@ -236,53 +157,31 @@ async function fetchBloggerBatch(
     maxResults
 ) {
 
-    const url =
-        new URL(
-            BLOG_FEED
-        );
+    const url = new URL(BLOG_FEED);
 
-
-    url.searchParams.set(
-        "alt",
-        "json"
-    );
-
-
+    url.searchParams.set("alt", "json");
     url.searchParams.set(
         "start-index",
-        String(
-            startIndex
-        )
+        String(startIndex)
     );
-
-
     url.searchParams.set(
         "max-results",
-        String(
-            maxResults
-        )
+        String(maxResults)
     );
 
+    const response = await fetch(
+        url.toString(),
+        {
+            headers: {
+                "Accept": "application/json"
+            },
 
-    const response =
-        await fetch(
-            url.toString(),
-            {
-                headers: {
-                    "Accept":
-                        "application/json"
-                },
-
-                cf: {
-                    cacheTtl:
-                        1800,
-
-                    cacheEverything:
-                        true
-                }
+            cf: {
+                cacheTtl: 1800,
+                cacheEverything: true
             }
-        );
-
+        }
+    );
 
     if (!response.ok) {
 
@@ -292,36 +191,56 @@ async function fetchBloggerBatch(
 
     }
 
-
     return await response.json();
-
 }
 
 
 // ============================================================
 // GET BLOGGER TOTAL
 // ============================================================
+//
+// IMPORTANT:
+// If Blogger temporarily fails, do NOT make the main sitemap
+// fail. Use the fallback number of sitemap pages.
+// ============================================================
 
 async function getBloggerTotal() {
 
-    const data =
-        await fetchBloggerBatch(
-            1,
-            1
+    try {
+
+        const data =
+            await fetchBloggerBatch(1, 1);
+
+        const total =
+            Number(
+                data?.feed
+                    ?.openSearch$totalResults
+                    ?.$t
+            );
+
+        if (
+            Number.isFinite(total) &&
+            total > 0
+        ) {
+            return total;
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Unable to get Blogger total:",
+            error
         );
 
+    }
 
-    return Number(
-        data?.feed
-            ?.openSearch$totalResults
-            ?.$t
-    ) || 0;
-
+    return FALLBACK_POST_SITEMAPS *
+        POSTS_PER_SITEMAP;
 }
 
 
 // ============================================================
-// NORMAL STATIC PAGES
+// STATIC PAGES
 // ============================================================
 
 function getStaticPages() {
@@ -329,37 +248,30 @@ function getStaticPages() {
     return [
 
         {
-            url:
-                SITE_URL + "/"
+            url: SITE_URL + "/"
         },
 
         {
-            url:
-                SITE_URL + "/about/"
+            url: SITE_URL + "/about/"
         },
 
         {
-            url:
-                SITE_URL + "/contact/"
+            url: SITE_URL + "/contact/"
         },
 
         {
-            url:
-                SITE_URL + "/privacy-policy/"
+            url: SITE_URL + "/privacy-policy/"
         },
 
         {
-            url:
-                SITE_URL + "/disclaimer/"
+            url: SITE_URL + "/disclaimer/"
         },
 
         {
-            url:
-                SITE_URL + "/blog"
+            url: SITE_URL + "/blog"
         }
 
     ];
-
 }
 
 
@@ -372,80 +284,46 @@ function createPagesSitemap() {
     const pages =
         getStaticPages();
 
-
     const xml =
         pages
-            .map(
-                page => {
+            .map(page => {
 
-                    return `
+                return `
 <url>
     <loc>${escapeXml(page.url)}</loc>
 </url>`;
 
-                }
-            )
+            })
             .join("");
 
-
     return `<?xml version="1.0" encoding="UTF-8"?>
-
-<urlset
-    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${xml}
 </urlset>`;
-
 }
 
 
 // ============================================================
-// FETCH EXACT 800 POSTS FOR ONE SITEMAP PAGE
-// ============================================================
-//
-// Example:
-//
-// page 1:
-// 1 -> 800
-//
-// page 2:
-// 801 -> 1600
-//
-// page 3:
-// 1601 -> 2400
-//
-// Blogger allows smaller batches, so this function performs
-// multiple Blogger requests and combines them.
-//
+// GET POSTS FOR ONE SITEMAP PAGE
 // ============================================================
 
-async function getPostsForSitemapPage(
-    page
-) {
+async function getPostsForSitemapPage(page) {
 
     const startIndex =
-        (
-            (page - 1) *
-            POSTS_PER_SITEMAP
-        ) + 1;
-
+        ((page - 1) * POSTS_PER_SITEMAP) + 1;
 
     const endIndex =
         startIndex +
         POSTS_PER_SITEMAP -
         1;
 
-
     const posts = [];
-
 
     let currentIndex =
         startIndex;
 
-
     while (
-        currentIndex <=
-        endIndex
+        currentIndex <= endIndex
     ) {
 
         const remaining =
@@ -453,20 +331,17 @@ async function getPostsForSitemapPage(
             currentIndex +
             1;
 
-
         const batchSize =
             Math.min(
                 BLOGGER_BATCH_SIZE,
                 remaining
             );
 
-
         const data =
             await fetchBloggerBatch(
                 currentIndex,
                 batchSize
             );
-
 
         const entries =
             Array.isArray(
@@ -475,106 +350,72 @@ async function getPostsForSitemapPage(
                 ? data.feed.entry
                 : [];
 
-
         if (
             entries.length === 0
         ) {
-
             break;
-
         }
 
-
         for (
-            const entry
-            of entries
+            const entry of entries
         ) {
 
             const post =
-                createPost(
-                    entry
-                );
+                createPost(entry);
 
-
-            if (
-                post
-            ) {
-
-                posts.push(
-                    post
-                );
-
+            if (post) {
+                posts.push(post);
             }
 
         }
 
-
         currentIndex +=
             entries.length;
-
-
-        // Blogger returned fewer posts than requested.
-        // There are no more posts.
 
         if (
             entries.length <
             batchSize
         ) {
-
             break;
-
         }
-
     }
 
-
     return posts;
-
 }
 
 
 // ============================================================
-// CREATE POST URLSET
+// CREATE POST SITEMAP
 // ============================================================
 
-function createPostSitemap(
-    posts
-) {
+function createPostSitemap(posts) {
 
     const xml =
         posts
-            .map(
-                post => {
+            .map(post => {
 
-                    const lastmod =
-                        post.lastmod
-                            ? `
+                const lastmod =
+                    post.lastmod
+                        ? `
     <lastmod>${escapeXml(
         post.lastmod
     )}</lastmod>`
-                            : "";
+                        : "";
 
-
-                    return `
+                return `
 <url>
     <loc>${escapeXml(
         post.url
     )}</loc>${lastmod}
 </url>`;
 
-                }
-            )
+            })
             .join("");
 
-
     return `<?xml version="1.0" encoding="UTF-8"?>
-
-<urlset
-    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${xml}
 </urlset>`;
-
 }
 
 
@@ -587,41 +428,38 @@ async function createSitemapIndex() {
     const total =
         await getBloggerTotal();
 
+    let totalPages =
+        Math.ceil(
+            total /
+            POSTS_PER_SITEMAP
+        );
 
-    const totalPages =
-        total > 0
-            ? Math.ceil(
-                total /
-                POSTS_PER_SITEMAP
-            )
-            : 0;
-
+    // Safety fallback
+    if (
+        !Number.isFinite(totalPages) ||
+        totalPages < 1
+    ) {
+        totalPages =
+            FALLBACK_POST_SITEMAPS;
+    }
 
     const now =
-        new Date()
-            .toISOString();
-
+        new Date().toISOString();
 
     let xml = "";
 
-
     // --------------------------------------------------------
-    // Static pages sitemap
+    // STATIC PAGES SITEMAP
     // --------------------------------------------------------
 
     xml += `
-
 <sitemap>
-
     <loc>${SITE_URL}/sitemap.xml?type=pages</loc>
-
     <lastmod>${now}</lastmod>
-
 </sitemap>`;
 
-
     // --------------------------------------------------------
-    // Blog post sitemap pages
+    // BLOG POST SITEMAPS
     // --------------------------------------------------------
 
     for (
@@ -631,29 +469,55 @@ async function createSitemapIndex() {
     ) {
 
         xml += `
-
 <sitemap>
-
     <loc>${SITE_URL}/sitemap.xml?type=posts&amp;page=${page}</loc>
-
 </sitemap>`;
 
     }
 
-
     return `<?xml version="1.0" encoding="UTF-8"?>
-
-<sitemapindex
-    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
->
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${xml}
 </sitemapindex>`;
-
 }
 
 
 // ============================================================
-// CLOUDFLARE HANDLER
+// XML RESPONSE
+// ============================================================
+
+function xmlResponse(
+    xml,
+    status = 200,
+    cacheSeconds = 1800
+) {
+
+    return new Response(
+        xml,
+        {
+            status: status,
+
+            headers: {
+
+                // text/xml is deliberately used here for
+                // maximum compatibility with crawlers/tools.
+                "Content-Type":
+                    "text/xml; charset=UTF-8",
+
+                "Cache-Control":
+                    `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}`,
+
+                "X-Content-Type-Options":
+                    "nosniff"
+
+            }
+        }
+    );
+}
+
+
+// ============================================================
+// CLOUDFLARE PAGES HANDLER
 // ============================================================
 
 export async function onRequestGet(
@@ -667,48 +531,30 @@ export async function onRequestGet(
                 context.request.url
             );
 
-
         const type =
             (
                 requestUrl.searchParams.get(
                     "type"
                 ) || ""
-            ).trim()
+            )
+                .trim()
                 .toLowerCase();
 
 
         // ====================================================
-        // MAIN INDEX
+        // MAIN SITEMAP INDEX
         //
         // /sitemap.xml
         // ====================================================
 
-        if (
-            !type
-        ) {
+        if (!type) {
 
             const xml =
                 await createSitemapIndex();
 
-
-            return new Response(
-                xml,
-                {
-                    status:
-                        200,
-
-                    headers: {
-
-                        "Content-Type":
-                            "application/xml; charset=UTF-8",
-
-                        "Cache-Control":
-                            "public, max-age=1800, s-maxage=1800"
-
-                    }
-                }
+            return xmlResponse(
+                xml
             );
-
         }
 
 
@@ -722,34 +568,14 @@ export async function onRequestGet(
             type === "pages"
         ) {
 
-            return new Response(
-
-                createPagesSitemap(),
-
-                {
-
-                    status:
-                        200,
-
-                    headers: {
-
-                        "Content-Type":
-                            "application/xml; charset=UTF-8",
-
-                        "Cache-Control":
-                            "public, max-age=1800, s-maxage=1800"
-
-                    }
-
-                }
-
+            return xmlResponse(
+                createPagesSitemap()
             );
-
         }
 
 
         // ====================================================
-        // POSTS
+        // BLOG POSTS
         //
         // /sitemap.xml?type=posts&page=1
         // ====================================================
@@ -766,41 +592,30 @@ export async function onRequestGet(
                     10
                 );
 
-
             if (
                 !Number.isFinite(page) ||
                 page < 1
             ) {
-
                 page = 1;
-
             }
-
 
             const total =
                 await getBloggerTotal();
 
-
             const totalPages =
-                total > 0
-                    ? Math.ceil(
-                        total /
-                        POSTS_PER_SITEMAP
-                    )
-                    : 0;
-
+                Math.ceil(
+                    total /
+                    POSTS_PER_SITEMAP
+                );
 
             if (
-                page >
-                totalPages &&
-                totalPages > 0
+                page > totalPages
             ) {
 
                 return new Response(
                     "Sitemap page not found.",
                     {
-                        status:
-                            404,
+                        status: 404,
 
                         headers: {
                             "Content-Type":
@@ -808,48 +623,32 @@ export async function onRequestGet(
                         }
                     }
                 );
-
             }
-
 
             const posts =
                 await getPostsForSitemapPage(
                     page
                 );
 
-
             const xml =
                 createPostSitemap(
                     posts
                 );
 
-
-            return new Response(
-                xml,
-                {
-                    status:
-                        200,
-
-                    headers: {
-
-                        "Content-Type":
-                            "application/xml; charset=UTF-8",
-
-                        "Cache-Control":
-                            "public, max-age=1800, s-maxage=1800"
-
-                    }
-                }
+            return xmlResponse(
+                xml
             );
-
         }
 
+
+        // ====================================================
+        // INVALID TYPE
+        // ====================================================
 
         return new Response(
             "Invalid sitemap type.",
             {
-                status:
-                    400,
+                status: 400,
 
                 headers: {
                     "Content-Type":
@@ -861,34 +660,23 @@ export async function onRequestGet(
     } catch (error) {
 
         console.error(
-            "Sitemap error:",
+            "Filmstars sitemap error:",
             error
         );
 
-
         return new Response(
-
             "Unable to generate sitemap.",
-
             {
-
-                status:
-                    500,
+                status: 500,
 
                 headers: {
-
                     "Content-Type":
                         "text/plain; charset=UTF-8",
 
                     "Cache-Control":
-                        "no-cache"
-
+                        "no-cache, no-store, must-revalidate"
                 }
-
             }
-
         );
-
     }
-
 }
