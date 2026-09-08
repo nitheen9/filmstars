@@ -4,9 +4,9 @@ export async function onRequestGet() {
         JSON.stringify({
             success: true,
             original:
-                "https://tollywoodboost.blogspot.com",
+                "https://mytecbook.blogspot.com",
             imported:
-                "https://tollyboost.blogspot.com",
+                "https://mytecbooks.blogspot.com",
             message:
                 "Blogger duplicate comparison API is working.",
             time:
