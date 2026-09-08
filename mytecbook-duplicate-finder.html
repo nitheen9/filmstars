@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 
 <meta name="viewport"
@@ -9,7 +11,7 @@
 <title>MyTecbook Blogger Duplicate Finder</title>
 
 <meta name="description"
-      content="Compare mytecbook.blogspot.com with mytecbooks.blogspot.com and find duplicate Blogger posts.">
+      content="Find matching Blogger posts between mytecbook.blogspot.com and mytecbooks.blogspot.com using partial title matching.">
 
 <style>
 
@@ -25,7 +27,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1250px;
     margin: auto;
     padding: 20px;
 }
@@ -33,6 +35,10 @@ body {
 h1 {
     margin: 0 0 8px;
     font-size: 28px;
+}
+
+h2 {
+    margin-top: 0;
 }
 
 .subtitle {
@@ -80,7 +86,7 @@ button:disabled {
 .batch-buttons {
     display: grid;
     grid-template-columns:
-        repeat(auto-fit, minmax(170px, 1fr));
+        repeat(auto-fit, minmax(180px, 1fr));
     gap: 10px;
     margin-top: 15px;
 }
@@ -102,7 +108,6 @@ button:disabled {
     grid-template-columns:
         repeat(auto-fit, minmax(180px, 1fr));
     gap: 12px;
-    margin-top: 20px;
 }
 
 .stat {
@@ -149,14 +154,34 @@ button:disabled {
 .match {
     border: 1px solid #ddd;
     border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
     background: #fff;
 }
 
 .match-title {
     font-weight: bold;
-    margin-bottom: 8px;
+    font-size: 17px;
+    margin-bottom: 12px;
+}
+
+.title-box {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 7px;
+    margin-bottom: 10px;
+}
+
+.title-label {
+    font-size: 12px;
+    color: #777;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.title-text {
+    font-size: 15px;
+    font-weight: 600;
 }
 
 .match a {
@@ -165,17 +190,28 @@ button:disabled {
     word-break: break-all;
 }
 
+.match a:hover {
+    text-decoration: underline;
+}
+
 .score {
+    margin-top: 12px;
+    font-weight: bold;
+}
+
+.match-type {
+    display: inline-block;
     margin-top: 8px;
+    padding: 5px 9px;
+    border-radius: 5px;
+    background: #e8f5e9;
+    color: #198754;
+    font-size: 12px;
     font-weight: bold;
 }
 
 small {
     color: #666;
-}
-
-.hidden {
-    display: none;
 }
 
 @media(max-width:600px) {
@@ -191,143 +227,226 @@ small {
 }
 
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-    <div class="card">
 
-        <h1>MyTecbook Blogger Duplicate Finder</h1>
+<div class="card">
 
-        <div class="subtitle">
-            Compare
-            <strong>mytecbook.blogspot.com</strong>
-            with
-            <strong>mytecbooks.blogspot.com</strong>
-        </div>
+<h1>
+MyTecbook Blogger Duplicate Finder
+</h1>
 
-        <button
-            id="rebuildBtn"
-            class="rebuild">
-            Force Fresh mytecbooks Rebuild
-        </button>
+<div class="subtitle">
 
-        <button
-            id="downloadBtn"
-            class="download">
-            Download Current CSV
-        </button>
+Compare
 
-        <div id="status"
-             class="status">
-            Ready.
-        </div>
+<strong>mytecbook.blogspot.com</strong>
 
-        <div class="progress-wrap">
-            <div id="progress"
-                 class="progress"></div>
-        </div>
+with
 
-    </div>
+<strong>mytecbooks.blogspot.com</strong>
 
-
-    <div class="card">
-
-        <h2>
-            mytecbook 1,000-post batches
-            ↔ ALL mytecbooks posts
-        </h2>
-
-        <div id="batchButtons"
-             class="batch-buttons">
-        </div>
-
-    </div>
-
-
-    <div class="card">
-
-        <h2>Statistics</h2>
-
-        <div class="stats">
-
-            <div class="stat">
-                <div class="stat-title">
-                    mytecbook Batch
-                </div>
-
-                <div id="batchStat"
-                     class="stat-value">
-                    -
-                </div>
-            </div>
-
-
-            <div class="stat">
-                <div class="stat-title">
-                    mytecbooks Indexed
-                </div>
-
-                <div id="indexedStat"
-                     class="stat-value">
-                    0
-                </div>
-            </div>
-
-
-            <div class="stat">
-                <div class="stat-title">
-                    Duplicates
-                </div>
-
-                <div id="duplicateStat"
-                     class="stat-value">
-                    0
-                </div>
-            </div>
-
-
-            <div class="stat">
-                <div class="stat-title">
-                    Not Matched
-                </div>
-
-                <div id="notMatchedStat"
-                     class="stat-value">
-                    0
-                </div>
-            </div>
-
-
-            <div class="stat">
-                <div class="stat-title">
-                    Match Rate
-                </div>
-
-                <div id="rateStat"
-                     class="stat-value">
-                    0%
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="card">
-
-        <h2>Duplicate Results</h2>
-
-        <div id="results">
-            No scan completed yet.
-        </div>
-
-    </div>
+using partial title matching.
 
 </div>
+
+
+<button
+    id="rebuildBtn"
+    class="rebuild">
+
+Force Fresh mytecbooks Rebuild
+
+</button>
+
+
+<button
+    id="downloadBtn"
+    class="download">
+
+Download Current CSV
+
+</button>
+
+
+<div
+    id="status"
+    class="status">
+
+Ready.
+
+</div>
+
+
+<div class="progress-wrap">
+
+<div
+    id="progress"
+    class="progress">
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="card">
+
+<h2>
+
+mytecbook 1,000-post batches
+↔ ALL mytecbooks posts
+
+</h2>
+
+<p>
+
+Each batch from <strong>mytecbook</strong>
+is compared against the complete
+<strong>mytecbooks</strong> index.
+
+</p>
+
+
+<div
+    id="batchButtons"
+    class="batch-buttons">
+
+</div>
+
+</div>
+
+
+
+<div class="card">
+
+<h2>
+Statistics
+</h2>
+
+
+<div class="stats">
+
+
+<div class="stat">
+
+<div class="stat-title">
+mytecbook Batch
+</div>
+
+<div
+    id="batchStat"
+    class="stat-value">
+
+-
+
+</div>
+
+</div>
+
+
+
+<div class="stat">
+
+<div class="stat-title">
+mytecbooks Indexed
+</div>
+
+<div
+    id="indexedStat"
+    class="stat-value">
+
+0
+
+</div>
+
+</div>
+
+
+
+<div class="stat">
+
+<div class="stat-title">
+Duplicates
+</div>
+
+<div
+    id="duplicateStat"
+    class="stat-value">
+
+0
+
+</div>
+
+</div>
+
+
+
+<div class="stat">
+
+<div class="stat-title">
+Not Matched
+</div>
+
+<div
+    id="notMatchedStat"
+    class="stat-value">
+
+0
+
+</div>
+
+</div>
+
+
+
+<div class="stat">
+
+<div class="stat-title">
+Match Rate
+</div>
+
+<div
+    id="rateStat"
+    class="stat-value">
+
+0%
+
+</div>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+
+<div class="card">
+
+<h2>
+Duplicate Results
+</h2>
+
+
+<div id="results">
+
+No scan completed yet.
+
+</div>
+
+</div>
+
+
+</div>
+
 
 
 <script>
@@ -336,87 +455,133 @@ small {
 
 
 /*
-    IMPORTANT:
-
-    This is the NEW API.
-
-    Do NOT change this to /api/blogger-posts.
-
-    Old Tollywood duplicate finder remains
-    completely separate.
+==================================================
+NEW API ONLY
+==================================================
 */
 
 const API_PATH =
     "/api/mytecbook-posts";
 
+
 const ORIGINAL_BLOG =
     "mytecbook";
+
 
 const IMPORTED_BLOG =
     "mytecbooks";
 
 
 /*
-    Configuration
+==================================================
+CONFIGURATION
+==================================================
 */
 
-const BATCH_SIZE = 1000;
+const BATCH_SIZE =
+    1000;
 
-const FEED_PAGE_SIZE = 150;
 
-const REQUEST_DELAY = 1200;
+const FEED_PAGE_SIZE =
+    150;
 
-const MAX_RETRIES = 5;
+
+const REQUEST_DELAY =
+    1200;
+
+
+const MAX_RETRIES =
+    5;
+
 
 const DB_NAME =
     "MyTecbookDuplicateDB";
 
-const DB_VERSION = 1;
+
+const DB_VERSION =
+    1;
+
 
 const STORE_NAME =
     "mytecbooks";
 
 
 /*
-    Elements
+==================================================
+ELEMENTS
+==================================================
 */
 
 const statusEl =
-    document.getElementById("status");
+    document.getElementById(
+        "status"
+    );
+
 
 const progressEl =
-    document.getElementById("progress");
+    document.getElementById(
+        "progress"
+    );
+
 
 const rebuildBtn =
-    document.getElementById("rebuildBtn");
+    document.getElementById(
+        "rebuildBtn"
+    );
+
 
 const downloadBtn =
-    document.getElementById("downloadBtn");
+    document.getElementById(
+        "downloadBtn"
+    );
+
 
 const batchButtonsEl =
-    document.getElementById("batchButtons");
+    document.getElementById(
+        "batchButtons"
+    );
+
 
 const batchStat =
-    document.getElementById("batchStat");
+    document.getElementById(
+        "batchStat"
+    );
+
 
 const indexedStat =
-    document.getElementById("indexedStat");
+    document.getElementById(
+        "indexedStat"
+    );
+
 
 const duplicateStat =
-    document.getElementById("duplicateStat");
+    document.getElementById(
+        "duplicateStat"
+    );
+
 
 const notMatchedStat =
-    document.getElementById("notMatchedStat");
+    document.getElementById(
+        "notMatchedStat"
+    );
+
 
 const rateStat =
-    document.getElementById("rateStat");
+    document.getElementById(
+        "rateStat"
+    );
+
 
 const resultsEl =
-    document.getElementById("results");
+    document.getElementById(
+        "results"
+    );
 
 
 /*
-    State
+==================================================
+STATE
+==================================================
 */
 
 let currentMatches = [];
@@ -427,217 +592,295 @@ let db = null;
 
 
 /*
-    IndexedDB
+==================================================
+SLEEP
+==================================================
+*/
+
+function sleep(ms) {
+
+    return new Promise(
+        resolve =>
+            setTimeout(
+                resolve,
+                ms
+            )
+    );
+
+}
+
+
+/*
+==================================================
+OPEN DATABASE
+==================================================
 */
 
 function openDB() {
 
-    return new Promise((resolve, reject) => {
+    return new Promise(
+        (resolve, reject) => {
 
-        const request =
-            indexedDB.open(
-                DB_NAME,
-                DB_VERSION
-            );
-
-        request.onupgradeneeded =
-            function(event) {
-
-                const database =
-                    event.target.result;
-
-                if (
-                    !database.objectStoreNames
-                        .contains(STORE_NAME)
-                ) {
-
-                    database.createObjectStore(
-                        STORE_NAME,
-                        {
-                            keyPath: "id"
-                        }
-                    );
-
-                }
-
-            };
-
-
-        request.onsuccess =
-            function(event) {
-
-                db =
-                    event.target.result;
-
-                resolve(db);
-
-            };
-
-
-        request.onerror =
-            function() {
-
-                reject(
-                    request.error ||
-                    new Error(
-                        "Unable to open IndexedDB."
-                    )
+            const request =
+                indexedDB.open(
+                    DB_NAME,
+                    DB_VERSION
                 );
 
-            };
 
-    });
+            request.onupgradeneeded =
+                function(event) {
+
+                    const database =
+                        event.target.result;
+
+
+                    if (
+                        !database
+                            .objectStoreNames
+                            .contains(
+                                STORE_NAME
+                            )
+                    ) {
+
+                        database
+                            .createObjectStore(
+                                STORE_NAME,
+                                {
+                                    keyPath:
+                                        "id"
+                                }
+                            );
+
+                    }
+
+                };
+
+
+            request.onsuccess =
+                function(event) {
+
+                    db =
+                        event.target.result;
+
+                    resolve(db);
+
+                };
+
+
+            request.onerror =
+                function() {
+
+                    reject(
+                        request.error ||
+                        new Error(
+                            "Unable to open IndexedDB."
+                        )
+                    );
+
+                };
+
+        }
+    );
 
 }
 
 
 /*
-    Clear IndexedDB
+==================================================
+CLEAR DATABASE
+==================================================
 */
 
 function clearStore() {
 
-    return new Promise((resolve, reject) => {
+    return new Promise(
+        (resolve, reject) => {
 
-        const transaction =
-            db.transaction(
-                STORE_NAME,
-                "readwrite"
-            );
+            const transaction =
+                db.transaction(
+                    STORE_NAME,
+                    "readwrite"
+                );
 
-        const store =
-            transaction.objectStore(
-                STORE_NAME
-            );
 
-        const request =
-            store.clear();
+            const store =
+                transaction.objectStore(
+                    STORE_NAME
+                );
 
-        request.onsuccess =
-            () => resolve();
 
-        request.onerror =
-            () => reject(request.error);
+            const request =
+                store.clear();
 
-    });
+
+            request.onsuccess =
+                () => resolve();
+
+
+            request.onerror =
+                () =>
+                    reject(
+                        request.error
+                    );
+
+        }
+    );
 
 }
 
 
 /*
-    Save posts
+==================================================
+SAVE POSTS
+==================================================
 */
 
 function savePosts(posts) {
 
-    return new Promise((resolve, reject) => {
+    return new Promise(
+        (resolve, reject) => {
 
-        const transaction =
-            db.transaction(
-                STORE_NAME,
-                "readwrite"
-            );
+            const transaction =
+                db.transaction(
+                    STORE_NAME,
+                    "readwrite"
+                );
 
-        const store =
-            transaction.objectStore(
-                STORE_NAME
-            );
 
-        for (const post of posts) {
+            const store =
+                transaction.objectStore(
+                    STORE_NAME
+                );
 
-            if (!post.id) {
-                continue;
+
+            for (
+                const post of posts
+            ) {
+
+                if (!post.id) {
+                    continue;
+                }
+
+                store.put(post);
+
             }
 
-            store.put(post);
+
+            transaction.oncomplete =
+                () => resolve();
+
+
+            transaction.onerror =
+                () =>
+                    reject(
+                        transaction.error
+                    );
 
         }
-
-        transaction.oncomplete =
-            () => resolve();
-
-        transaction.onerror =
-            () => reject(
-                transaction.error
-            );
-
-    });
+    );
 
 }
 
 
 /*
-    Get ALL imported posts
+==================================================
+GET ALL POSTS
+==================================================
 */
 
 function getAllPosts() {
 
-    return new Promise((resolve, reject) => {
+    return new Promise(
+        (resolve, reject) => {
 
-        const transaction =
-            db.transaction(
-                STORE_NAME,
-                "readonly"
-            );
+            const transaction =
+                db.transaction(
+                    STORE_NAME,
+                    "readonly"
+                );
 
-        const store =
-            transaction.objectStore(
-                STORE_NAME
-            );
 
-        const request =
-            store.getAll();
+            const store =
+                transaction.objectStore(
+                    STORE_NAME
+                );
 
-        request.onsuccess =
-            () => resolve(
-                request.result || []
-            );
 
-        request.onerror =
-            () => reject(request.error);
+            const request =
+                store.getAll();
 
-    });
+
+            request.onsuccess =
+                () =>
+                    resolve(
+                        request.result || []
+                    );
+
+
+            request.onerror =
+                () =>
+                    reject(
+                        request.error
+                    );
+
+        }
+    );
 
 }
 
 
 /*
-    Count imported posts
+==================================================
+COUNT POSTS
+==================================================
 */
 
 function countPosts() {
 
-    return new Promise((resolve, reject) => {
+    return new Promise(
+        (resolve, reject) => {
 
-        const transaction =
-            db.transaction(
-                STORE_NAME,
-                "readonly"
-            );
+            const transaction =
+                db.transaction(
+                    STORE_NAME,
+                    "readonly"
+                );
 
-        const store =
-            transaction.objectStore(
-                STORE_NAME
-            );
 
-        const request =
-            store.count();
+            const store =
+                transaction.objectStore(
+                    STORE_NAME
+                );
 
-        request.onsuccess =
-            () => resolve(
-                request.result || 0
-            );
 
-        request.onerror =
-            () => reject(request.error);
+            const request =
+                store.count();
 
-    });
+
+            request.onsuccess =
+                () =>
+                    resolve(
+                        request.result || 0
+                    );
+
+
+            request.onerror =
+                () =>
+                    reject(
+                        request.error
+                    );
+
+        }
+    );
 
 }
 
 
 /*
-    API request
+==================================================
+API REQUEST
+==================================================
 */
 
 async function apiRequest(
@@ -647,11 +890,14 @@ async function apiRequest(
 ) {
 
     const url =
-        `${API_PATH}?blog=${encodeURIComponent(blog)}` +
+        `${API_PATH}` +
+        `?blog=${encodeURIComponent(blog)}` +
         `&start=${start}` +
         `&limit=${limit}`;
 
+
     let lastError = null;
+
 
     for (
         let attempt = 1;
@@ -665,14 +911,18 @@ async function apiRequest(
                 await fetch(
                     url,
                     {
-                        cache: "no-store"
+                        cache:
+                            "no-store"
                     }
                 );
+
 
             const text =
                 await response.text();
 
+
             let data;
+
 
             try {
 
@@ -687,7 +937,11 @@ async function apiRequest(
 
             }
 
-            if (!response.ok || !data.success) {
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
 
                 throw new Error(
                     data.error ||
@@ -696,11 +950,15 @@ async function apiRequest(
 
             }
 
+
             return data;
+
 
         } catch (error) {
 
-            lastError = error;
+            lastError =
+                error;
+
 
             if (
                 attempt < MAX_RETRIES
@@ -710,6 +968,7 @@ async function apiRequest(
                     `Temporary error loading ${blog} ` +
                     `(attempt ${attempt}/${MAX_RETRIES}). ` +
                     `Retrying...`;
+
 
                 await sleep(
                     attempt * 2000
@@ -721,46 +980,43 @@ async function apiRequest(
 
     }
 
-    throw lastError ||
+
+    throw (
+        lastError ||
         new Error(
             "Unable to load Blogger posts."
-        );
-
-}
-
-
-/*
-    Sleep
-*/
-
-function sleep(ms) {
-
-    return new Promise(
-        resolve => setTimeout(resolve, ms)
+        )
     );
 
 }
 
 
 /*
-    Rebuild ALL mytecbooks
+==================================================
+REBUILD IMPORTED BLOG
+==================================================
 */
 
 async function rebuildImportedBlog() {
 
     rebuildBtn.disabled = true;
 
+
     try {
 
         await openDB();
 
+
         await clearStore();
+
 
         statusEl.textContent =
             "Starting fresh mytecbooks rebuild...";
 
+
         progressEl.style.width =
             "0%";
+
 
         let start = 1;
 
@@ -778,17 +1034,24 @@ async function rebuildImportedBlog() {
                     FEED_PAGE_SIZE
                 );
 
+
             const posts =
                 data.posts || [];
 
-            if (posts.length === 0) {
+
+            if (!posts.length) {
                 break;
             }
 
 
-            await savePosts(posts);
+            await savePosts(
+                posts
+            );
 
-            loaded += posts.length;
+
+            loaded +=
+                posts.length;
+
 
             total =
                 data.totalResults ||
@@ -799,12 +1062,17 @@ async function rebuildImportedBlog() {
                 total > 0
                     ? Math.min(
                         100,
-                        (loaded / total) * 100
+                        (
+                            loaded /
+                            total
+                        ) * 100
                     )
                     : 0;
 
+
             progressEl.style.width =
                 `${percent}%`;
+
 
             indexedStat.textContent =
                 loaded.toLocaleString();
@@ -825,11 +1093,15 @@ async function rebuildImportedBlog() {
                 posts.length <
                 FEED_PAGE_SIZE
             ) {
+
                 break;
+
             }
 
 
-            start += posts.length;
+            start +=
+                posts.length;
+
 
             await sleep(
                 REQUEST_DELAY
@@ -841,15 +1113,20 @@ async function rebuildImportedBlog() {
         progressEl.style.width =
             "100%";
 
+
+        const finalCount =
+            await countPosts();
+
+
         indexedStat.textContent =
-            (
-                await countPosts()
-            ).toLocaleString();
+            finalCount.toLocaleString();
 
 
         statusEl.textContent =
             `mytecbooks rebuild complete.\n` +
-            `${indexedStat.textContent} posts indexed.`;
+            `${finalCount.toLocaleString()}` +
+            ` posts indexed.`;
+
 
     } catch (error) {
 
@@ -857,9 +1134,11 @@ async function rebuildImportedBlog() {
             "Rebuild failed:\n" +
             error.message;
 
+
     } finally {
 
-        rebuildBtn.disabled = false;
+        rebuildBtn.disabled =
+            false;
 
     }
 
@@ -867,95 +1146,289 @@ async function rebuildImportedBlog() {
 
 
 /*
-    Normalize text
+==================================================
+TITLE NORMALIZATION
+==================================================
 */
 
-function normalizeText(text) {
+function normalizeTitle(title) {
 
-    return (
-        text || ""
+    return String(
+        title || ""
     )
         .toLowerCase()
-        .replace(/&amp;/g, "&")
-        .replace(/[^a-z0-9]+/g, " ")
-        .replace(/\s+/g, " ")
+        .replace(
+            /&amp;/g,
+            "&"
+        )
+        .replace(
+            /&quot;/g,
+            ""
+        )
+        .replace(
+            /&#39;/g,
+            ""
+        )
+        .replace(
+            /[^a-z0-9]+/g,
+            " "
+        )
+        .replace(
+            /\s+/g,
+            " "
+        )
         .trim();
 
 }
 
 
 /*
-    Normalize title
+==================================================
+TITLE WORDS
+==================================================
 */
 
-function normalizeTitle(title) {
+function getTitleWords(title) {
 
-    return normalizeText(title);
+    const stopWords =
+        new Set([
+
+            "the",
+            "and",
+            "for",
+            "with",
+            "from",
+            "this",
+            "that",
+            "are",
+            "was",
+            "were",
+            "has",
+            "have",
+            "had",
+            "into",
+            "about",
+            "after",
+            "before",
+
+            "photos",
+            "photo",
+            "images",
+            "image",
+            "pics",
+            "pictures",
+
+            "latest",
+            "new"
+
+        ]);
+
+
+    return [
+        ...new Set(
+
+            normalizeTitle(
+                title
+            )
+                .split(" ")
+                .filter(
+                    word =>
+                        word.length >= 3 &&
+                        !stopWords.has(
+                            word
+                        )
+                )
+
+        )
+    ];
 
 }
 
 
 /*
-    Token similarity
+==================================================
+PARTIAL TITLE MATCH
+==================================================
+
+Examples that can match:
+
+"Samantha Ruth Prabhu Latest Photos"
+
+"Samantha Ruth Prabhu Photos"
+
+OR
+
+"Anushka Sharma Airport Photos"
+
+"Anushka Sharma Airport Pictures"
+
+OR
+
+"Google Chrome Latest News"
+
+"Google Chrome News"
+
+==================================================
 */
 
 function titleSimilarity(
-    a,
-    b
+    titleA,
+    titleB
 ) {
 
-    const x =
-        normalizeTitle(a);
+    const wordsA =
+        getTitleWords(
+            titleA
+        );
 
-    const y =
-        normalizeTitle(b);
 
-    if (!x || !y) {
+    const wordsB =
+        getTitleWords(
+            titleB
+        );
+
+
+    if (
+        !wordsA.length ||
+        !wordsB.length
+    ) {
+
         return 0;
-    }
 
-    if (x === y) {
-        return 1;
     }
 
 
-    const ax =
-        new Set(x.split(" "));
+    let matchedA = 0;
 
-    const bx =
-        new Set(y.split(" "));
+    let matchedB = 0;
 
 
-    let common = 0;
+    for (
+        const wordA of wordsA
+    ) {
 
-    for (const word of ax) {
+        for (
+            const wordB of wordsB
+        ) {
 
-        if (bx.has(word)) {
-            common++;
+            /*
+                Exact word
+            */
+
+            if (
+                wordA ===
+                wordB
+            ) {
+
+                matchedA++;
+
+                break;
+
+            }
+
+
+            /*
+                Small word variation
+            */
+
+            if (
+                wordA.length >= 5 &&
+                wordB.length >= 5 &&
+                (
+                    wordA.startsWith(
+                        wordB
+                    ) ||
+                    wordB.startsWith(
+                        wordA
+                    )
+                )
+            ) {
+
+                matchedA++;
+
+                break;
+
+            }
+
         }
 
     }
 
 
-    const union =
-        new Set([
-            ...ax,
-            ...bx
-        ]);
+    for (
+        const wordB of wordsB
+    ) {
+
+        for (
+            const wordA of wordsA
+        ) {
+
+            if (
+                wordB ===
+                wordA
+            ) {
+
+                matchedB++;
+
+                break;
+
+            }
 
 
-    if (!union.size) {
-        return 0;
+            if (
+                wordA.length >= 5 &&
+                wordB.length >= 5 &&
+                (
+                    wordA.startsWith(
+                        wordB
+                    ) ||
+                    wordB.startsWith(
+                        wordA
+                    )
+                )
+            ) {
+
+                matchedB++;
+
+                break;
+
+            }
+
+        }
+
     }
 
 
-    return common / union.size;
+    /*
+        Similarity in BOTH directions.
+
+        This prevents a title containing
+        one common word from automatically
+        becoming a strong match.
+    */
+
+    const ratioA =
+        matchedA /
+        wordsA.length;
+
+
+    const ratioB =
+        matchedB /
+        wordsB.length;
+
+
+    return Math.min(
+        ratioA,
+        ratioB
+    );
 
 }
 
 
 /*
-    Date normalization
+==================================================
+DATE
+==================================================
 */
 
 function normalizeDate(date) {
@@ -964,16 +1437,21 @@ function normalizeDate(date) {
         return "";
     }
 
+
     const d =
         new Date(date);
+
 
     if (
         Number.isNaN(
             d.getTime()
         )
     ) {
+
         return "";
+
     }
+
 
     return d
         .toISOString()
@@ -983,7 +1461,9 @@ function normalizeDate(date) {
 
 
 /*
-    Image filename
+==================================================
+IMAGE FILENAME
+==================================================
 */
 
 function imageFilename(url) {
@@ -992,24 +1472,35 @@ function imageFilename(url) {
         return "";
     }
 
+
     try {
 
         const clean =
             url.split("?")[0];
 
+
         const parts =
             clean.split("/");
 
-        const filename =
-            parts[parts.length - 1] || "";
 
-        return normalizeText(
-            decodeURIComponent(filename)
+        const filename =
+            parts[
+                parts.length - 1
+            ] || "";
+
+
+        return normalizeTitle(
+            decodeURIComponent(
+                filename
+            )
         );
+
 
     } catch {
 
-        return normalizeText(url);
+        return normalizeTitle(
+            url
+        );
 
     }
 
@@ -1017,7 +1508,9 @@ function imageFilename(url) {
 
 
 /*
-    Compare images
+==================================================
+IMAGE MATCH
+==================================================
 */
 
 function matchingImageScore(
@@ -1027,28 +1520,44 @@ function matchingImageScore(
 
     const a =
         (original.imageUrls || [])
-            .map(imageFilename)
+            .map(
+                imageFilename
+            )
             .filter(Boolean);
+
 
     const b =
         (imported.imageUrls || [])
-            .map(imageFilename)
+            .map(
+                imageFilename
+            )
             .filter(Boolean);
 
 
-    if (!a.length || !b.length) {
+    if (
+        !a.length ||
+        !b.length
+    ) {
+
         return 0;
+
     }
 
 
-    for (const x of a) {
+    for (
+        const x of a
+    ) {
 
-        for (const y of b) {
+        for (
+            const y of b
+        ) {
 
             if (
                 x === y
             ) {
-                return 35;
+
+                return 20;
+
             }
 
         }
@@ -1062,7 +1571,9 @@ function matchingImageScore(
 
 
 /*
-    Calculate duplicate score
+==================================================
+CALCULATE MATCH SCORE
+==================================================
 */
 
 function calculateScore(
@@ -1070,61 +1581,34 @@ function calculateScore(
     imported
 ) {
 
-    let score = 0;
-
-
-    /*
-        Exact title
-    */
-
-    const titleA =
-        normalizeTitle(
-            original.title
-        );
-
-    const titleB =
-        normalizeTitle(
+    const similarity =
+        titleSimilarity(
+            original.title,
             imported.title
         );
 
 
-    if (
-        titleA &&
-        titleA === titleB
-    ) {
+    /*
+        Title is the primary signal.
 
-        score += 60;
+        Maximum title score = 80
+    */
 
-    } else {
-
-        const similarity =
-            titleSimilarity(
-                original.title,
-                imported.title
-            );
-
-        if (
-            similarity >= 0.8
-        ) {
-
-            score +=
-                Math.round(
-                    similarity * 40
-                );
-
-        }
-
-    }
+    let score =
+        Math.round(
+            similarity * 80
+        );
 
 
     /*
-        Same date
+        Same publication date
     */
 
     const dateA =
         normalizeDate(
             original.date
         );
+
 
     const dateB =
         normalizeDate(
@@ -1138,13 +1622,13 @@ function calculateScore(
         dateA === dateB
     ) {
 
-        score += 15;
+        score += 10;
 
     }
 
 
     /*
-        Matching image filename
+        Same image filename
     */
 
     score +=
@@ -1160,7 +1644,9 @@ function calculateScore(
 
 
 /*
-    Find best match
+==================================================
+FIND BEST MATCH
+==================================================
 */
 
 function findBestMatch(
@@ -1168,8 +1654,9 @@ function findBestMatch(
     importedPosts
 ) {
 
-    let best =
+    let bestPost =
         null;
+
 
     let bestScore =
         0;
@@ -1180,37 +1667,121 @@ function findBestMatch(
         of importedPosts
     ) {
 
-        const score =
-            calculateScore(
-                original,
-                imported
+        const originalTitle =
+            normalizeTitle(
+                original.title
             );
 
 
+        const importedTitle =
+            normalizeTitle(
+                imported.title
+            );
+
+
+        /*
+            Exact normalized title
+        */
+
         if (
-            score > bestScore
+            originalTitle &&
+            originalTitle ===
+                importedTitle
         ) {
 
-            bestScore =
-                score;
+            return {
 
-            best = imported;
+                post:
+                    imported,
+
+                score:
+                    100,
+
+                similarity:
+                    1
+
+            };
+
+        }
+
+
+        const similarity =
+            titleSimilarity(
+                original.title,
+                imported.title
+            );
+
+
+        /*
+            Only consider meaningful
+            partial title matches.
+        */
+
+        if (
+            similarity >=
+            0.50
+        ) {
+
+            const score =
+                calculateScore(
+                    original,
+                    imported
+                );
+
+
+            if (
+                score >
+                bestScore
+            ) {
+
+                bestScore =
+                    score;
+
+                bestPost =
+                    imported;
+
+            }
 
         }
 
     }
 
 
+    if (
+        bestPost &&
+        bestScore >= 40
+    ) {
+
+        return {
+
+            post:
+                bestPost,
+
+            score:
+                bestScore
+
+        };
+
+    }
+
+
     return {
-        post: best,
-        score: bestScore
+
+        post:
+            null,
+
+        score:
+            0
+
     };
 
 }
 
 
 /*
-    Scan one 1,000-post batch
+==================================================
+SCAN BATCH
+==================================================
 */
 
 async function scanBatch(
@@ -1232,7 +1803,9 @@ async function scanBatch(
     batchStat.textContent =
         `${start.toLocaleString()} - ` +
         `${(
-            start + BATCH_SIZE - 1
+            start +
+            BATCH_SIZE -
+            1
         ).toLocaleString()}`;
 
 
@@ -1240,11 +1813,12 @@ async function scanBatch(
         "";
 
 
-    currentMatches = [];
+    currentMatches =
+        [];
 
 
     /*
-        Load ALL indexed imported posts
+        ALL imported posts
     */
 
     const importedPosts =
@@ -1256,7 +1830,9 @@ async function scanBatch(
             .toLocaleString();
 
 
-    if (!importedPosts.length) {
+    if (
+        !importedPosts.length
+    ) {
 
         statusEl.textContent =
             "mytecbooks index is empty. " +
@@ -1267,6 +1843,10 @@ async function scanBatch(
     }
 
 
+    /*
+        Load original batch
+    */
+
     statusEl.textContent =
         `Loading mytecbook batch ${batchNumber}...`;
 
@@ -1275,15 +1855,13 @@ async function scanBatch(
         "0%";
 
 
-    const originalPosts = [];
+    const originalPosts =
+        [];
+
 
     let position =
         start;
 
-
-    /*
-        Load 1,000 original posts
-    */
 
     while (
         originalPosts.length <
@@ -1314,8 +1892,12 @@ async function scanBatch(
             data.posts || [];
 
 
-        if (!posts.length) {
+        if (
+            !posts.length
+        ) {
+
             break;
+
         }
 
 
@@ -1334,7 +1916,8 @@ async function scanBatch(
                 (
                     originalPosts.length /
                     BATCH_SIZE
-                ) * 100
+                ) *
+                100
             );
 
 
@@ -1343,8 +1926,7 @@ async function scanBatch(
 
 
         statusEl.textContent =
-            `Loading mytecbook batch ` +
-            `${batchNumber}...\n` +
+            `Loading mytecbook batch ${batchNumber}...\n` +
             `${originalPosts.length.toLocaleString()}` +
             ` posts loaded.`;
 
@@ -1353,7 +1935,9 @@ async function scanBatch(
             posts.length <
             limit
         ) {
+
             break;
+
         }
 
 
@@ -1365,18 +1949,21 @@ async function scanBatch(
 
 
     /*
-        Compare
+        Compare every original post
+        against ALL imported posts.
     */
 
     let duplicates =
         0;
+
 
     let notMatched =
         0;
 
 
     statusEl.textContent =
-        `Comparing ${originalPosts.length.toLocaleString()}` +
+        `Comparing ` +
+        `${originalPosts.length.toLocaleString()}` +
         ` mytecbook posts against ALL ` +
         `${importedPosts.length.toLocaleString()}` +
         ` mytecbooks posts...`;
@@ -1399,21 +1986,31 @@ async function scanBatch(
             );
 
 
+        /*
+            50% meaningful title overlap
+            is considered a match.
+        */
+
         if (
             result.post &&
-            result.score >= 65
+            result.score >= 40
         ) {
 
             duplicates++;
 
 
             currentMatches.push({
+
                 original,
+
                 imported:
                     result.post,
+
                 score:
                     result.score
+
             });
+
 
         } else {
 
@@ -1465,9 +2062,9 @@ async function scanBatch(
         originalPosts.length
             ? (
                 duplicates /
-                originalPosts.length *
-                100
-            )
+                originalPosts.length
+            ) *
+            100
             : 0;
 
 
@@ -1486,7 +2083,8 @@ async function scanBatch(
         `${duplicates.toLocaleString()}\n` +
         `Not matched: ` +
         `${notMatched.toLocaleString()}\n` +
-        `Match rate: ${rate.toFixed(2)}%`;
+        `Match rate: ` +
+        `${rate.toFixed(2)}%`;
 
 
     markBatchDone(
@@ -1497,15 +2095,19 @@ async function scanBatch(
 
 
 /*
-    Render results
+==================================================
+RENDER RESULTS
+==================================================
 */
 
 function renderResults() {
 
-    if (!currentMatches.length) {
+    if (
+        !currentMatches.length
+    ) {
 
         resultsEl.innerHTML =
-            "<p>No duplicates found in this batch.</p>";
+            "<p>No matching titles found in this batch.</p>";
 
         return;
 
@@ -1513,9 +2115,8 @@ function renderResults() {
 
 
     /*
-        Display first 300 results
-        to avoid making the browser
-        excessively heavy.
+        Show first 300 in browser.
+        CSV contains all.
     */
 
     const visible =
@@ -1526,72 +2127,111 @@ function renderResults() {
 
 
     const html =
-        visible.map(
-            (match, index) => {
+        visible
+            .map(
+                (match, index) => {
 
-                const original =
-                    match.original;
-
-                const imported =
-                    match.imported;
+                    const original =
+                        match.original;
 
 
-                return `
-                    <div class="match">
+                    const imported =
+                        match.imported;
 
-                        <div class="match-title">
-                            ${index + 1}.
-                            ${escapeHtml(
-                                original.title
-                            )}
-                        </div>
 
-                        <div>
-                            <small>
-                                Original:
-                            </small><br>
+                    return `
 
-                            <a
-                                href="${escapeAttr(
-                                    original.url
-                                )}"
-                                target="_blank"
-                                rel="noopener">
-                                ${escapeHtml(
-                                    original.url
-                                )}
-                            </a>
-                        </div>
+<div class="match">
 
-                        <br>
+    <div class="match-title">
 
-                        <div>
-                            <small>
-                                Imported:
-                            </small><br>
+        ${index + 1}.
+        Matching Post
 
-                            <a
-                                href="${escapeAttr(
-                                    imported.url
-                                )}"
-                                target="_blank"
-                                rel="noopener">
-                                ${escapeHtml(
-                                    imported.url
-                                )}
-                            </a>
-                        </div>
+    </div>
 
-                        <div class="score">
-                            Match score:
-                            ${match.score}
-                        </div>
 
-                    </div>
-                `;
+    <div class="title-box">
 
-            }
-        ).join("");
+        <div class="title-label">
+            MYTECBOOK ORIGINAL TITLE
+        </div>
+
+        <div class="title-text">
+            ${escapeHtml(
+                original.title
+            )}
+        </div>
+
+        <br>
+
+        <a
+            href="${escapeAttr(
+                original.url
+            )}"
+            target="_blank"
+            rel="noopener">
+
+            ${escapeHtml(
+                original.url
+            )}
+
+        </a>
+
+    </div>
+
+
+    <div class="title-box">
+
+        <div class="title-label">
+            MYTECBOOKS IMPORTED TITLE
+        </div>
+
+        <div class="title-text">
+            ${escapeHtml(
+                imported.title
+            )}
+        </div>
+
+        <br>
+
+        <a
+            href="${escapeAttr(
+                imported.url
+            )}"
+            target="_blank"
+            rel="noopener">
+
+            ${escapeHtml(
+                imported.url
+            )}
+
+        </a>
+
+    </div>
+
+
+    <div class="match-type">
+
+        PARTIAL TITLE MATCH
+
+    </div>
+
+
+    <div class="score">
+
+        Match score:
+        ${match.score}
+
+    </div>
+
+</div>
+
+`;
+
+                }
+            )
+            .join("");
 
 
     resultsEl.innerHTML =
@@ -1604,11 +2244,14 @@ function renderResults() {
     ) {
 
         resultsEl.innerHTML +=
-            `<p><small>
-                Showing first 300 of
-                ${currentMatches.length.toLocaleString()}
-                matches. The CSV contains all matches.
-            </small></p>`;
+            `<p>
+                <small>
+                    Showing first 300 of
+                    ${currentMatches.length.toLocaleString()}
+                    matches.
+                    Download CSV for all matches.
+                </small>
+            </p>`;
 
     }
 
@@ -1616,34 +2259,63 @@ function renderResults() {
 
 
 /*
-    Escape HTML
+==================================================
+ESCAPE HTML
+==================================================
 */
 
-function escapeHtml(value) {
+function escapeHtml(
+    value
+) {
 
-    return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    return String(
+        value || ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 
 }
 
 
 /*
-    Escape URL attribute
+==================================================
+ESCAPE ATTRIBUTE
+==================================================
 */
 
-function escapeAttr(value) {
+function escapeAttr(
+    value
+) {
 
-    return escapeHtml(value);
+    return escapeHtml(
+        value
+    );
 
 }
 
 
 /*
-    Batch buttons
+==================================================
+CREATE BATCH BUTTONS
+==================================================
 */
 
 function createBatchButtons() {
@@ -1651,15 +2323,6 @@ function createBatchButtons() {
     batchButtonsEl.innerHTML =
         "";
 
-
-    /*
-        16 batches:
-
-        1-1000
-        1001-2000
-        ...
-        15001-16000
-    */
 
     for (
         let batch = 1;
@@ -1719,7 +2382,9 @@ function createBatchButtons() {
 
 
 /*
-    Run batch button
+==================================================
+RUN BATCH BUTTON
+==================================================
 */
 
 async function runBatchButton(
@@ -1734,7 +2399,8 @@ async function runBatchButton(
 
 
     allButtons.forEach(
-        b => b.disabled = true
+        b =>
+            b.disabled = true
     );
 
 
@@ -1754,12 +2420,25 @@ async function runBatchButton(
             "running"
         );
 
+
         button.classList.add(
             "done"
         );
 
-        button.textContent +=
-            " ✓";
+
+        /*
+            Avoid adding multiple checkmarks
+        */
+
+        if (
+            !button.textContent
+                .includes("✓")
+        ) {
+
+            button.textContent +=
+                " ✓";
+
+        }
 
 
     } catch (error) {
@@ -1768,14 +2447,17 @@ async function runBatchButton(
             "running"
         );
 
+
         statusEl.textContent =
             `Batch ${batch} failed:\n` +
             error.message;
 
+
     } finally {
 
         allButtons.forEach(
-            b => b.disabled = false
+            b =>
+                b.disabled = false
         );
 
     }
@@ -1784,7 +2466,9 @@ async function runBatchButton(
 
 
 /*
-    Mark batch done
+==================================================
+MARK BATCH DONE
+==================================================
 */
 
 function markBatchDone(
@@ -1813,7 +2497,8 @@ function markBatchDone(
 
 
     if (
-        !button.textContent.includes("✓")
+        !button.textContent
+            .includes("✓")
     ) {
 
         button.textContent +=
@@ -1825,13 +2510,20 @@ function markBatchDone(
 
 
 /*
-    CSV download
+==================================================
+CSV ESCAPE
+==================================================
 */
 
-function csvEscape(value) {
+function csvEscape(
+    value
+) {
 
     const text =
-        String(value ?? "");
+        String(
+            value ?? ""
+        );
+
 
     return `"${text.replace(
         /"/g,
@@ -1841,9 +2533,17 @@ function csvEscape(value) {
 }
 
 
+/*
+==================================================
+DOWNLOAD CSV
+==================================================
+*/
+
 function downloadCSV() {
 
-    if (!currentMatches.length) {
+    if (
+        !currentMatches.length
+    ) {
 
         alert(
             "No duplicate results available."
@@ -1863,7 +2563,7 @@ function downloadCSV() {
             "Imported Title",
             "Imported URL",
             "Imported Date",
-            "Score"
+            "Match Score"
         ]
 
     ];
@@ -1900,7 +2600,9 @@ function downloadCSV() {
             .map(
                 row =>
                     row
-                        .map(csvEscape)
+                        .map(
+                            csvEscape
+                        )
                         .join(",")
             )
             .join("\r\n");
@@ -1931,13 +2633,18 @@ function downloadCSV() {
     a.href =
         url;
 
+
     a.download =
         `mytecbook-duplicates-batch-${currentBatch}.csv`;
 
 
-    document.body.appendChild(a);
+    document.body.appendChild(
+        a
+    );
+
 
     a.click();
+
 
     a.remove();
 
@@ -1950,7 +2657,9 @@ function downloadCSV() {
 
 
 /*
-    Events
+==================================================
+EVENTS
+==================================================
 */
 
 rebuildBtn.addEventListener(
@@ -1983,7 +2692,9 @@ downloadBtn.addEventListener(
 
 
 /*
-    Start
+==================================================
+INITIALIZE
+==================================================
 */
 
 (async function init() {
@@ -1991,6 +2702,7 @@ downloadBtn.addEventListener(
     try {
 
         await openDB();
+
 
         createBatchButtons();
 
@@ -2003,7 +2715,9 @@ downloadBtn.addEventListener(
             count.toLocaleString();
 
 
-        if (count > 0) {
+        if (
+            count > 0
+        ) {
 
             statusEl.textContent =
                 `Existing mytecbooks index loaded: ` +
@@ -2016,6 +2730,7 @@ downloadBtn.addEventListener(
                 "Click Force Fresh mytecbooks Rebuild first.";
 
         }
+
 
     } catch (error) {
 
@@ -2030,4 +2745,5 @@ downloadBtn.addEventListener(
 </script>
 
 </body>
+
 </html>
