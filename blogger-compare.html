@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -6,13 +7,12 @@
 <meta charset="UTF-8">
 
 <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
 >
 
-<title>
-Blogger Duplicate Finder
-</title>
+<title>Blogger Duplicate Finder</title>
 
 <style>
 
@@ -330,17 +330,13 @@ ALL mytecbooks posts
 
 </header>
 
-
 <div class="container">
 
-
 <div class="panel">
-
 
 <h2>
 Choose mytecbook Batch
 </h2>
-
 
 <p>
 
@@ -351,20 +347,16 @@ Important:
 The selected 1,000 posts are from
 mytecbook.
 
-They are compared against the
-<strong>
-entire mytecbooks archive
-</strong>,
+They are compared against the <strong>
+entire mytecbooks archive </strong>,
 not the same 1,000 positions.
 
 </p>
-
 
 <div
     id="batchGrid"
     class="batch-grid">
 </div>
-
 
 <div
     id="cacheStatus"
@@ -375,38 +367,34 @@ checking...
 
 </div>
 
-
 <div>
 
-
 <button
-    id="rebuildButton"
-    class="action-button rebuild-button"
-    type="button"
-    onclick="rebuildmytecbooksIndex()">
+ id="rebuildButton"
+ class="action-button rebuild-button"
+ type="button"
+ onclick="rebuildmytecbooksIndex()">
 
 Force Fresh mytecbooks Rebuild
 
 </button>
 
-
 <button
-    id="clearButton"
-    class="action-button clear-button"
-    type="button"
-    onclick="clearmytecbooksIndex()">
+ id="clearButton"
+ class="action-button clear-button"
+ type="button"
+ onclick="clearmytecbooksIndex()">
 
 Delete Cached mytecbooks Index
 
 </button>
 
-
 <button
-    id="csvButton"
-    class="action-button csv-button"
-    type="button"
-    onclick="downloadCSV()"
-    disabled>
+ id="csvButton"
+ class="action-button csv-button"
+ type="button"
+ onclick="downloadCSV()"
+ disabled>
 
 Download Current CSV
 
@@ -414,13 +402,11 @@ Download Current CSV
 
 </div>
 
-
 <div id="status">
 
 Ready. Select a batch.
 
 </div>
-
 
 <div class="progress">
 
@@ -429,12 +415,9 @@ Ready. Select a batch.
 
 </div>
 
-
 </div>
 
-
 <div class="stats">
-
 
 <div class="stat">
 
@@ -448,7 +431,6 @@ mytecbook Batch
 
 </div>
 
-
 <div class="stat">
 
 <strong id="xyzCount">
@@ -460,7 +442,6 @@ mytecbooks Indexed
 </span>
 
 </div>
-
 
 <div class="stat">
 
@@ -474,7 +455,6 @@ Duplicates
 
 </div>
 
-
 <div class="stat">
 
 <strong id="notFoundCount">
@@ -486,7 +466,6 @@ Not Matched
 </span>
 
 </div>
-
 
 <div class="stat">
 
@@ -500,9 +479,7 @@ Match Rate
 
 </div>
 
-
 </div>
-
 
 <div id="results">
 
@@ -514,12 +491,9 @@ Select a batch above.
 
 </div>
 
-
 </div>
 
-
 <script>
-
 
 /* =====================================================
    SETTINGS
@@ -534,24 +508,29 @@ const MAX_RETRIES = 5;
 const REQUEST_DELAY = 1800;
 
 
-/*
- * IndexedDB
- */
+/* =====================================================
+   INDEXEDDB SETTINGS
+===================================================== */
 
 const DB_NAME =
     "FilmstarsBloggerDuplicateDB";
 
-const DB_VERSION = 3;
+/*
+ * IMPORTANT:
+ * Version increased from 3 to 4.
+ *
+ * This forces IndexedDB to run onupgradeneeded
+ * and create the missing object store.
+ */
+const DB_VERSION = 4;
 
 const STORE_NAME =
     "mytecbooks";
 
 
-let currentBatch =
-    0;
+let currentBatch = 0;
 
-let currentMatches =
-    [];
+let currentMatches = [];
 
 
 /* =====================================================
@@ -568,7 +547,6 @@ function createBatchButtons() {
             "batchGrid"
         );
 
-
     for (
         let i = 1;
         i <= 16;
@@ -579,30 +557,24 @@ function createBatchButtons() {
             ((i - 1) *
             BATCH_SIZE) + 1;
 
-
         const end =
             i *
             BATCH_SIZE;
-
 
         const button =
             document.createElement(
                 "button"
             );
 
-
         button.type =
             "button";
-
 
         button.className =
             "batch-button";
 
-
         button.id =
             "batch-" +
             i;
-
 
         button.textContent =
             "Batch " +
@@ -611,7 +583,6 @@ function createBatchButtons() {
             start.toLocaleString() +
             "–" +
             end.toLocaleString();
-
 
         button.addEventListener(
             "click",
@@ -625,7 +596,6 @@ function createBatchButtons() {
             }
         );
 
-
         grid.appendChild(
             button
         );
@@ -634,7 +604,7 @@ function createBatchButtons() {
 
 
 /* =====================================================
-   OPEN DB
+   OPEN INDEXEDDB
 ===================================================== */
 
 function openDB() {
@@ -649,17 +619,22 @@ function openDB() {
                 );
 
 
+            /*
+             * This runs when:
+             *
+             * 1. Database is created.
+             * 2. DB_VERSION increases.
+             *
+             * We always verify that the required
+             * object store exists.
+             */
+
             request.onupgradeneeded =
                 function(event) {
 
                     const db =
                         event.target.result;
 
-
-                    /*
-                     * Version 3:
-                     * create clean store if necessary.
-                     */
 
                     if (
                         !db.objectStoreNames.contains(
@@ -680,8 +655,38 @@ function openDB() {
             request.onsuccess =
                 function() {
 
+                    const db =
+                        request.result;
+
+
+                    /*
+                     * Extra safety check.
+                     */
+
+                    if (
+                        !db.objectStoreNames.contains(
+                            STORE_NAME
+                        )
+                    ) {
+
+                        db.close();
+
+
+                        reject(
+                            new Error(
+                                "IndexedDB object store '" +
+                                STORE_NAME +
+                                "' is missing."
+                            )
+                        );
+
+
+                        return;
+                    }
+
+
                     resolve(
-                        request.result
+                        db
                     );
                 };
 
@@ -690,7 +695,22 @@ function openDB() {
                 function() {
 
                     reject(
-                        request.error
+                        request.error ||
+                        new Error(
+                            "Unable to open IndexedDB."
+                        )
+                    );
+                };
+
+
+            request.onblocked =
+                function() {
+
+                    reject(
+                        new Error(
+                            "IndexedDB upgrade is blocked. " +
+                            "Close other tabs of this site and reload."
+                        )
                     );
                 };
 
@@ -700,7 +720,7 @@ function openDB() {
 
 
 /* =====================================================
-   CLEAR DB
+   CLEAR PUBLIC INDEX
 ===================================================== */
 
 async function clearmytecbooksIndex() {
@@ -709,44 +729,12 @@ async function clearmytecbooksIndex() {
 
     try {
 
-        const db =
-            await openDB();
-
-
-        await new Promise(
-            function(resolve, reject) {
-
-                const transaction =
-                    db.transaction(
-                        STORE_NAME,
-                        "readwrite"
-                    );
-
-
-                transaction.objectStore(
-                    STORE_NAME
-                ).clear();
-
-
-                transaction.oncomplete =
-                    function() {
-
-                        resolve();
-                    };
-
-
-                transaction.onerror =
-                    function() {
-
-                        reject(
-                            transaction.error
-                        );
-                    };
-            }
+        setStatus(
+            "Deleting cached mytecbooks index..."
         );
 
 
-        db.close();
+        await clearIndexInternal();
 
 
         currentMatches =
@@ -757,6 +745,30 @@ async function clearmytecbooksIndex() {
             "xyzCount"
         ).textContent =
             "0";
+
+
+        document.getElementById(
+            "abcCount"
+        ).textContent =
+            "0";
+
+
+        document.getElementById(
+            "duplicateCount"
+        ).textContent =
+            "0";
+
+
+        document.getElementById(
+            "notFoundCount"
+        ).textContent =
+            "0";
+
+
+        document.getElementById(
+            "matchRate"
+        ).textContent =
+            "0%";
 
 
         document.getElementById(
@@ -803,6 +815,78 @@ async function clearmytecbooksIndex() {
 
 
 /* =====================================================
+   INTERNAL CLEAR
+===================================================== */
+
+async function clearIndexInternal() {
+
+    const db =
+        await openDB();
+
+
+    try {
+
+        await new Promise(
+            function(resolve, reject) {
+
+                const transaction =
+                    db.transaction(
+                        STORE_NAME,
+                        "readwrite"
+                    );
+
+
+                const store =
+                    transaction.objectStore(
+                        STORE_NAME
+                    );
+
+
+                store.clear();
+
+
+                transaction.oncomplete =
+                    function() {
+
+                        resolve();
+                    };
+
+
+                transaction.onerror =
+                    function() {
+
+                        reject(
+                            transaction.error ||
+                            new Error(
+                                "Unable to clear IndexedDB."
+                            )
+                        );
+                    };
+
+
+                transaction.onabort =
+                    function() {
+
+                        reject(
+                            transaction.error ||
+                            new Error(
+                                "IndexedDB transaction aborted."
+                            )
+                        );
+                    };
+
+            }
+        );
+
+    }
+    finally {
+
+        db.close();
+    }
+}
+
+
+/* =====================================================
    SAVE POSTS
 ===================================================== */
 
@@ -810,56 +894,91 @@ async function savePosts(
     posts
 ) {
 
+    if (
+        !posts ||
+        posts.length === 0
+    ) {
+
+        return;
+    }
+
+
     const db =
         await openDB();
 
 
-    await new Promise(
-        function(resolve, reject) {
+    try {
 
-            const transaction =
-                db.transaction(
-                    STORE_NAME,
-                    "readwrite"
-                );
+        await new Promise(
+            function(resolve, reject) {
 
-
-            const store =
-                transaction.objectStore(
-                    STORE_NAME
-                );
-
-
-            for (
-                const post of posts
-            ) {
-
-                store.put(
-                    post
-                );
-            }
-
-
-            transaction.oncomplete =
-                function() {
-
-                    resolve();
-                };
-
-
-            transaction.onerror =
-                function() {
-
-                    reject(
-                        transaction.error
+                const transaction =
+                    db.transaction(
+                        STORE_NAME,
+                        "readwrite"
                     );
-                };
-
-        }
-    );
 
 
-    db.close();
+                const store =
+                    transaction.objectStore(
+                        STORE_NAME
+                    );
+
+
+                for (
+                    const post of posts
+                ) {
+
+                    if (
+                        post &&
+                        post.id
+                    ) {
+
+                        store.put(
+                            post
+                        );
+                    }
+                }
+
+
+                transaction.oncomplete =
+                    function() {
+
+                        resolve();
+                    };
+
+
+                transaction.onerror =
+                    function() {
+
+                        reject(
+                            transaction.error ||
+                            new Error(
+                                "Unable to save posts."
+                            )
+                        );
+                    };
+
+
+                transaction.onabort =
+                    function() {
+
+                        reject(
+                            transaction.error ||
+                            new Error(
+                                "IndexedDB save transaction aborted."
+                            )
+                        );
+                    };
+
+            }
+        );
+
+    }
+    finally {
+
+        db.close();
+    }
 }
 
 
@@ -873,53 +992,60 @@ async function getAllSavedPosts() {
         await openDB();
 
 
-    return new Promise(
-        function(resolve, reject) {
+    try {
 
-            const transaction =
-                db.transaction(
-                    STORE_NAME,
-                    "readonly"
-                );
+        return await new Promise(
+            function(resolve, reject) {
 
-
-            const request =
-                transaction
-                    .objectStore(
-                        STORE_NAME
-                    )
-                    .getAll();
-
-
-            request.onsuccess =
-                function() {
-
-                    db.close();
-
-                    resolve(
-                        request.result ||
-                        []
+                const transaction =
+                    db.transaction(
+                        STORE_NAME,
+                        "readonly"
                     );
-                };
 
 
-            request.onerror =
-                function() {
+                const request =
+                    transaction
+                        .objectStore(
+                            STORE_NAME
+                        )
+                        .getAll();
 
-                    db.close();
 
-                    reject(
-                        request.error
-                    );
-                };
+                request.onsuccess =
+                    function() {
 
-        }
-    );
+                        resolve(
+                            request.result ||
+                            []
+                        );
+                    };
+
+
+                request.onerror =
+                    function() {
+
+                        reject(
+                            request.error ||
+                            new Error(
+                                "Unable to read IndexedDB."
+                            )
+                        );
+                    };
+
+            }
+        );
+
+    }
+    finally {
+
+        db.close();
+    }
 }
 
 
 /* =====================================================
-   COUNT
+   COUNT INDEX
 ===================================================== */
 
 async function countXYZ() {
@@ -928,49 +1054,59 @@ async function countXYZ() {
         await openDB();
 
 
-    return new Promise(
-        function(resolve, reject) {
+    try {
 
-            const request =
-                db
-                    .transaction(
+        return await new Promise(
+            function(resolve, reject) {
+
+                const transaction =
+                    db.transaction(
                         STORE_NAME,
                         "readonly"
-                    )
-                    .objectStore(
-                        STORE_NAME
-                    )
-                    .count();
-
-
-            request.onsuccess =
-                function() {
-
-                    db.close();
-
-                    resolve(
-                        request.result
                     );
-                };
 
 
-            request.onerror =
-                function() {
+                const request =
+                    transaction
+                        .objectStore(
+                            STORE_NAME
+                        )
+                        .count();
 
-                    db.close();
 
-                    reject(
-                        request.error
-                    );
-                };
+                request.onsuccess =
+                    function() {
 
-        }
-    );
+                        resolve(
+                            request.result || 0
+                        );
+                    };
+
+
+                request.onerror =
+                    function() {
+
+                        reject(
+                            request.error ||
+                            new Error(
+                                "Unable to count IndexedDB posts."
+                            )
+                        );
+                    };
+
+            }
+        );
+
+    }
+    finally {
+
+        db.close();
+    }
 }
 
 
 /* =====================================================
-   FORCE FRESH XYZ INDEX
+   FORCE FRESH INDEX
 ===================================================== */
 
 async function rebuildmytecbooksIndex() {
@@ -983,10 +1119,6 @@ async function rebuildmytecbooksIndex() {
             [];
 
 
-        /*
-         * Delete previous data first.
-         */
-
         setStatus(
             "Deleting old mytecbooks index..."
         );
@@ -997,10 +1129,6 @@ async function rebuildmytecbooksIndex() {
 
         setProgress(0);
 
-
-        /*
-         * Fetch the current mytecbooks archive.
-         */
 
         setStatus(
             "Downloading current mytecbooks archive..."
@@ -1022,10 +1150,6 @@ async function rebuildmytecbooksIndex() {
             );
         }
 
-
-        /*
-         * Save only the newly downloaded posts.
-         */
 
         setStatus(
             "Saving " +
@@ -1086,54 +1210,6 @@ async function rebuildmytecbooksIndex() {
 
 
 /* =====================================================
-   INTERNAL CLEAR
-===================================================== */
-
-async function clearIndexInternal() {
-
-    const db =
-        await openDB();
-
-
-    await new Promise(
-        function(resolve, reject) {
-
-            const transaction =
-                db.transaction(
-                    STORE_NAME,
-                    "readwrite"
-                );
-
-
-            transaction.objectStore(
-                STORE_NAME
-            ).clear();
-
-
-            transaction.oncomplete =
-                function() {
-
-                    resolve();
-                };
-
-
-            transaction.onerror =
-                function() {
-
-                    reject(
-                        transaction.error
-                    );
-                };
-
-        }
-    );
-
-
-    db.close();
-}
-
-
-/* =====================================================
    LOAD FULL BLOG
 ===================================================== */
 
@@ -1147,8 +1223,7 @@ async function loadAllPosts(
         new Set();
 
 
-    let position =
-        1;
+    let position = 1;
 
 
     while (true) {
@@ -1165,10 +1240,6 @@ async function loadAllPosts(
             data.posts || [];
 
 
-        /*
-         * Only ZERO posts means end.
-         */
-
         if (
             batch.length === 0
         ) {
@@ -1177,8 +1248,7 @@ async function loadAllPosts(
         }
 
 
-        let newPosts =
-            0;
+        let newPosts = 0;
 
 
         for (
@@ -1186,6 +1256,8 @@ async function loadAllPosts(
         ) {
 
             if (
+                post &&
+                post.id &&
                 !ids.has(
                     post.id
                 )
@@ -1205,8 +1277,7 @@ async function loadAllPosts(
 
 
         /*
-         * If the same page comes back
-         * repeatedly, avoid an infinite loop.
+         * Prevent infinite repeated pages.
          */
 
         if (
@@ -1220,10 +1291,6 @@ async function loadAllPosts(
             );
         }
 
-
-        /*
-         * Advance by the number actually returned.
-         */
 
         position +=
             batch.length;
@@ -1270,7 +1337,7 @@ async function loadAllPosts(
 
 
 /* =====================================================
-   LOAD ABC 1000
+   LOAD mytecbook BATCH
 ===================================================== */
 
 async function loadABCBatch(
@@ -1330,8 +1397,7 @@ async function loadABCBatch(
         }
 
 
-        let newPosts =
-            0;
+        let newPosts = 0;
 
 
         for (
@@ -1339,6 +1405,8 @@ async function loadABCBatch(
         ) {
 
             if (
+                post &&
+                post.id &&
                 !ids.has(
                     post.id
                 )
@@ -1356,11 +1424,6 @@ async function loadABCBatch(
             }
         }
 
-
-        /*
-         * Prevent infinite repeated
-         * page responses.
-         */
 
         if (
             newPosts === 0
@@ -1415,8 +1478,7 @@ async function fetchWithRetry(
     count
 ) {
 
-    let lastError =
-        null;
+    let lastError = null;
 
 
     for (
@@ -1607,7 +1669,7 @@ async function scanBatch(
     try {
 
         /*
-         * Get ALL mytecbooks posts.
+         * Load ALL mytecbooks posts from IndexedDB.
          */
 
         let xyzPosts =
@@ -1615,8 +1677,8 @@ async function scanBatch(
 
 
         /*
-         * Automatically build full XYZ
-         * index if it does not exist.
+         * Automatically build full index
+         * if it does not exist.
          */
 
         if (
@@ -1624,8 +1686,7 @@ async function scanBatch(
         ) {
 
             setStatus(
-                "mytecbooks full index is not available. " +
-                "Building it now..."
+                "mytecbooks full index is not available. Building it now..."
             );
 
 
@@ -1666,7 +1727,7 @@ async function scanBatch(
 
 
         /*
-         * Load ONLY the selected ABC batch.
+         * Load ONLY selected mytecbook batch.
          */
 
         const abcPosts =
@@ -1692,7 +1753,7 @@ async function scanBatch(
 
 
         /*
-         * Build index for ALL XYZ.
+         * Build index for ALL mytecbooks.
          */
 
         setStatus(
@@ -1709,11 +1770,8 @@ async function scanBatch(
 
 
         /*
-         * EXACT REQUEST:
-         *
-         * ABC 1000
-         *      ↓
-         * ALL XYZ
+         * Compare selected 1000
+         * against entire archive.
          */
 
         setStatus(
@@ -1797,6 +1855,7 @@ async function scanBatch(
         showError(
             error.message
         );
+
     }
     finally {
 
@@ -1890,8 +1949,7 @@ function findMatches(
 
 
         /*
-         * First:
-         * exact normalized content.
+         * Exact normalized content.
          */
 
         const textCandidates =
@@ -1976,10 +2034,8 @@ function findMatches(
         let best =
             null;
 
-
         let bestScore =
             0;
-
 
         let bestMethod =
             "";
@@ -2025,7 +2081,7 @@ function findMatches(
 
 
         /*
-         * Accept only a strong match.
+         * Accept only strong matches.
          */
 
         if (
@@ -2123,7 +2179,7 @@ function scoreMatch(
 
 
     /*
-     * Same published date.
+     * Same date.
      */
 
     if (
@@ -2884,7 +2940,7 @@ function downloadCSV() {
 
 
 /* =====================================================
-   BUTTONS
+   BUTTON CONTROLS
 ===================================================== */
 
 function disableControls(
@@ -2915,6 +2971,10 @@ function disableControls(
 }
 
 
+/* =====================================================
+   RUNNING BUTTON
+===================================================== */
+
 function markRunning(
     batch
 ) {
@@ -2924,10 +2984,13 @@ function markRunning(
             ".batch-button"
         )
         .forEach(
-            button =>
+            button => {
+
                 button.classList.remove(
                     "running"
-                )
+                );
+
+            }
         );
 
 
@@ -2942,12 +3005,20 @@ function markRunning(
         button
     ) {
 
+        button.classList.remove(
+            "done"
+        );
+
         button.classList.add(
             "running"
         );
     }
 }
 
+
+/* =====================================================
+   DONE BUTTON
+===================================================== */
 
 function markDone(
     batch
@@ -3068,7 +3139,7 @@ ${escapeHTML(
 
 
 /* =====================================================
-   ESCAPE
+   HTML ESCAPE
 ===================================================== */
 
 function escapeHTML(
@@ -3208,8 +3279,12 @@ function sleep(
 
         document.getElementById(
             "cacheStatus"
-        ).textContent =
-            "mytecbooks archive: not loaded yet.";
+        ).innerHTML =
+            "mytecbooks archive: not loaded yet." +
+            "<br>" +
+            escapeHTML(
+                error.message
+            );
 
     }
 
